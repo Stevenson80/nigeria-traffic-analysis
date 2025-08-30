@@ -5,7 +5,7 @@ import logging
 import io
 import base64
 from datetime import datetime
-import pdfkit
+from weasyprint import HTML  # Replace pdfkit with WeasyPrint
 from PyPDF2 import PdfMerger
 from traffic_analysis_models import TrafficAnalysisModel, EmissionModelType
 
@@ -25,12 +25,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 ])
 logger = logging.getLogger(__name__)
 
-# wkhtmltopdf configuration - hardcoded for Render deployment
-WKHTMLTOPDF_PATH = '/usr/bin/wkhtmltopdf'
-if not os.path.exists(WKHTMLTOPDF_PATH):
-    logger.warning(f"wkhtmltopdf not found at {WKHTMLTOPDF_PATH}. Ensure it is installed.")
-config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
-
+# REMOVED: wkhtmltopdf configuration section
 
 # Custom filters for formatting
 @app.template_filter('format_number')
@@ -507,27 +502,17 @@ def download_pdf():
             f.write(cover_rendered + '\n' + report_rendered)
         logger.info(f"Saved rendered HTML to {html_output_path}")
 
-        # Generate PDFs
+        # Generate PDFs using WeasyPrint
         cover_pdf = 'cover.pdf'
         report_pdf = 'report.pdf'
         final_pdf = 'abuja_traffic_analysis_report.pdf'
-        options = {
-            'page-size': 'A4',
-            'margin-top': '0.5in',
-            'margin-right': '0.5in',
-            'margin-bottom': '0.5in',
-            'margin-left': '0.5in',
-            'encoding': 'UTF-8',
-            'enable-local-file-access': '',
-            'quiet': ''
-        }
 
         # Generate cover PDF
-        pdfkit.from_string(cover_rendered, cover_pdf, configuration=config, options=options)
+        HTML(string=cover_rendered).write_pdf(cover_pdf)
         logger.info(f"Generated cover PDF at {cover_pdf}")
 
         # Generate report PDF
-        pdfkit.from_string(report_rendered, report_pdf, configuration=config, options=options)
+        HTML(string=report_rendered).write_pdf(report_pdf)
         logger.info(f"Generated report PDF at {report_pdf}")
 
         # Merge PDFs
@@ -545,7 +530,7 @@ def download_pdf():
 
         if not os.path.exists(final_pdf) or os.path.getsize(final_pdf) == 0:
             logger.error("PDF file was not created or is empty")
-            flash("PDF file was not created or is empty. Check wkhtmltopdf and file permissions.", "error")
+            flash("PDF file was not created or is empty.", "error")
             return Response("PDF generation failed: File not created or empty", status=500)
 
         flash("PDF report generated successfully!", "success")
