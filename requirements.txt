@@ -1,7 +1,6 @@
 Flask==3.0.3
-pandas==2.2.3  # Try the latest patch version
+pandas==2.2.3
 matplotlib==3.9.0
-pdfkit==1.0.0
+WeasyPrint==63.0  # Replace pdfkit with WeasyPrint
 numpy==2.0.0
 gunicorn==22.0.0
-PyPDF2==3.0.1
