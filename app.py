@@ -25,8 +25,8 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 ])
 logger = logging.getLogger(__name__)
 
-# wkhtmltopdf configuration
-WKHTMLTOPDF_PATH = os.environ.get('WKHTMLTOPDF_PATH', 'C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe')
+# wkhtmltopdf configuration - hardcoded for Render deployment
+WKHTMLTOPDF_PATH = '/usr/bin/wkhtmltopdf'
 if not os.path.exists(WKHTMLTOPDF_PATH):
     logger.warning(f"wkhtmltopdf not found at {WKHTMLTOPDF_PATH}. Ensure it is installed.")
 config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
