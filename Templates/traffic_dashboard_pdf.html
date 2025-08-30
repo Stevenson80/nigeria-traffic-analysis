@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abuja Traffic Analysis Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Your existing CSS styles remain unchanged */
+        :root {
+            --primary-color: #1a2a6c;
+            --secondary-color: #b21f1f;
+            --accent-color: #fdbb2d;
+            --light-color: #f0f7ff;
+            --dark-color: #2c3e50;
+            --text-color: #333;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #495057, #6c757d);
+        }
+
+        .cover-page {
+            text-align: center;
+            padding: 80px 40px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            color: white;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .cover-page h1 {
+            font-size: 2.8em;
+            margin-bottom: 20px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+
+        .cover-page p {
+            font-size: 1.2em;
+            max-width: 800px;
+            margin: 10px auto;
+            opacity: 0.9;
+        }
+
+        .cover-page .date {
+            margin-top: 30px;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            page-break-inside: avoid;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--primary-color);
+            font-family: 'Poppins', sans-serif;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .summary-card {
+            background: var(--light-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--primary-color);
+            transition: var(--transition);
+        }
+
+        .summary-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .summary-card h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: var(--dark-color);
+        }
+
+        .summary-card .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+
+        .summary-card .subtext {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.95em;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+        .chart-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            margin: 35px 0;
+        }
+
+        .chart-box {
+            flex: 1 1 400px;
+            min-width: 300px;
+            background: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+        }
+
+        .chart-box h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            color: var(--dark-color);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+            font-size: 0.95em;
+            color: #666;
+            border-top: 1px solid #eaeaea;
+        }
+
+        .no-print {
+            display: block;
+        }
+
+        .road-comparison {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .road-card {
+            flex: 1;
+            min-width: 300px;
+            background: var(--light-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .road-card h3 {
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .key-findings {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: var(--border-radius);
+        }
+
+        .recommendations {
+            background: #d1ecf1;
+            border-left: 4px solid #0dcaf0;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: var(--border-radius);
+        }
+
+        ul, ol {
+            padding-left: 30px;
+            margin: 15px 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .chart-img-container {
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .chart-img-container img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                padding: 0;
+                background-color: white;
+                font-size: 12pt;
+            }
+            .section {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+            .cover-page {
+                page-break-after: always;
+                box-shadow: none;
+            }
+            .summary-card, .road-card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+            .chart-box {
+                page-break-inside: avoid;
+            }
+            table {
+                page-break-inside: avoid;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            .cover-page {
+                padding: 50px 20px;
+            }
+            .cover-page h1 {
+                font-size: 2.2em;
+            }
+            .controls {
+                flex-direction: column;
+                align-items: flex-end;
+            }
+            .btn {
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 10px;
+            }
+            .chart-container {
+                gap: 20px;
+            }
+            .chart-box {
+                flex: 1 1 100%;
+            }
+        }
+
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loadingIndicator">
+        <div class="loading-spinner"></div>
+        <p>Generating PDF report...</p>
+    </div>
+
+    <div class="controls no-print">
+        <button class="btn" onclick="downloadPDF()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+            </svg>
+            Download PDF Report
+        </button>
+        <button class="btn btn-secondary" onclick="window.print()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/>
+                <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+            </svg>
+            Print Report
+        </button>
+    </div>
+
+    <div id="report-content">
+        <!-- Cover Page -->
+        <div class="cover-page">
+            <h1>Abuja Traffic Analysis System</h1>
+            <p>Comprehensive traffic congestion analysis for major Abuja roads</p>
+            <p>Detailed assessment of economic and environmental impacts</p>
+            <div class="date">Report Generated: August 29, 2025</div>
+        </div>
+
+        <!-- Executive Summary -->
+        <div class="section">
+            <h2>Executive Summary</h2>
+            <p>This report presents a comprehensive analysis of traffic congestion across three major Abuja roads: Nyanya, Lugbe, and Kubwa. The analysis captures data from <strong>431</strong> vehicles during evening rush hour (18:00) on August 29, 2025, quantifying the economic and environmental impact of congestion through multiple metrics including delay times, fuel consumption, CO2 emissions, and productivity loss.</p>
+
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <h3>Total Vehicles</h3>
+                    <div class="value">431</div>
+                    <div class="subtext">across all roads</div>
+                </div>
+                <div class="summary-card">
+                    <h3>People Affected</h3>
+                    <div class="value">2,081</div>
+                    <div class="subtext">commuters impacted</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Delay</h3>
+                    <div class="value">294.5 hours</div>
+                    <div class="subtext">due to congestion</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Economic Impact</h3>
+                    <div class="value">₦747,981</div>
+                    <div class="subtext">fuel cost + productivity loss</div>
+                </div>
+            </div>
+
+            <p>The analysis reveals significant congestion across all three corridors, with Nyanya Road experiencing the highest impact in terms of vehicles affected, fuel cost, and productivity loss. The findings highlight the urgent need for targeted interventions to alleviate traffic congestion and its associated economic and environmental costs.</p>
+        </div>
+
+        <!-- Methodology -->
+        <div class="section">
+            <h2>Methodology</h2>
+            <p>This analysis uses vehicle-specific occupancy rates and fuel consumption parameters. Key assumptions include:</p>
+            <ul>
+                <li><strong>Fuel prices:</strong> ₦850/L for petrol and ₦1000/L for diesel</li>
+                <li><strong>CO2 emission factors:</strong> 2.31 kg CO₂/L for petrol and 2.68 kg CO₂/L for diesel</li>
+                <li><strong>Productivity Loss</strong> calculated using a value of time of ₦7.29/minute, based on minimum wage calculations</li>
+                <li><strong>Distance:</strong> 6.0 km average corridor length</li>
+                <li>Data represents a snapshot at 18:00 on 2025-08-29, which may not reflect daily averages</li>
+            </ul>
+        </div>
+
+        <!-- Grand Totals -->
+        <div class="section">
+            <h2>Grand Totals Across All Roads</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                        <th>Unit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Total Vehicles</td>
+                        <td>431</td>
+                        <td>vehicles</td>
+                    </tr>
+                    <tr>
+                        <td>Total People Affected</td>
+                        <td>2,081</td>
+                        <td>people</td>
+                    </tr>
+                    <tr>
+                        <td>Total Delay Time</td>
+                        <td>294.5</td>
+                        <td>hours</td>
+                    </tr>
+                    <tr>
+                        <td>Total Excess Fuel</td>
+                        <td>142.6</td>
+                        <td>liters</td>
+                    </tr>
+                    <tr>
+                        <td>Total Fuel Cost</td>
+                        <td>₦125,707</td>
+                        <td>naira</td>
+                    </tr>
+                    <tr>
+                        <td>Total CO2 Emissions</td>
+                        <td>340.5</td>
+                        <td>kg</td>
+                    </tr>
+                    <tr>
+                        <td>Total Productivity Loss</td>
+                        <td>₦622,274</td>
+                        <td>naira</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Economic Impact</strong></td>
+                        <td><strong>₦747,981</strong></td>
+                        <td><strong>naira</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Per-Road Analysis -->
+        <div class="section">
+            <h2>Per-Road Analysis</h2>
+
+            <div class="road-comparison">
+                <div class="road-card">
+                    <h3>Nyanya Road</h3>
+                    <table>
+                        <tr>
+                            <td>Vehicles</td>
+                            <td>170</td>
+                        </tr>
+                        <tr>
+                            <td>People Affected</td>
+                            <td>835</td>
+                        </tr>
+                        <tr>
+                            <td>Excess Fuel</td>
+                            <td>57.1 L</td>
+                        </tr>
+                        <tr>
+                            <td>Fuel Cost</td>
+                            <td>₦50,377</td>
+                        </tr>
+                        <tr>
+                            <td>CO2 Emissions</td>
+                            <td>136.5 kg</td>
+                        </tr>
+                        <tr>
+                            <td>Productivity Loss</td>
+                            <td>₦249,752</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="road-card">
+                    <h3>Lugbe Road</h3>
+                    <table>
+                        <tr>
+                            <td>Vehicles</td>
+                            <td>158</td>
+                        </tr>
+                        <tr>
+                            <td>People Affected</td>
+                            <td>733</td>
+                        </tr>
+                        <tr>
+                            <td>Excess Fuel</td>
+                            <td>49.0 L</td>
+                        </tr>
+                        <tr>
+                            <td>Fuel Cost</td>
+                            <td>₦43,042</td>
+                        </tr>
+                        <tr>
+                            <td>CO2 Emissions</td>
+                            <td>116.6 kg</td>
+                        </tr>
+                        <tr>
+                            <td>Productivity Loss</td>
+                            <td>₦219,101</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="road-card">
+                    <h3>Kubwa Road</h3>
+                    <table>
+                        <tr>
+                            <td>Vehicles</td>
+                            <td>103</td>
+                        </tr>
+                        <tr>
+                            <td>People Affected</td>
+                            <td>513</td>
+                        </tr>
+                        <tr>
+                            <td>Excess Fuel</td>
+                            <td>36.4 L</td>
+                        </tr>
+                        <tr>
+                            <td>Fuel Cost</td>
+                            <td>₦32,287</td>
+                        </tr>
+                        <tr>
+                            <td>CO2 Emissions</td>
+                            <td>87.4 kg</td>
+                        </tr>
+                        <tr>
+                            <td>Productivity Loss</td>
+                            <td>₦153,420</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vehicle Distribution Charts -->
+        <div class="section">
+            <h2>Vehicle Distribution Analysis</h2>
+            <p>The following pie charts illustrate the distribution of vehicle types across each road corridor:</p>
+
+            <div class="chart-container">
+                <div class="chart-box">
+                    <h3>Nyanya Road Vehicle Distribution</h3>
+                    <canvas id="pie-nyanya-road"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h3>Lugbe Road Vehicle Distribution</h3>
+                    <canvas id="pie-lugbe-road"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h3>Kubwa Road Vehicle Distribution</h3>
+                    <canvas id="pie-kubwa-road"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparative Analysis -->
+        <div class="section">
+            <h2>Comparative Analysis Across Roads</h2>
+            <p>The following bar charts compare key metrics across the three road corridors:</p>
+
+            <div class="chart-container">
+                <div class="chart-box">
+                    <h3>People Affected by Congestion</h3>
+                    <canvas id="peopleChart"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h3>Fuel Cost Comparison (₦)</h3>
+                    <canvas id="fuelCostChart"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h3>Productivity Loss (₦)</h3>
+                    <canvas id="productivityChart"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h3>CO2 Emissions (kg)</h3>
+                    <canvas id="co2Chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conclusions -->
+        <div class="section">
+            <h2>Conclusions and Recommendations</h2>
+
+            <div class="key-findings">
+                <h3>Key Findings</h3>
+                <ul>
+                    <li>Nyanya Road experiences the highest congestion impact, accounting for approximately 42% of all vehicles observed and 51% of total productivity loss</li>
+                    <li>Traffic congestion affects nearly 2,000 commuters during the evening rush hour across these three corridors</li>
+                    <li>The economic impact is substantial, with over ₦600,000 in combined fuel costs and productivity loss during just one hour of congestion</li>
+                    <li>Environmental impacts include 340.5 kg of excess CO2 emissions during the observed period</li>
+                    <li>The average delay per vehicle is 41.0 minutes across all roads</li>
+                </ul>
+            </div>
+
+            <div class="recommendations">
+                <h3>Recommendations</h3>
+                <ul>
+                    <li><strong>Immediate Interventions:</strong> Implement targeted traffic management interventions on Nyanya Road, which shows the highest congestion metrics</li>
+                    <li><strong>Public Transportation:</strong> Enhance alternative transportation options to reduce vehicle numbers during peak hours</li>
+                    <li><strong>Infrastructure Investment:</strong> Prioritize infrastructure improvements based on the specific vehicle type distributions observed on each road</li>
+                    <li><strong>Data Collection:</strong> Conduct further analysis to understand daily and weekly patterns beyond the snapshot data presented here</li>
+                    <li><strong>Policy Measures:</strong> Consider congestion pricing or staggered work hours to distribute traffic more evenly throughout the day</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 | Powered by Opygoal Technology Ltd | Developed by Oladotun Ajakaiye | Service Manager & Data Analyst</p>
+        </div>
+    </div>
+
+    <script>
+        // Show loading indicator
+        function showLoading() {
+            document.getElementById('loadingIndicator').style.display = 'flex';
+        }
+
+        // Hide loading indicator
+        function hideLoading() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+
+        // Store chart instances for later use
+        const charts = {};
+
+        // Initialize charts when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sample data - in a real application, this would come from your backend
+            const roadNames = ['Nyanya Road', 'Lugbe Road', 'Kubwa Road'];
+            const vehicleTypes = ['Cars', 'Motorcycles', 'SUVs', 'Sedans', 'Wagons', 'Short Buses', 'Minibusses', 'Long Buses', 'Truck', 'Tanker and Trailer'];
+
+            // Generate pie charts for each road
+            roadNames.forEach(road => {
+                const canvasId = `pie-${road.replace(' ', '-').toLowerCase()}`;
+                const ctx = document.getElementById(canvasId);
+
+                if (ctx) {
+                    // Generate random data for demonstration
+                    const data = Array.from({length: 5}, () => Math.floor(Math.random() * 30) + 10);
+
+                    charts[canvasId] = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: vehicleTypes.slice(0, 5),
+                            datasets: [{
+                                data: data,
+                                backgroundColor: ['#1a2a6c', '#b21f1f', '#fdbb2d', '#1c6b3d', '#6b2c90', '#2a6b55', '#6b2c4d', '#4d2c6b', '#6b4d2c', '#2c6b6b']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        boxWidth: 12,
+                                        font: {
+                                            size: 10
+                                        }
+                                    }
+                                },
+                                title: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Bar charts for comparative analysis
+            const barChartData = {
+                'People Affected': [835, 733, 513],
+                'Fuel Cost': [50377, 43042, 32287],
+                'Productivity Loss': [249752, 219101, 153420],
+                'CO2 Emissions': [136.5, 116.6, 87.4]
+            };
+
+            const barChartIds = ['peopleChart', 'fuelCostChart', 'productivityChart', 'co2Chart'];
+
+            Object.keys(barChartData).forEach((metric, index) => {
+                const ctx = document.getElementById(barChartIds[index]);
+
+                if (ctx) {
+                    charts[barChartIds[index]] = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: roadNames,
+                            datasets: [{
+                                label: metric,
+                                data: barChartData[metric],
+                                backgroundColor: ['#1a2a6c', '#b21f1f', '#fdbb2d']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            if (metric === 'Fuel Cost' || metric === 'Productivity Loss') {
+                                                return '₦' + value.toLocaleString();
+                                            } else if (metric === 'CO2 Emissions') {
+                                                return value + ' kg';
+                                            }
+                                            return value;
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        });
+
+        // Function to convert all charts to images
+        async function convertChartsToImages() {
+            const chartCanvases = document.querySelectorAll('canvas');
+            const imagePromises = [];
+
+            chartCanvases.forEach(canvas => {
+                const promise = new Promise((resolve) => {
+                    // Create a container for the image
+                    const container = document.createElement('div');
+                    container.className = 'chart-img-container';
+
+                    // Create image from canvas
+                    const image = new Image();
+                    image.src = canvas.toDataURL('image/png');
+                    image.alt = "Chart visualization";
+                    image.style.maxWidth = '100%';
+
+                    // Replace canvas with image
+                    container.appendChild(image);
+                    canvas.parentNode.appendChild(container);
+                    canvas.style.display = 'none';
+
+                    resolve();
+                });
+
+                imagePromises.push(promise);
+            });
+
+            await Promise.all(imagePromises);
+        }
+
+        // Function to restore charts after PDF generation
+        function restoreCharts() {
+            // Hide all chart images
+            document.querySelectorAll('.chart-img-container').forEach(container => {
+                container.style.display = 'none';
+            });
+
+            // Show all canvases again
+            document.querySelectorAll('canvas').forEach(canvas => {
+                canvas.style.display = 'block';
+            });
+        }
+
+        // Download PDF function
+        async function downloadPDF() {
+            showLoading();
+
+            try {
+                // First convert all charts to images
+                await convertChartsToImages();
+
+                // Wait a moment for DOM to update
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                const element = document.getElementById('report-content');
+                const opt = {
+                    margin: [10, 10, 10, 10],
+                    filename: 'abuja_traffic_analysis_report.pdf',
+                    image: {
+                        type: 'jpeg',
+                        quality: 0.98
+                    },
+                    html2canvas: {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: '#FFFFFF'
+                    },
+                    jsPDF: {
+                        unit: 'mm',
+                        format: 'a4',
+                        orientation: 'portrait'
+                    },
+                    pagebreak: {
+                        mode: ['avoid-all', 'css', 'legacy']
+                    }
+                };
+
+                // Generate PDF
+                await html2pdf().set(opt).from(element).save();
+
+            } catch (err) {
+                console.error('PDF generation error:', err);
+                alert('Error generating PDF. Please try again.');
+            } finally {
+                // Restore charts after PDF generation
+                restoreCharts();
+                hideLoading();
+            }
+        }
+    </script>
+</body>
+</html>

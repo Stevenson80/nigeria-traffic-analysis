@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Data Entry - Abuja Traffic Analysis System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #4CAF50;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-color: #dee2e6;
+            --success-color: #d4edda;
+            --error-color: #f8d7da;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+            --advanced-bg: #f0f7ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark-color);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 25px;
+            text-align: center;
+            box-shadow: var(--box-shadow);
+        }
+
+        .navbar a {
+            margin: 0 8px;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 500;
+            background-color: var(--light-color);
+            border-radius: 50px;
+            transition: var(--transition);
+            display: inline-block;
+            border: 2px solid transparent;
+        }
+
+        .navbar a:hover {
+            background-color: var(--accent-color);
+            color: white;
+            transform: translateY(-2px);
+            border-color: var(--accent-color);
+        }
+
+        .navbar a i {
+            margin-right: 8px;
+        }
+
+        .form-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 2.2em;
+        }
+
+        h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        h4 {
+            color: var(--secondary-color);
+            margin: 20px 0 15px 0;
+            padding-left: 10px;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .flash-message {
+            margin-bottom: 25px;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid transparent;
+        }
+
+        .flash-message.success {
+            background-color: var(--success-color);
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+
+        .flash-message.error {
+            background-color: var(--error-color);
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .advanced-section {
+            background-color: var(--advanced-bg);
+            border-left: 4px solid #6f42c1;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        input[type="number"],
+        input[type="date"],
+        input[type="time"],
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        input[type="time"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        input[type="number"].error,
+        input[type="date"].error,
+        input[type="time"].error,
+        input[type="text"].error,
+        select.error {
+            border-color: #dc3545;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--secondary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--light-color);
+        }
+
+        input[type="submit"] {
+            margin-top: 30px;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, var(--accent-color), #45a049);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            transition: var(--transition);
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        input[type="submit"]:hover {
+            background: linear-gradient(135deg, #45a049, var(--accent-color));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        input[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .required::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+        .help-text {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        small {
+            font-size: 12px;
+            color: #6c757d;
+            display: block;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .navbar a {
+                display: block;
+                margin: 8px 0;
+                text-align: center;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .form-row {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .form-container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            input[type="submit"] {
+                width: 100%;
+                padding: 12px;
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--secondary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toggle-advanced {
+            background-color: #6f42c1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            transition: var(--transition);
+        }
+
+        .toggle-advanced:hover {
+            background-color: #5a359c;
+            transform: translateY(-2px);
+        }
+
+        .toggle-advanced i {
+            margin-right: 8px;
+        }
+
+        .advanced-fields {
+            display: none;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .advanced-fields.visible {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .sub-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            border-left: 3px solid #6f42c1;
+        }
+
+        .sub-section h4 {
+            color: #6f42c1;
+            border-left: 4px solid #6f42c1;
+        }
+    </style>
+    <script>
+        function validateForm() {
+            // Clear previous errors
+            clearErrors();
+
+            let isValid = true;
+
+            // Validate travel times
+            const congestedTime = parseFloat(document.getElementById('congested_travel_time').value);
+            const freeFlowTime = parseFloat(document.getElementById('free_flow_time').value);
+
+            if (congestedTime <= freeFlowTime) {
+                showError('congested_travel_time', 'Congested Travel Time must be greater than Free Flow Time.');
+                isValid = false;
+            }
+
+            // Validate all numeric inputs
+            const numericInputs = document.querySelectorAll('input[type="number"]');
+            numericInputs.forEach(input => {
+                if (input.value && parseFloat(input.value) < 0) {
+                    showError(input.id, 'Value must be a positive number.');
+                    isValid = false;
+                }
+            });
+
+            // Validate required fields
+            const requiredInputs = document.querySelectorAll('[required]');
+            requiredInputs.forEach(input => {
+                if (!input.value.trim()) {
+                    showError(input.id, 'This field is required.');
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                // Scroll to first error
+                const firstError = document.querySelector('.error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+
+            return isValid;
+        }
+
+        function showError(inputId, message) {
+            const input = document.getElementById(inputId);
+            const errorElement = document.getElementById(inputId + '-error');
+
+            if (input) {
+                input.classList.add('error');
+            }
+
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+        }
+
+        function clearErrors() {
+            const errorInputs = document.querySelectorAll('.error');
+            errorInputs.forEach(input => input.classList.remove('error'));
+
+            const errorMessages = document.querySelectorAll('.error-message');
+            errorMessages.forEach(msg => msg.style.display = 'none');
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.querySelector('input[type="submit"]').disabled = true;
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.querySelector('input[type="submit"]').disabled = false;
+        }
+
+        // Auto-calculate delay time
+        function calculateDelay() {
+            const congestedTime = parseFloat(document.getElementById('congested_travel_time').value) || 0;
+            const freeFlowTime = parseFloat(document.getElementById('free_flow_time').value) || 0;
+            const delay = congestedTime - freeFlowTime;
+
+            if (delay > 0) {
+                document.getElementById('delay_time').textContent = delay.toFixed(1) + ' minutes';
+            } else {
+                document.getElementById('delay_time').textContent = '0 minutes';
+            }
+        }
+
+        // Toggle advanced fields visibility
+        function toggleAdvancedFields() {
+            const advancedFields = document.getElementById('advancedFields');
+            const toggleButton = document.getElementById('toggleAdvanced');
+
+            if (advancedFields.classList.contains('visible')) {
+                advancedFields.classList.remove('visible');
+                toggleButton.innerHTML = '<i class="fas fa-cogs"></i> Show Advanced Fields (Barth & MOVES Models)';
+            } else {
+                advancedFields.classList.add('visible');
+                toggleButton.innerHTML = '<i class="fas fa-times"></i> Hide Advanced Fields';
+            }
+        }
+
+        // Add event listeners for auto-calculation
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('congested_travel_time').addEventListener('input', calculateDelay);
+            document.getElementById('free_flow_time').addEventListener('input', calculateDelay);
+
+            // Set up advanced fields toggle
+            document.getElementById('toggleAdvanced').addEventListener('click', toggleAdvancedFields);
+
+            // Initial calculation
+            calculateDelay();
+        });
+    </script>
+</head>
+<body>
+    <div class="navbar" role="navigation" aria-label="Main navigation">
+        <a href="{{ url_for('welcome') }}" aria-label="Home page"><i class="fas fa-home"></i> Home</a>
+        <a href="{{ url_for('analysis') }}" aria-label="Analysis page"><i class="fas fa-chart-bar"></i> Analysis</a>
+        <a href="{{ url_for('data_entry') }}" aria-label="Data entry page" style="background-color: var(--accent-color); color: white;"><i class="fas fa-pen-to-square"></i> Data Entry</a>
+        <a href="{{ url_for('download_report') }}" aria-label="Download CSV report"><i class="fas fa-file-csv"></i> CSV Report</a>
+        <a href="{{ url_for('download_pdf') }}" aria-label="Download PDF report"><i class="fas fa-file-pdf"></i> PDF Report</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-message {{ messages[0][0] }}" role="alert">
+                {% for category, message in messages %}
+                    <p><i class="fas fa-{% if category == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i> {{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="form-container">
+        <h1><i class="fas fa-traffic-light"></i> Traffic Data Entry</h1>
+        <p style="text-align: center; margin-bottom: 25px; color: #6c757d;">Enter traffic data for comprehensive congestion analysis across major Abuja roads</p>
+
+        <form method="post" action="{{ url_for('data_entry') }}" onsubmit="showLoading(); return validateForm();">
+
+            <div class="form-section">
+                <h3><i class="fas fa-info-circle"></i> General Parameters</h3>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="entry_date" class="required">Date:</label>
+                        <input type="date" id="entry_date" name="entry_date" value="{{ current_data.get('entry_date', '') }}" required aria-label="Data entry date">
+                        <div id="entry_date-error" class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="entry_time" class="required">Time:</label>
+                        <input type="time" id="entry_time" name="entry_time" value="{{ current_data.get('entry_time', '') }}" required aria-label="Data entry time">
+                        <div id="entry_time-error" class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="congested_travel_time" class="required">Congested Travel Time (minutes):</label>
+                        <input type="number" id="congested_travel_time" name="congested_travel_time" step="0.1" min="0" value="{{ current_data.get('congested_travel_time', 45.0) }}" required aria-label="Congested travel time in minutes">
+                        <div id="congested_travel_time-error" class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="free_flow_time" class="required">Free Flow Time (minutes):</label>
+                        <input type="number" id="free_flow_time" name="free_flow_time" step="0.1" min="0" value="{{ current_data.get('free_flow_time', 4.0) }}" required aria-label="Free flow time in minutes">
+                        <div id="free_flow_time-error" class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="distance_km" class="required">Distance (km):</label>
+                        <input type="number" id="distance_km" name="distance_km" step="0.1" min="0" value="{{ current_data.get('distance_km', 6.0) }}" required aria-label="Distance in kilometers">
+                        <div id="distance_km-error" class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="value_per_minute" class="required">Value per Minute (₦):</label>
+                        <input type="number" id="value_per_minute" name="value_per_minute" step="0.01" min="0" value="{{ current_data.get('value_per_minute', 7.29) }}" required aria-label="Value per minute in Naira">
+                        <div id="value_per_minute-error" class="error-message"></div>
+                        <div class="help-text">Based on minimum wage calculations</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fuel_cost_per_liter_petrol" class="required">Fuel Cost - Petrol (₦/L):</label>
+                        <input type="number" id="fuel_cost_per_liter_petrol" name="fuel_cost_per_liter_petrol" step="0.01" min="0" value="{{ current_data.get('fuel_cost_per_liter_petrol', 850.0) }}" required aria-label="Petrol fuel cost per liter in Naira">
+                        <div id="fuel_cost_per_liter_petrol-error" class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fuel_cost_per_liter_diesel" class="required">Fuel Cost - Diesel (₦/L):</label>
+                        <input type="number" id="fuel_cost_per_liter_diesel" name="fuel_cost_per_liter_diesel" step="0.01" min="0" value="{{ current_data.get('fuel_cost_per_liter_diesel', 1000.0) }}" required aria-label="Diesel fuel cost per liter in Naira">
+                        <div id="fuel_cost_per_liter_diesel-error" class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emission_factor_petrol" class="required">Emission Factor - Petrol (kg CO₂/L):</label>
+                        <input type="number" id="emission_factor_petrol" name="emission_factor_petrol" step="0.01" min="0" value="{{ current_data.get('emission_factor_petrol', 2.31) }}" required aria-label="Petrol emission factor in kg CO2 per liter">
+                        <div id="emission_factor_petrol-error" class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emission_factor_diesel" class="required">Emission Factor - Diesel (kg CO₂/L):</label>
+                        <input type="number" id="emission_factor_diesel" name="emission_factor_diesel" step="0.01" min="0" value="{{ current_data.get('emission_factor_diesel', 2.68) }}" required aria-label="Diesel emission factor in kg CO2 per liter">
+                        <div id="emission_factor_diesel-error" class="error-message"></div>
+                    </div>
+                </div>
+
+                <div style="background: #e8f4fc; padding: 15px; border-radius: var(--border-radius); margin-top: 20px;">
+                    <p><strong>Calculated Delay Time:</strong> <span id="delay_time">0 minutes</span></p>
+                    <div class="help-text">Delay = Congested Time - Free Flow Time</div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-car"></i> Vehicle Counts by Road</h3>
+                <p>Enter the number of vehicles observed for each vehicle type on each road:</p>
+
+                {% for road in roads | default(['Nyanya Road', 'Lugbe Road', 'Kubwa Road']) %}
+                    <h4>{{ road }}</h4>
+                    <table role="grid" aria-label="Vehicle counts for {{ road }}">
+                        <thead>
+                            <tr>
+                                <th>Vehicle Type</th>
+                                <th>Count</th>
+                                <th>Typical Occupancy</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vehicle_type in vehicle_types | default(['Motorcycles', 'Cars', 'SUVs', 'Sedans', 'Wagons', 'Short Buses', 'Minibusses', 'Long Buses', 'Truck', 'Tanker and Trailer']) %}
+                                <tr>
+                                    <td>{{ vehicle_type }}</td>
+                                    <td>
+                                        <input type="number" name="{{ road.replace(' ', '_') }}_{{ vehicle_type.replace(' ', '_').replace('/', '_') }}"
+                                               min="0" value="{{ current_data.get((road, vehicle_type), 0) }}"
+                                               required aria-label="Vehicle count for {{ vehicle_type }} on {{ road }}">
+                                    </td>
+                                    <td>
+                                        {% if vehicle_type == 'Motorcycles' %}1.4
+                                        {% elif vehicle_type in ['Cars', 'SUVs', 'Sedans', 'Wagons'] %}5.2
+                                        {% elif vehicle_type in ['Short Buses', 'Minibusses', 'Long Buses'] %}21.3
+                                        {% elif vehicle_type == 'Truck' %}1.55
+                                        {% elif vehicle_type == 'Tanker and Trailer' %}1.45
+                                        {% else %}1.0{% endif %} persons
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endfor %}
+            </div>
+
+            <!-- Barth Model Parameters Section -->
+            <div class="form-section">
+                <h3><i class="fas fa-calculator"></i> Barth Model Parameters</h3>
+                <p>Optional: Adjust Barth model coefficients for more accurate calculations</p>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="barth_alpha">Alpha Coefficient:</label>
+                        <input type="number" step="0.0001" name="barth_alpha" value="{{ current_data.get('barth_alpha', 0.0003) }}" aria-label="Barth model alpha coefficient">
+                        <small>Base coefficient for engine displacement (default: 0.0003)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="barth_beta">Beta Coefficient:</label>
+                        <input type="number" step="0.0001" name="barth_beta" value="{{ current_data.get('barth_beta', 0.0025) }}" aria-label="Barth model beta coefficient">
+                        <small>Coefficient for vehicle weight (default: 0.0025)</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="barth_gamma">Gamma Coefficient:</label>
+                        <input type="number" step="0.0001" name="barth_gamma" value="{{ current_data.get('barth_gamma', 0.0018) }}" aria-label="Barth model gamma coefficient">
+                        <small>Coefficient for road gradient (default: 0.0018)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="barth_traffic_flow">Traffic Flow Coefficient:</label>
+                        <input type="number" step="0.01" name="barth_traffic_flow" value="{{ current_data.get('barth_traffic_flow', 0.15) }}" aria-label="Barth traffic flow coefficient">
+                        <small>Traffic flow coefficient (default: 0.15)</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="barth_road_gradient">Road Gradient Coefficient:</label>
+                        <input type="number" step="0.01" name="barth_road_gradient" value="{{ current_data.get('barth_road_gradient', 0.10) }}" aria-label="Barth road gradient coefficient">
+                        <small>Road gradient coefficient (default: 0.10)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="barth_acceleration">Acceleration Coefficient:</label>
+                        <input type="number" step="0.01" name="barth_acceleration" value="{{ current_data.get('barth_acceleration', 0.04) }}" aria-label="Barth acceleration coefficient">
+                        <small>Vehicle acceleration coefficient (default: 0.04)</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vehicle Emission Factors Section -->
+            <div class="form-section">
+                <h3><i class="fas fa-industry"></i> Vehicle-Specific Emission Factors (kg CO₂/km)</h3>
+                <p>Optional: Provide vehicle-specific emission factors for more accurate Barth model calculations</p>
+
+                <div class="form-row">
+                    {% for vehicle_type in vehicle_types | default(['Motorcycles', 'Cars', 'SUVs', 'Sedans', 'Wagons', 'Short Buses', 'Minibusses', 'Long Buses', 'Truck', 'Tanker and Trailer']) %}
+                    <div class="form-group">
+                        <label for="emission_factor_{{ vehicle_type.replace(' ', '_').replace('/', '_') }}">
+                            {{ vehicle_type }} CO₂ Factor:
+                        </label>
+                        <input type="number" step="0.01"
+                               name="emission_factor_{{ vehicle_type.replace(' ', '_').replace('/', '_') }}"
+                               value="{{ current_data.get('emission_factor_' + vehicle_type.replace(' ', '_').replace('/', '_'), 0.2) }}"
+                               aria-label="Emission factor for {{ vehicle_type }}">
+                        <small>kg CO₂/km (default: {{ current_data.get('emission_factor_' + vehicle_type.replace(' ', '_').replace('/', '_'), 0.2) }})</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Advanced Fields Toggle -->
+            <button type="button" id="toggleAdvanced" class="toggle-advanced">
+                <i class="fas fa-cogs"></i> Show Advanced Fields (MOVES Model)
+            </button>
+
+            <!-- Advanced Fields Section -->
+            <div id="advancedFields" class="advanced-fields">
+                <div class="form-section advanced-section">
+                    <h3><i class="fas fa-wind"></i> MOVES Model Parameters</h3>
+                    <p class="help-text">Optional: Provide additional data for EPA MOVES model integration</p>
+
+                    <div class="sub-section">
+                        <h4>Vehicle Activity Data</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="moves_avg_speed">Average Speed (km/h):</label>
+                                <input type="number" id="moves_avg_speed" name="moves_avg_speed" step="0.1" min="0"
+                                       value="{{ current_data.get('moves_avg_speed', '') }}"
+                                       aria-label="MOVES average speed in km/h">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="moves_stops_per_km">Stops per Kilometer:</label>
+                                <input type="number" id="moves_stops_per_km" name="moves_stops_per_km" step="0.01" min="0"
+                                       value="{{ current_data.get('moves_stops_per_km', '') }}"
+                                       aria-label="MOVES stops per kilometer">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="moves_road_grade">Road Grade (%):</label>
+                                <input type="number" id="moves_road_grade" name="moves_road_grade" step="0.1" min="-10" max="10"
+                                       value="{{ current_data.get('moves_road_grade', '') }}"
+                                       aria-label="MOVES road grade percentage">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sub-section">
+                        <h4>Environmental Conditions</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="moves_temperature">Temperature (°C):</label>
+                                <input type="number" id="moves_temperature" name="moves_temperature" step="0.1"
+                                       value="{{ current_data.get('moves_temperature', '') }}"
+                                       aria-label="MOVES temperature in Celsius">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="moves_humidity">Relative Humidity (%):</label>
+                                <input type="number" id="moves_humidity" name="moves_humidity" step="1" min="0" max="100"
+                                       value="{{ current_data.get('moves_humidity', '') }}"
+                                       aria-label="MOVES relative humidity percentage">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="moves_fuel_type">Predominant Fuel Type:</label>
+                                <select id="moves_fuel_type" name="moves_fuel_type" aria-label="MOVES predominant fuel type">
+                                    <option value="">Select fuel type</option>
+                                    <option value="petrol" {% if current_data.get('moves_fuel_type', '') == 'petrol' %}selected{% endif %}>Petrol</option>
+                                    <option value="diesel" {% if current_data.get('moves_fuel_type', '') == 'diesel' %}selected{% endif %}>Diesel</option>
+                                    <option value="cng" {% if current_data.get('moves_fuel_type', '') == 'cng' %}selected{% endif %}>CNG</option>
+                                    <option value="hybrid" {% if current_data.get('moves_fuel_type', '') == 'hybrid' %}selected{% endif %}>Hybrid</option>
+                                    <option value="electric" {% if current_data.get('moves_fuel_type', '') == 'electric' %}selected{% endif %}>Electric</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sub-section">
+                        <h4>Emission Processes</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" name="moves_process_running" value="1"
+                                           {% if current_data.get('moves_process_running', 0) == 1 %}checked{% endif %}>
+                                    Include Running Emissions
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" name="moves_process_idle" value="1"
+                                           {% if current_data.get('moves_process_idle', 1) == 1 %}checked{% endif %}>
+                                    Include Idle Emissions
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" name="moves_process_start" value="1"
+                                           {% if current_data.get('moves_process_start', 0) == 1 %}checked{% endif %}>
+                                    Include Start Emissions
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <p>Submitting data...</p>
+            </div>
+
+            <input type="submit" value="Submit Traffic Data" aria-label="Submit traffic data">
+        </form>
+    </div>
+
+    <footer>
+        <p>© 2025 | Powered by Opygoal Technology Ltd | Developed by Oladotun Ajakaiye | Service Manager & Data Analyst</p>
+    </footer>
+</body>
+</html>

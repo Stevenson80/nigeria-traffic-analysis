@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Abuja Traffic Analysis System - Report Cover</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 40px;
+            color: #2c3e50;
+            line-height: 1.6;
+            text-align: center;
+            background: #f8f9fa;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            color: #3498db;
+            margin: 20px 0 10px;
+        }
+        p {
+            font-size: 1.1em;
+            color: #343a40;
+            margin-bottom: 20px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background: #e8f4fc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        .stat-box h3 {
+            font-size: 1.2em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .stat-box .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .features, .how-it-works {
+            text-align: left;
+            margin: 20px 0;
+        }
+        .features ul, .how-it-works ol {
+            padding-left: 20px;
+        }
+        .features li, .how-it-works li {
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+        footer {
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        @page {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Abuja Traffic Analysis System</h1>
+        <p>
+            This advanced system provides comprehensive analysis of traffic congestion on major Abuja roads, helping transportation planners, policymakers, and urban developers make data-driven decisions to improve traffic flow, reduce congestion, and minimize environmental impact.
+        </p>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <h3>Major Roads Analyzed</h3>
+                <div class="value">3</div>
+            </div>
+            <div class="stat-box">
+                <h3>Vehicle Types Tracked</h3>
+                <div class="value">10</div>
+            </div>
+            <div class="stat-box">
+                <h3>Key Performance Metrics</h3>
+                <div class="value">8</div>
+            </div>
+        </div>
+
+        <div class="features">
+            <h2>System Features</h2>
+            <ul>
+                <li><strong>Data Entry:</strong> Easily input traffic data for different vehicle types across Abuja's major roads with our intuitive form interface.</li>
+                <li><strong>Comprehensive Analysis:</strong> Get detailed analysis of traffic congestion, including fuel costs, CO2 emissions, productivity losses, and economic impact.</li>
+                <li><strong>Report Generation:</strong> Download detailed reports in CSV and PDF formats for further analysis, presentations, and official documentation.</li>
+            </ul>
+        </div>
+
+        <div class="how-it-works">
+            <h2>How It Works</h2>
+            <ol>
+                <li><strong>Data Collection:</strong> Navigate to the Data Entry page to input traffic data for different vehicle types.</li>
+                <li><strong>Analysis:</strong> View comprehensive analysis on the Analysis page with visual charts and detailed metrics.</li>
+                <li><strong>Reporting:</strong> Download reports in CSV or PDF format for your records and presentations.</li>
+                <li><strong>Decision Making:</strong> Use the insights to make data-driven transportation and urban planning decisions.</li>
+            </ol>
+        </div>
+
+        <footer>
+            <p>© {{ current_year }} | Powered by Opygoal Technology Ltd | Developed by Oladotun Ajakaiye | Service Manager & Data Analyst</p>
+        </footer>
+    </div>
+</body>
+</html>
