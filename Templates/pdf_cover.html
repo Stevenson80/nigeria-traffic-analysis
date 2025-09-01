@@ -2,131 +2,420 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Abuja Traffic Analysis System - Report Cover</title>
+    <title>Abuja Traffic Analysis System - Comprehensive Report</title>
     <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 40px;
             color: #2c3e50;
             line-height: 1.6;
-            text-align: center;
-            background: #f8f9fa;
-            height: 100vh;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
         }
-        .container {
-            max-width: 800px;
-            padding: 30px;
+
+        .cover-container {
+            max-width: 700px;
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            padding: 50px;
+            position: relative;
+            overflow: hidden;
         }
+
+        .cover-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(26, 42, 108, 0.03) 0%, rgba(178, 31, 31, 0.03) 100%);
+            z-index: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid #1a2a6c;
+        }
+
         h1 {
-            font-size: 2.5em;
-            color: #2c3e50;
-            margin-bottom: 20px;
+            font-size: 2.8em;
+            color: #1a2a6c;
+            margin: 0 0 15px 0;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
+
         h2 {
-            font-size: 1.8em;
-            color: #3498db;
-            margin: 20px 0 10px;
+            font-size: 1.6em;
+            color: #b21f1f;
+            margin: 0 0 20px 0;
+            font-weight: 400;
         }
-        p {
-            font-size: 1.1em;
-            color: #343a40;
-            margin-bottom: 20px;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin: 20px 0;
-        }
-        .stat-box {
-            background: #e8f4fc;
-            padding: 15px;
+
+        .report-info {
+            background: #f8f9fa;
+            padding: 25px;
             border-radius: 8px;
-            border-left: 4px solid #3498db;
+            margin: 30px 0;
+            border-left: 4px solid #fdbb2d;
         }
-        .stat-box h3 {
-            font-size: 1.2em;
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-        .stat-box .value {
-            font-size: 2em;
-            font-weight: bold;
-            color: #3498db;
-        }
-        .features, .how-it-works {
-            text-align: left;
-            margin: 20px 0;
-        }
-        .features ul, .how-it-works ol {
-            padding-left: 20px;
-        }
-        .features li, .how-it-works li {
-            margin-bottom: 10px;
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
             font-size: 1em;
         }
-        footer {
-            margin-top: 40px;
-            font-size: 0.9em;
-            color: #6c757d;
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
         }
-        @page {
+
+        .info-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .info-value {
+            color: #1a2a6c;
+            font-weight: 500;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f);
+            color: white;
+            padding: 25px 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-box h3 {
+            font-size: 1.1em;
+            margin: 0 0 15px 0;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        .stat-box .value {
+            font-size: 2.5em;
+            font-weight: 700;
             margin: 0;
+            line-height: 1;
+        }
+
+        .features-section {
+            margin: 40px 0;
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            color: #1a2a6c;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #fdbb2d;
+            font-weight: 600;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .feature-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+
+        .feature-content h4 {
+            margin: 0 0 8px 0;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        .feature-content p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .methodology {
+            background: #e8f4fc;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 30px 0;
+            border-left: 4px solid #3498db;
+        }
+
+        .methodology h3 {
+            color: #1a2a6c;
+            margin: 0 0 15px 0;
+            font-size: 1.2em;
+        }
+
+        .methodology-list {
+            columns: 2;
+            column-gap: 20px;
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .methodology-list li {
+            margin-bottom: 10px;
+            break-inside: avoid;
+            font-size: 0.95em;
+            color: #2c3e50;
+        }
+
+        .footer {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #e9ecef;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        .footer-logo {
+            font-weight: 700;
+            color: #1a2a6c;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .confidential {
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+            }
+
+            .cover-container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 2.2em;
+            }
+
+            h2 {
+                font-size: 1.3em;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .methodology-list {
+                columns: 1;
+            }
+        }
+
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 6em;
+            color: rgba(26, 42, 108, 0.03);
+            font-weight: 800;
+            z-index: 1;
+            pointer-events: none;
+            white-space: nowrap;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome to the Abuja Traffic Analysis System</h1>
-        <p>
-            This advanced system provides comprehensive analysis of traffic congestion on major Abuja roads, helping transportation planners, policymakers, and urban developers make data-driven decisions to improve traffic flow, reduce congestion, and minimize environmental impact.
-        </p>
+    <div class="cover-container">
+        <div class="watermark">ABUJA TRAFFIC ANALYSIS</div>
 
-        <div class="stats-grid">
-            <div class="stat-box">
-                <h3>Major Roads Analyzed</h3>
-                <div class="value">3</div>
+        <div class="content">
+            <div class="header">
+                <h1>Abuja Traffic Analysis System</h1>
+                <h2>Comprehensive Traffic Congestion Analysis Report</h2>
             </div>
-            <div class="stat-box">
-                <h3>Vehicle Types Tracked</h3>
-                <div class="value">10</div>
+
+            <div class="report-info">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Report Date:</span>
+                        <span class="info-value">{{ current_date }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Report Time:</span>
+                        <span class="info-value">{{ current_time }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Emission Model:</span>
+                        <span class="info-value">{{ emission_model | upper }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Analysis Period:</span>
+                        <span class="info-value">Evening Rush Hour (18:00)</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Data Source:</span>
+                        <span class="info-value">{{ data_source }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Report Version:</span>
+                        <span class="info-value">v2.0</span>
+                    </div>
+                </div>
             </div>
-            <div class="stat-box">
-                <h3>Key Performance Metrics</h3>
-                <div class="value">8</div>
+
+            <div class="confidential">
+                <strong>CONFIDENTIAL</strong> - For authorized personnel only. This report contains sensitive traffic analysis data.
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <h3>Roads Analyzed</h3>
+                    <div class="value">3</div>
+                </div>
+                <div class="stat-box">
+                    <h3>Vehicle Types</h3>
+                    <div class="value">10</div>
+                </div>
+                <div class="stat-box">
+                    <h3>Performance Metrics</h3>
+                    <div class="value">8</div>
+                </div>
+                <div class="stat-box">
+                    <h3>Emission Models</h3>
+                    <div class="value">3</div>
+                </div>
+            </div>
+
+            <div class="features-section">
+                <h3 class="section-title">Key System Features</h3>
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <div class="feature-icon">1</div>
+                        <div class="feature-content">
+                            <h4>Advanced Data Collection</h4>
+                            <p>Comprehensive traffic data collection with support for multiple vehicle types and road corridors across Abuja</p>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-icon">2</div>
+                        <div class="feature-content">
+                            <h4>Multi-Model Analysis</h4>
+                            <p>Three emission calculation models (Basic, Barth, MOVES) for accurate environmental impact assessment</p>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-icon">3</div>
+                        <div class="feature-content">
+                            <h4>Economic Impact Assessment</h4>
+                            <p>Detailed analysis of fuel costs, productivity losses, and total economic impact of traffic congestion</p>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-icon">4</div>
+                        <div class="feature-content">
+                            <h4>Professional Reporting</h4>
+                            <p>Comprehensive PDF and CSV reports with visualizations, charts, and executive summaries</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="methodology">
+                <h3>Analysis Methodology</h3>
+                <ul class="methodology-list">
+                    <li>Vehicle-specific occupancy rates and parameters</li>
+                    <li>Fuel prices: ₦1,045/L (petrol), ₦1,210/L (diesel)</li>
+                    <li>CO2 factors: 2.31 kg/L (petrol), 2.68 kg/L (diesel)</li>
+                    <li>Productivity value: ₦8.80 per minute</li>
+                    <li>Standard corridor length: 6.0 km</li>
+                    <li>Free flow: 4.0 min, Congested: 45.0 min</li>
+                    <li>Speed parameters: 60.0 km/h (free), 8.0 km/h (congested)</li>
+                    <li>Advanced parameters: Acceleration 0.5 m/s², Idle time 30%</li>
+                </ul>
+            </div>
+
+            <div class="footer">
+                <div class="footer-logo">Opygoal Technology Ltd</div>
+                <p>© {{ current_year }} | Powered by Opygoal Technology Ltd</p>
+                <p>Developed by Oladotun Ajakaiye | Service Manager & Data Analyst</p>
+                <p>Abuja Traffic Analysis System | Comprehensive Report</p>
             </div>
         </div>
-
-        <div class="features">
-            <h2>System Features</h2>
-            <ul>
-                <li><strong>Data Entry:</strong> Easily input traffic data for different vehicle types across Abuja's major roads with our intuitive form interface.</li>
-                <li><strong>Comprehensive Analysis:</strong> Get detailed analysis of traffic congestion, including fuel costs, CO2 emissions, productivity losses, and economic impact.</li>
-                <li><strong>Report Generation:</strong> Download detailed reports in CSV and PDF formats for further analysis, presentations, and official documentation.</li>
-            </ul>
-        </div>
-
-        <div class="how-it-works">
-            <h2>How It Works</h2>
-            <ol>
-                <li><strong>Data Collection:</strong> Navigate to the Data Entry page to input traffic data for different vehicle types.</li>
-                <li><strong>Analysis:</strong> View comprehensive analysis on the Analysis page with visual charts and detailed metrics.</li>
-                <li><strong>Reporting:</strong> Download reports in CSV or PDF format for your records and presentations.</li>
-                <li><strong>Decision Making:</strong> Use the insights to make data-driven transportation and urban planning decisions.</li>
-            </ol>
-        </div>
-
-        <footer>
-            <p>© {{ current_year }} | Powered by Opygoal Technology Ltd | Developed by Oladotun Ajakaiye | Service Manager & Data Analyst</p>
-        </footer>
     </div>
 </body>
 </html>

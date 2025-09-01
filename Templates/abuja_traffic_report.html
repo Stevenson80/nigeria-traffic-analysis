@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Abuja Traffic Analysis Report</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #1a2a6c;
@@ -25,7 +26,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: var(--text-color);
             max-width: 1200px;
@@ -37,70 +38,114 @@
         .cover-page {
             text-align: center;
             padding: 80px 40px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             border-radius: var(--border-radius);
             margin-bottom: 30px;
             box-shadow: var(--box-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cover-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(253, 187, 45, 0.1) 0%, transparent 70%);
         }
 
         .cover-page h1 {
-            font-size: 2.8em;
+            font-size: 3em;
             margin-bottom: 20px;
             font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            position: relative;
         }
 
         .cover-page p {
-            font-size: 1.2em;
+            font-size: 1.3em;
             max-width: 800px;
-            margin: 10px auto;
-            opacity: 0.9;
+            margin: 15px auto;
+            opacity: 0.95;
+            line-height: 1.5;
+            position: relative;
         }
 
         .cover-page .date {
-            margin-top: 30px;
+            margin-top: 40px;
             font-size: 1.1em;
             font-weight: 500;
+            background: rgba(0,0,0,0.2);
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: inline-block;
         }
 
         .section {
             background: white;
-            padding: 30px;
+            padding: 35px;
             margin-bottom: 30px;
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
             page-break-inside: avoid;
+            position: relative;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, rgba(26, 42, 108, 0.03) 0%, rgba(178, 31, 31, 0.03) 100%);
+            border-radius: 0 0 0 100%;
         }
 
         h1, h2, h3 {
             color: var(--primary-color);
             margin-bottom: 20px;
+            font-family: 'Poppins', sans-serif;
         }
 
         h2 {
             border-bottom: 3px solid var(--accent-color);
-            padding-bottom: 10px;
+            padding-bottom: 12px;
+            font-weight: 600;
+            font-size: 1.8em;
+        }
+
+        h3 {
+            color: var(--secondary-color);
+            font-weight: 500;
         }
 
         .summary-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
-            margin: 25px 0;
+            margin: 30px 0;
         }
 
         .summary-card {
             background: var(--light-color);
-            padding: 20px;
+            padding: 25px 20px;
             border-radius: var(--border-radius);
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.08);
             border-left: 4px solid var(--primary-color);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
         .summary-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.12);
         }
 
         .summary-card h3 {
@@ -108,13 +153,15 @@
             margin-bottom: 15px;
             color: var(--dark-color);
             font-size: 1.1em;
+            font-weight: 600;
         }
 
         .summary-card .value {
-            font-size: 1.8em;
+            font-size: 2em;
             font-weight: bold;
             color: var(--primary-color);
             margin: 10px 0;
+            font-family: 'Poppins', sans-serif;
         }
 
         .summary-card .unit {
@@ -126,22 +173,25 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 25px 0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-radius: var(--border-radius);
+            overflow: hidden;
         }
 
         th, td {
-            padding: 12px 15px;
+            padding: 14px 16px;
             text-align: left;
             border-bottom: 1px solid var(--border-color);
         }
 
         th {
-            background-color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             font-weight: 600;
             position: sticky;
             top: 0;
+            font-family: 'Poppins', sans-serif;
         }
 
         tr:nth-child(even) {
@@ -150,6 +200,7 @@
 
         tr:hover {
             background-color: #e9ecef;
+            transition: background-color 0.2s ease;
         }
 
         .chart-container {
@@ -157,89 +208,105 @@
             flex-wrap: wrap;
             gap: 30px;
             justify-content: center;
-            margin: 30px 0;
+            margin: 35px 0;
         }
 
         .chart-box {
-            flex: 1 1 400px;
-            min-width: 300px;
+            flex: 1 1 450px;
+            min-width: 320px;
             background: white;
             padding: 25px;
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
             border: 1px solid var(--border-color);
+            transition: transform 0.3s ease;
+        }
+
+        .chart-box:hover {
+            transform: translateY(-3px);
         }
 
         .chart-box h3 {
             text-align: center;
             margin-bottom: 20px;
             color: var(--dark-color);
+            font-weight: 600;
         }
 
         .footer {
             text-align: center;
-            margin-top: 50px;
+            margin-top: 60px;
             padding: 30px;
             color: #6c757d;
             font-size: 0.95em;
             border-top: 1px solid var(--border-color);
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
         }
 
         .methodology {
             background: #e8f4fc;
-            padding: 20px;
+            padding: 25px;
             border-radius: var(--border-radius);
-            margin: 20px 0;
+            margin: 25px 0;
             border-left: 4px solid var(--primary-color);
         }
 
         .methodology ul {
-            padding-left: 20px;
-            margin: 15px 0;
+            padding-left: 25px;
+            margin: 18px 0;
         }
 
         .methodology li {
-            margin-bottom: 10px;
-            line-height: 1.4;
+            margin-bottom: 12px;
+            line-height: 1.5;
         }
 
         .recommendations {
             background: #f0f7ff;
-            padding: 20px;
+            padding: 25px;
             border-radius: var(--border-radius);
-            margin: 20px 0;
+            margin: 25px 0;
             border-left: 4px solid var(--accent-color);
         }
 
         .recommendations ul {
-            padding-left: 20px;
-            margin: 15px 0;
+            padding-left: 25px;
+            margin: 18px 0;
         }
 
         .recommendations li {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             line-height: 1.6;
         }
 
         .road-comparison {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 25px 0;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
         }
 
         .road-card {
             background: var(--light-color);
-            padding: 20px;
+            padding: 25px;
             border-radius: var(--border-radius);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .road-card:hover {
+            transform: translateY(-3px);
         }
 
         .road-card h3 {
             color: var(--secondary-color);
-            margin-bottom: 15px;
-            padding-bottom: 10px;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
             border-bottom: 2px solid var(--secondary-color);
+            font-weight: 600;
         }
 
         @media print {
@@ -274,7 +341,7 @@
                 padding: 60px 20px;
             }
             .cover-page h1 {
-                font-size: 2.2em;
+                font-size: 2.4em;
             }
             .summary-grid {
                 grid-template-columns: 1fr;
@@ -288,6 +355,9 @@
             .road-comparison {
                 grid-template-columns: 1fr;
             }
+            .section {
+                padding: 25px 20px;
+            }
         }
 
         .text-center {
@@ -300,45 +370,158 @@
 
         .scrollable-table {
             overflow-x: auto;
+            margin: 25px 0;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .model-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 15px;
+            vertical-align: middle;
+        }
+
+        .emission-model-info {
+            background: #fff3cd;
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
             margin: 20px 0;
+            border-left: 4px solid #ffc107;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .emission-model-info i {
+            color: #856404;
+            font-size: 1.2em;
+        }
+
+        .data-highlight {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .data-highlight .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .data-highlight .label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .print-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, var(--accent-color), #e65c00);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .print-button:hover {
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .print-button {
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                font-size: 1.2em;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Print Button -->
+    <button class="print-button" onclick="window.print()" title="Print Report">
+        <i class="fas fa-print"></i>
+    </button>
+
     <!-- Cover Page -->
     <div class="cover-page">
         <h1>Abuja Traffic Analysis System</h1>
         <p>Comprehensive traffic congestion analysis for major Abuja roads</p>
-        <p>Detailed assessment of economic and environmental impacts</p>
-        <div class="date">Report Generated: {{ current_date | default('August 29, 2025') }}</div>
+        <p>Detailed assessment of economic and environmental impacts using advanced emission models</p>
+        <div class="date">Report Generated: {{ current_date | default('2025-08-29') }} | Emission Model: {{ emission_model | default('BASIC') | upper }}</div>
     </div>
 
     <!-- Executive Summary -->
     <div class="section">
         <h2>Executive Summary</h2>
-        <p>This report presents a comprehensive analysis of traffic congestion across three major Abuja roads: Nyanya, Lugbe, and Kubwa. The analysis captures data from <strong>{{ summary.total_vehicles_all_roads | default(409, true) | format_number }}</strong> vehicles during evening rush hour (18:00) on {{ summary.date | default('August 29, 2025') }}, quantifying the economic and environmental impact of congestion through multiple metrics including delay times, fuel consumption, CO2 emissions, and productivity loss.</p>
+
+        <div class="emission-model-info">
+            <i class="fas fa-info-circle"></i>
+            <div>
+                <strong>Analysis Methodology:</strong>
+                {% if emission_model == 'basic' %}
+                Basic fuel consumption-based emission calculations with fixed emission factors
+                {% elif emission_model == 'barth' %}
+                Barth's comprehensive fuel consumption model with acceleration and idle time factors
+                {% elif emission_model == 'moves' %}
+                EPA MOVES-like emission model with speed and acceleration corrections
+                {% else %}
+                Custom emission calculation model
+                {% endif %}
+            </div>
+        </div>
+
+        <p>This report presents a comprehensive analysis of traffic congestion across three major Abuja roads: Nyanya, Lugbe, and Kubwa. The analysis captures data from <strong>{{ summary.total_vehicles_all_roads | default(760, true) | format_number }}</strong> vehicles during evening rush hour (18:00) on {{ summary.date | default('2025-08-29') }}, quantifying the economic and environmental impact of congestion through multiple metrics including delay times, fuel consumption, CO2 emissions, and productivity loss.</p>
 
         <div class="summary-grid">
             <div class="summary-card">
                 <h3>Total Vehicles</h3>
-                <div class="value">{{ summary.total_vehicles_all_roads | default(409, true) | format_number }}</div>
+                <div class="value">{{ summary.total_vehicles_all_roads | default(760, true) | format_number }}</div>
                 <div class="unit">across all corridors</div>
             </div>
             <div class="summary-card">
                 <h3>People Affected</h3>
-                <div class="value">{{ summary.total_people_all_roads | default(1975, true) | format_number }}</div>
+                <div class="value">{{ summary.total_people_all_roads | default(3521, true) | format_number }}</div>
                 <div class="unit">commuters impacted</div>
             </div>
             <div class="summary-card">
                 <h3>Total Delay</h3>
-                <div class="value">{{ summary.total_delay_hours_all_roads | default(279.5, true) | format_float }}</div>
+                <div class="value">{{ summary.total_delay_hours_all_roads | default(512.7, true) | format_float(1) }}</div>
                 <div class="unit">hours lost</div>
             </div>
             <div class="summary-card">
                 <h3>Economic Impact</h3>
-                <div class="value">₦{{ (summary.total_fuel_cost_all_roads | default(117907.5, true) + summary.total_productivity_loss_all_roads | default(487286.03, true)) | format_number }}</div>
+                <div class="value">₦{{ (summary.total_fuel_cost_all_roads | default(256420, true) + summary.total_productivity_loss_all_roads | default(985630, true)) | format_number }}</div>
                 <div class="unit">fuel + productivity loss</div>
             </div>
+        </div>
+
+        <div class="data-highlight">
+            <div class="label">Total Environmental Impact</div>
+            <div class="value">{{ summary.total_co2_all_roads | default(598.2, true) | format_float(1) }} kg CO₂</div>
+            <div class="label">Equivalent to {{ ((summary.total_co2_all_roads | default(598.2, true)) / 20) | round | int }} average trees' annual absorption</div>
         </div>
 
         <p>The analysis reveals significant congestion across all three corridors, with Nyanya Road experiencing the highest impact in terms of vehicles affected, fuel cost, and productivity loss. The findings highlight the urgent need for targeted interventions to alleviate traffic congestion and its associated economic and environmental costs.</p>
@@ -346,15 +529,16 @@
 
     <!-- Methodology -->
     <div class="section">
-        <h2>Methodology</h2>
+        <h2>Analysis Methodology <span class="model-badge">{{ emission_model | default('BASIC') | upper }}</span></h2>
         <div class="methodology">
-            <p>This analysis uses vehicle-specific occupancy rates and fuel consumption parameters. Key assumptions include:</p>
+            <p>This analysis uses vehicle-specific occupancy rates and fuel consumption parameters based on the <strong>{{ emission_model | default('basic') | upper }}</strong> emission model. Key assumptions include:</p>
             <ul>
-                <li><strong>Fuel prices:</strong> ₦{{ summary.Fuel_Cost_Per_Liter_Petrol | default(850.0, true) | format_float }}/L for petrol and ₦{{ summary.Fuel_Cost_Per_Liter_Diesel | default(1000.0, true) | format_float }}/L for diesel</li>
+                <li><strong>Fuel prices (2026):</strong> ₦{{ summary.Fuel_Cost_Per_Liter_Petrol | default(1045.0, true) | format_float }}/L for petrol and ₦{{ summary.Fuel_Cost_Per_Liter_Diesel | default(1210.0, true) | format_float }}/L for diesel</li>
                 <li><strong>CO2 emission factors:</strong> {{ summary.Emission_Factor_Petrol | default(2.31, true) | format_float }} kg CO₂/L for petrol and {{ summary.Emission_Factor_Diesel | default(2.68, true) | format_float }} kg CO₂/L for diesel</li>
-                <li><strong>Productivity Loss</strong> calculated using a value of time of ₦{{ summary.Value_Per_Minute_Naira | default(7.29, true) | format_float }}/minute, based on minimum wage calculations</li>
-                <li><strong>Data represents</strong> a snapshot at {{ summary.time | default('18:00', true) }} on {{ summary.date | default('2025-08-29', true) }}, which may not reflect daily averages</li>
+                <li><strong>Productivity Loss</strong> calculated using a value of time of ₦{{ summary.Value_Per_Minute_Naira | default(8.8, true) | format_float }}/minute</li>
+                <li><strong>Data represents</strong> a snapshot at {{ summary.time | default('18:00', true) }} on {{ summary.date | default('2025-08-29', true) }}</li>
                 <li><strong>Corridor Length:</strong> {{ summary.Distance_KM | default(6.0, true) | format_float }} km average distance</li>
+                <li><strong>Advanced Parameters:</strong> Free flow speed: {{ summary.Free_Flow_Speed_KPH | default(60.0, true) | format_float }} km/h, Congested speed: {{ summary.Congested_Speed_KPH | default(8.0, true) | format_float }} km/h, Acceleration: {{ summary.Avg_Acceleration | default(0.5, true) | format_float }} m/s², Idle time: {{ (summary.Idle_Time_Percentage | default(0.3, true) * 100) | format_float(1) }}%</li>
             </ul>
         </div>
     </div>
@@ -366,50 +550,50 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Metric</th>
+                        <th>Performance Metric</th>
                         <th>Value</th>
                         <th>Unit</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Total Vehicles</td>
-                        <td>{{ summary.total_vehicles_all_roads | default(409, true) | format_number }}</td>
+                        <td>Total Vehicles Observed</td>
+                        <td>{{ summary.total_vehicles_all_roads | default(760, true) | format_number }}</td>
                         <td>vehicles</td>
                     </tr>
                     <tr>
                         <td>Total People Affected</td>
-                        <td>{{ summary.total_people_all_roads | default(1975, true) | format_number }}</td>
+                        <td>{{ summary.total_people_all_roads | default(3521, true) | format_number }}</td>
                         <td>people</td>
                     </tr>
                     <tr>
                         <td>Total Delay Time</td>
-                        <td>{{ summary.total_delay_hours_all_roads | default(279.5, true) | format_float }}</td>
+                        <td>{{ summary.total_delay_hours_all_roads | default(512.7, true) | format_float(1) }}</td>
                         <td>hours</td>
                     </tr>
                     <tr>
-                        <td>Total Excess Fuel</td>
-                        <td>{{ summary.total_excess_fuel_all_roads | default(133.9, true) | format_float }}</td>
+                        <td>Total Excess Fuel Consumption</td>
+                        <td>{{ summary.total_excess_fuel_all_roads | default(245.3, true) | format_float(1) }}</td>
                         <td>liters</td>
                     </tr>
                     <tr>
                         <td>Total Fuel Cost</td>
-                        <td>₦{{ summary.total_fuel_cost_all_roads | default(117907.5, true) | format_number }}</td>
+                        <td>₦{{ summary.total_fuel_cost_all_roads | default(256420, true) | format_number }}</td>
                         <td>naira</td>
                     </tr>
                     <tr>
                         <td>Total CO2 Emissions</td>
-                        <td>{{ summary.total_co2_all_roads | default(319.5, true) | format_float }}</td>
+                        <td>{{ summary.total_co2_all_roads | default(598.2, true) | format_float(1) }}</td>
                         <td>kg</td>
                     </tr>
                     <tr>
                         <td>Total Productivity Loss</td>
-                        <td>₦{{ summary.total_productivity_loss_all_roads | default(487286.03, true) | format_number }}</td>
+                        <td>₦{{ summary.total_productivity_loss_all_roads | default(985630, true) | format_number }}</td>
                         <td>naira</td>
                     </tr>
                     <tr style="background-color: #e3f2fd;">
                         <td><strong>Total Economic Impact</strong></td>
-                        <td><strong>₦{{ (summary.total_fuel_cost_all_roads | default(117907.5, true) + summary.total_productivity_loss_all_roads | default(487286.03, true)) | format_number }}</strong></td>
+                        <td><strong>₦{{ (summary.total_fuel_cost_all_roads | default(256420, true) + summary.total_productivity_loss_all_roads | default(985630, true)) | format_number }}</strong></td>
                         <td><strong>naira</strong></td>
                     </tr>
                 </tbody>
@@ -435,7 +619,7 @@
                     </tr>
                     <tr>
                         <td>Excess Fuel</td>
-                        <td>{{ road_data.total_excess_fuel_l | default(0.0) | format_float }} L</td>
+                        <td>{{ road_data.total_excess_fuel_l | default(0.0) | format_float(1) }} L</td>
                     </tr>
                     <tr>
                         <td>Fuel Cost</td>
@@ -443,7 +627,7 @@
                     </tr>
                     <tr>
                         <td>CO2 Emissions</td>
-                        <td>{{ road_data.total_co2_kg | default(0.0) | format_float }} kg</td>
+                        <td>{{ road_data.total_co2_kg | default(0.0) | format_float(1) }} kg</td>
                     </tr>
                     <tr>
                         <td>Productivity Loss</td>
@@ -465,7 +649,7 @@
         <p>The following pie charts illustrate the distribution of vehicle types across each road corridor:</p>
 
         <div class="chart-container">
-            {% for road_name in vehicle_distributions.keys() %}
+            {% for road_name, vehicles in vehicle_distributions.items() %}
             <div class="chart-box">
                 <h3>{{ road_name }} Vehicle Distribution</h3>
                 <canvas id="pie-{{ road_name | replace(' ', '-') | lower }}"></canvas>
@@ -506,31 +690,35 @@
         <div class="methodology mb-20">
             <h3>Key Findings</h3>
             <ul>
-                <li>Nyanya Road shows the highest congestion impact, accounting for approximately 42% of total vehicles and 51% of productivity losses</li>
-                <li>Evening rush hour congestion affects nearly 2,000 commuters across the three corridors</li>
-                <li>Total economic impact exceeds ₦600,000 during the observed period</li>
-                <li>Environmental impact includes {{ summary.total_co2_all_roads | default(319.5, true) | format_float }} kg of excess CO2 emissions</li>
-                <li>Average delay per vehicle is {{ summary.avg_delay_per_vehicle | default(41.0, true) | format_float }} minutes across all corridors</li>
+                <li>{{ (road_results|first).key if road_results else 'Nyanya Road' }} shows the highest congestion impact, accounting for approximately {{ ((road_results|first).total_vehicles / summary.total_vehicles_all_roads * 100) | default(42, true) | round | int }}% of total vehicles and {{ ((road_results|first).total_productivity_loss_naira / summary.total_productivity_loss_all_roads * 100) | default(51, true) | round | int }}% of productivity losses</li>
+                <li>Evening rush hour congestion affects nearly {{ summary.total_people_all_roads | default(3521, true) | format_number }} commuters across the three corridors</li>
+                <li>Total economic impact exceeds ₦{{ (summary.total_fuel_cost_all_roads | default(256420, true) + summary.total_productivity_loss_all_roads | default(985630, true)) | format_number }} during the observed period</li>
+                <li>Environmental impact includes {{ summary.total_co2_all_roads | default(598.2, true) | format_float(1) }} kg of excess CO2 emissions</li>
+                <li>Average delay per vehicle is {{ (summary.total_delay_hours_all_roads | default(512.7, true) * 60 / summary.total_vehicles_all_roads | default(760, true)) | default(41.0, true) | format_float(1) }} minutes across all corridors</li>
+                <li>Analysis performed using <strong>{{ emission_model | default('BASIC') | upper }}</strong> emission model for enhanced accuracy</li>
             </ul>
         </div>
 
         <div class="recommendations">
             <h3>Strategic Recommendations</h3>
             <ul>
-                <li><strong>Immediate Interventions:</strong> Implement targeted traffic management systems on Nyanya Road, which shows the highest congestion metrics</li>
+                <li><strong>Immediate Interventions:</strong> Implement targeted traffic management systems on {{ (road_results|first).key if road_results else 'Nyanya Road' }}, which shows the highest congestion metrics</li>
                 <li><strong>Public Transportation:</strong> Enhance alternative transportation options to reduce private vehicle numbers during peak hours</li>
                 <li><strong>Infrastructure Investment:</strong> Prioritize road improvements based on specific vehicle type distributions observed</li>
                 <li><strong>Policy Measures:</strong> Consider congestion pricing or staggered work hours to distribute traffic more evenly</li>
                 <li><strong>Data Collection:</strong> Expand monitoring to understand daily and weekly patterns beyond current snapshot data</li>
-                <li><strong>Environmental Mitigation:</strong> Implement measures to offset {{ summary.total_co2_all_roads | default(319.5, true) | format_float }} kg of CO2 emissions generated</li>
+                <li><strong>Environmental Mitigation:</strong> Implement measures to offset {{ summary.total_co2_all_roads | default(598.2, true) | format_float(1) }} kg of CO2 emissions generated</li>
+                <li><strong>Model Selection:</strong> Continue using {{ emission_model | default('BASIC') | upper }} model for future analyses to maintain consistency in emission calculations</li>
             </ul>
         </div>
     </div>
 
     <div class="footer">
         <p>© 2025 | Powered by Opygoal Technology Ltd | Developed by Oladotun Ajakaiye | Service Manager & Data Analyst</p>
+        <p>Abuja Traffic Analysis System v2.0 | {{ emission_model | default('BASIC') | upper }} Emission Model</p>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script>
         // Initialize charts when the page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -579,10 +767,10 @@
 
             // Bar charts for comparative analysis
             const barChartData = {
-                'People Affected': [835, 681, 458],
-                'Fuel Cost': [50377, 40492, 27037],
-                'Productivity Loss': [249752, 100492, 137041],
-                'CO2 Emissions': [136.5, 109.7, 73.3]
+                'People Affected': [1325, 1150, 1046],
+                'Fuel Cost': [96580, 82170, 77670],
+                'Productivity Loss': [389450, 312480, 283700],
+                'CO2 Emissions': [223.7, 190.3, 184.2]
             };
 
             Object.keys(barChartData).forEach((metric, index) => {
@@ -631,6 +819,18 @@
                 }
             });
         });
+
+        // Format number with commas
+        function formatNumber(value) {
+            if (typeof value !== 'number') return value;
+            return value.toLocaleString();
+        }
+
+        // Format float with specified decimal places
+        function formatFloat(value, decimals = 1) {
+            if (typeof value !== 'number') return value;
+            return value.toFixed(decimals);
+        }
     </script>
 </body>
 </html>

@@ -5,3 +5,4 @@ WeasyPrint==63.0  # Replace pdfkit with WeasyPrint
 numpy==2.0.0
 gunicorn==22.0.0
 PyPDF2==3.0.1
+pdfkit==1.0.0

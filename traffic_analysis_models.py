@@ -1,50 +1,70 @@
+#!/usr/bin/env python3
+"""
+TrafficAnalysisModel class for analyzing traffic data and generating rich PDF reports using ReportLab and Matplotlib.
+"""
+
 import pandas as pd
 import logging
+import matplotlib
+matplotlib.use('Agg')  # Non-interactive backend for server environments
 import matplotlib.pyplot as plt
 import os
 from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime
 import numpy as np
 from enum import Enum
+import base64
+import io
+from pathlib import Path
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.units import cm
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
 
 # Configure logger
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('traffic_analysis_models.log'),
+        logging.StreamHandler()
+    ]
+)
 logger = logging.getLogger(__name__)
-
 
 class EmissionModelType(Enum):
     BASIC = "basic"
     BARTH = "barth"
     MOVES = "moves"
 
-
 class TrafficAnalysisModel:
-    FUEL_PRICE_PETROL = 850.0
-    FUEL_PRICE_DIESEL = 1000.0
-    EMISSION_FACTOR_PETROL = 2.31
+    # Constants (updated for 2026 with 10% inflation adjustment from 2025)
+    FUEL_PRICE_PETROL = 1045.0  # Naira/liter
+    FUEL_PRICE_DIESEL = 1210.0  # Naira/liter
+    EMISSION_FACTOR_PETROL = 2.31  # kg CO2/liter
     EMISSION_FACTOR_DIESEL = 2.68
-    VALUE_PER_MINUTE = 7.29
-    CORRIDOR_LENGTH = 6.0
-    BARTH_IDLE_FUEL_CONSUMPTION_PETROL = 0.6
+    VALUE_PER_MINUTE = 8.8  # Naira/min
+    CORRIDOR_LENGTH = 6.0  # km
+    BARTH_IDLE_FUEL_CONSUMPTION_PETROL = 0.6  # liters/hour
     BARTH_IDLE_FUEL_CONSUMPTION_DIESEL = 0.8
     BARTH_ACCEL_FACTOR_PETROL = 0.00035
     BARTH_ACCEL_FACTOR_DIESEL = 0.00045
-    MOVES_BASE_EMISSION_RATE_PETROL = 2.0
+    MOVES_BASE_EMISSION_RATE_PETROL = 2.0  # g/km
     MOVES_BASE_EMISSION_RATE_DIESEL = 2.5
     MOVES_SPEED_CORRECTION_FACTOR = 0.05
     MOVES_ACCEL_CORRECTION_FACTOR = 0.1
 
-    # Barth coefficients for emission calculations
     BARTH_COEFFICIENTS = {
-        'alpha': 0.0003,  # Base coefficient for engine displacement
-        'beta': 0.0025,  # Coefficient for vehicle weight
-        'gamma': 0.0018,  # Coefficient for road gradient
-        'traffic_flow': 0.15,  # Traffic flow coefficient
-        'road_gradient': 0.10,  # Road gradient coefficient
-        'acceleration': 0.04  # Acceleration coefficient
+        'alpha': 0.0003,
+        'beta': 0.0025,
+        'gamma': 0.0018,
+        'traffic_flow': 0.15,
+        'road_gradient': 0.10,
+        'acceleration': 0.04
     }
 
-    # Vehicle-specific emission factors (kg CO₂/km)
     VEHICLE_EMISSION_FACTORS = {
         'Motorcycles': 0.12,
         'Cars': 0.18,
@@ -58,7 +78,9 @@ class TrafficAnalysisModel:
         'Tanker and Trailer': 0.70
     }
 
-    def __init__(self, csv_file_path=None, emission_model: EmissionModelType = EmissionModelType.BASIC):
+    def __init__(self, csv_file_path: Optional[str] = None,
+                 emission_model: EmissionModelType = EmissionModelType.BASIC):
+        """Initialize the TrafficAnalysisModel with optional CSV data and emission model."""
         self.vehicle_parameters = {
             'Motorcycles': {'class': 1, 'occupancy_min': 1.1, 'occupancy_max': 1.7, 'occupancy_avg': 1.4,
                             'fuel_consumption_l_per_km_free_flow': 0.03, 'fuel_consumption_l_per_km_congested': 0.045,
@@ -92,8 +114,9 @@ class TrafficAnalysisModel:
                       'fuel_type': 'diesel', 'weight_kg': 8000, 'engine_displacement_cc': 6000, 'euro_standard': 3},
             'Tanker and Trailer': {'class': 5, 'occupancy_min': 1.4, 'occupancy_max': 1.5, 'occupancy_avg': 1.45,
                                    'fuel_consumption_l_per_km_free_flow': 0.4,
-                                   'fuel_consumption_l_per_km_congested': 0.6, 'fuel_type': 'diesel',
-                                   'weight_kg': 15000, 'engine_displacement_cc': 8000, 'euro_standard': 2}
+                                   'fuel_consumption_l_per_km_congested': 0.6,
+                                   'fuel_type': 'diesel', 'weight_kg': 15000, 'engine_displacement_cc': 8000,
+                                   'euro_standard': 2}
         }
         self.value_per_minute = self.VALUE_PER_MINUTE
         self.data = None
@@ -111,40 +134,16 @@ class TrafficAnalysisModel:
         try:
             self.road_data = {
                 'Nyanya Road': {
-                    'Motorcycles': 100,
-                    'Cars': 200,
-                    'SUVs': 150,
-                    'Sedans': 180,
-                    'Wagons': 50,
-                    'Short Buses': 30,
-                    'Minibusses': 20,
-                    'Long Buses': 10,
-                    'Truck': 15,
-                    'Tanker and Trailer': 5
+                    'Motorcycles': 100, 'Cars': 200, 'SUVs': 150, 'Sedans': 180, 'Wagons': 50,
+                    'Short Buses': 30, 'Minibusses': 20, 'Long Buses': 10, 'Truck': 15, 'Tanker and Trailer': 5
                 },
                 'Lugbe Road': {
-                    'Motorcycles': 80,
-                    'Cars': 250,
-                    'SUVs': 120,
-                    'Sedans': 200,
-                    'Wagons': 60,
-                    'Short Buses': 25,
-                    'Minibusses': 15,
-                    'Long Buses': 8,
-                    'Truck': 20,
-                    'Tanker and Trailer': 10
+                    'Motorcycles': 80, 'Cars': 250, 'SUVs': 120, 'Sedans': 200, 'Wagons': 60,
+                    'Short Buses': 25, 'Minibusses': 15, 'Long Buses': 8, 'Truck': 20, 'Tanker and Trailer': 10
                 },
                 'Kubwa Road': {
-                    'Motorcycles': 120,
-                    'Cars': 180,
-                    'SUVs': 100,
-                    'Sedans': 150,
-                    'Wagons': 40,
-                    'Short Buses': 20,
-                    'Minibusses': 10,
-                    'Long Buses': 5,
-                    'Truck': 25,
-                    'Tanker and Trailer': 8
+                    'Motorcycles': 120, 'Cars': 180, 'SUVs': 100, 'Sedans': 150, 'Wagons': 40,
+                    'Short Buses': 20, 'Minibusses': 10, 'Long Buses': 5, 'Truck': 25, 'Tanker and Trailer': 8
                 }
             }
             self.data = pd.DataFrame([
@@ -168,32 +167,95 @@ class TrafficAnalysisModel:
                     'Avg_Acceleration': 0.5,
                     'Avg_Deceleration': 0.5,
                     'Idle_Time_Percentage': 0.3,
-                    'Emission_Model': self.emission_model.value
+                    'Stops_Per_KM': 2.0,  # Added for MOVES model
+                    'Road_Grade': 0.0,    # Added for MOVES model
+                    'Temperature_C': 25.0, # Added for MOVES model
+                    'Emission_Model': self.emission_model.value,
+                    'Barth_Alpha': self.BARTH_COEFFICIENTS['alpha'],
+                    'Barth_Beta': self.BARTH_COEFFICIENTS['beta'],
+                    'Barth_Gamma': self.BARTH_COEFFICIENTS['gamma'],
+                    'Barth_Traffic_Flow': self.BARTH_COEFFICIENTS['traffic_flow'],
+                    'Barth_Road_Gradient': self.BARTH_COEFFICIENTS['road_gradient'],
+                    'Barth_Acceleration': self.BARTH_COEFFICIENTS['acceleration'],
+                    'Vehicle_Emission_Factor': self.VEHICLE_EMISSION_FACTORS.get(vehicle, 0.2)
                 }
                 for road in self.road_data
                 for vehicle, count in self.road_data[road].items()
             ])
             logger.info("Loaded hardcoded data successfully")
         except Exception as e:
-            logger.error(f"Error loading hardcoded data: {str(e)}")
+            logger.error(f"Error loading hardcoded data: {str(e)}", exc_info=True)
             self.road_data = {}
             self.data = pd.DataFrame()
 
     def load_csv_data(self, csv_file_path: str):
-        """Load traffic data from CSV file."""
+        """Load and validate traffic data from CSV file."""
         try:
+            csv_path = Path(csv_file_path)
+            if not csv_path.exists():
+                raise FileNotFoundError(f"CSV file {csv_file_path} not found")
             self.data = pd.read_csv(csv_file_path)
+            required_columns = ['Road', 'Vehicle Type', 'Real_Vehicle_Count']
+            missing_columns = [col for col in required_columns if col not in self.data.columns]
+            if missing_columns:
+                raise ValueError(f"CSV missing required columns: {missing_columns}")
+
+            if not pd.api.types.is_numeric_dtype(self.data['Real_Vehicle_Count']):
+                raise ValueError("'Real_Vehicle_Count' must be numeric")
+            if (self.data['Real_Vehicle_Count'] < 0).any():
+                raise ValueError("'Real_Vehicle_Count' contains negative values")
+
+            # Ensure all numeric columns are properly converted to float
+            numeric_columns = [
+                'Congested_Travel_Time_Minutes', 'Distance_KM', 'Free_Flow_Time_Minutes',
+                'Free_Flow_Speed_KPH', 'Congested_Speed_KPH', 'Avg_Acceleration',
+                'Avg_Deceleration', 'Idle_Time_Percentage', 'Stops_Per_KM',
+                'Road_Grade', 'Temperature_C'
+            ]
+
+            for col in numeric_columns:
+                if col in self.data.columns:
+                    self.data[col] = pd.to_numeric(self.data[col], errors='coerce').fillna(0.0).astype(float)
+                else:
+                    self.data[col] = 0.0
+
+            default_columns = {
+                'Congested_Travel_Time_Minutes': 45.0,
+                'Distance_KM': self.CORRIDOR_LENGTH,
+                'Free_Flow_Time_Minutes': 4.0,
+                'Free_Flow_Speed_KPH': 60.0,
+                'Congested_Speed_KPH': 8.0,
+                'Avg_Acceleration': 0.5,
+                'Avg_Deceleration': 0.5,
+                'Idle_Time_Percentage': 0.3,
+                'Stops_Per_KM': 2.0,      # Default for MOVES
+                'Road_Grade': 0.0,        # Default for MOVES
+                'Temperature_C': 25.0     # Default for MOVES
+            }
+
+            for col, default in default_columns.items():
+                if col not in self.data.columns:
+                    self.data[col] = default
+
+            for col, default in self.BARTH_COEFFICIENTS.items():
+                col_name = f"Barth_{col.capitalize()}"
+                if col_name not in self.data.columns:
+                    self.data[col_name] = default
+
+            if 'Vehicle_Emission_Factor' not in self.data.columns:
+                self.data['Vehicle_Emission_Factor'] = self.data['Vehicle Type'].map(
+                    self.VEHICLE_EMISSION_FACTORS).fillna(0.2)
+
             self.road_data = {}
             for road in self.data['Road'].unique():
                 road_df = self.data[self.data['Road'] == road]
                 self.road_data[road] = {
-                    vehicle: row['Real_Vehicle_Count']
+                    row['Vehicle Type']: row['Real_Vehicle_Count']
                     for _, row in road_df.iterrows()
-                    for vehicle in [row['Vehicle Type']]
                 }
-            logger.info(f"Loaded data from {csv_file_path}")
+            logger.info(f"Loaded and validated data from {csv_file_path}")
         except Exception as e:
-            logger.error(f"Error loading CSV data from {csv_file_path}: {str(e)}")
+            logger.error(f"Error loading CSV data from {csv_file_path}: {str(e)}", exc_info=True)
             self.data = pd.DataFrame()
             self.road_data = {}
 
@@ -201,162 +263,172 @@ class TrafficAnalysisModel:
         """Get vehicle distribution for a specific road."""
         try:
             if road_name not in self.road_data:
+                logger.warning(f"No data for road: {road_name}")
                 return []
             return [
-                {'vehicle_type': vehicle, 'count': count}
-                for vehicle, count in self.road_data[road_name].items()
-                if count > 0
+                {'vehicle_type': vehicle, 'count': int(count) if not pd.isna(count) else 0}
+                for vehicle, count in self.road_data[road_name].items() if count > 0
             ]
         except Exception as e:
-            logger.error(f"Error getting vehicle distribution for {road_name}: {str(e)}")
+            logger.error(f"Error getting vehicle distribution for {road_name}: {str(e)}", exc_info=True)
             return []
 
-    def _calculate_barth_fuel_consumption(self, row):
-        """Calculate fuel consumption using Barth's comprehensive model with configurable parameters"""
-        vehicle_type = row['Vehicle Type']
-        count = row['Real_Vehicle_Count']
-        distance = row['Distance_KM']
-        congested_time = row['Congested_Travel_Time_Minutes'] / 60  # Convert to hours
+    def calculate_fuel_consumption_barth(self, avg_speed_kmh: float, vehicle_type: str, distance: float, count: int) -> Tuple[float, float]:
+        """Calculate fuel consumption using Barth's comprehensive model."""
+        try:
+            vehicle_params = self.vehicle_parameters.get(vehicle_type, {})
+            if not vehicle_params:
+                logger.warning(f"No parameters for vehicle type: {vehicle_type}")
+                return 0.0, 0.0
 
-        # Get Barth parameters from row data or use defaults
-        alpha = row.get('Barth_Alpha', self.BARTH_COEFFICIENTS['alpha'])
-        beta = row.get('Barth_Beta', self.BARTH_COEFFICIENTS['beta'])
-        gamma = row.get('Barth_Gamma', self.BARTH_COEFFICIENTS['gamma'])
-        traffic_flow = row.get('Barth_Traffic_Flow', self.BARTH_COEFFICIENTS['traffic_flow'])
-        road_gradient = row.get('Barth_Road_Gradient', self.BARTH_COEFFICIENTS['road_gradient'])
-        acceleration_coef = row.get('Barth_Acceleration', self.BARTH_COEFFICIENTS['acceleration'])
+            # Extract parameters
+            weight = vehicle_params.get('weight_kg', 1000)
+            engine_displacement = vehicle_params.get('engine_displacement_cc', 1500)
+            fuel_type = vehicle_params.get('fuel_type', 'petrol')
+            accel_factor = self.BARTH_ACCEL_FACTOR_PETROL if fuel_type == 'petrol' else self.BARTH_ACCEL_FACTOR_DIESEL
+            idle_consumption = self.BARTH_IDLE_FUEL_CONSUMPTION_PETROL if fuel_type == 'petrol' else self.BARTH_IDLE_FUEL_CONSUMPTION_DIESEL
 
-        params = self.vehicle_parameters.get(vehicle_type, {})
-        if not params:
-            return 0, 0
+            # Barth model parameters
+            alpha = self.BARTH_COEFFICIENTS['alpha']
+            beta = self.BARTH_COEFFICIENTS['beta']
+            gamma = self.BARTH_COEFFICIENTS['gamma']
+            traffic_flow = self.BARTH_COEFFICIENTS['traffic_flow']
+            road_gradient = self.BARTH_COEFFICIENTS['road_gradient']
+            acceleration = self.BARTH_COEFFICIENTS['acceleration']
 
-        # Get vehicle parameters
-        weight = params.get('weight_kg', 1000)
-        engine_displacement = params.get('engine_displacement_cc', 1500)
+            # Base fuel consumption (liters/km)
+            base_consumption = (alpha * engine_displacement + beta * weight + gamma * road_gradient) * distance
 
-        # Calculate average speed
-        avg_speed = distance / congested_time if congested_time > 0 else 0
+            # Adjust for traffic conditions based on speed
+            congestion_factor = max(0.1, min(1.0, 60.0 / avg_speed_kmh if avg_speed_kmh > 0 else 1.0))
+            traffic_effect = base_consumption * traffic_flow * congestion_factor
 
-        # Barth's comprehensive formula
-        # FC = (α * engine_displacement + β * weight + γ * gradient) * distance * traffic_flow
-        #    + acceleration_coef * (number_of_stops * acceleration_events)
+            # Acceleration effect (assuming acceleration events scale with congestion)
+            acceleration_events = congestion_factor * 10
+            acceleration_effect = accel_factor * acceleration_events * distance
 
-        # Estimate number of acceleration events based on congestion level
-        congestion_factor = (45 - 4) / 45  # Based on delay time (simplified)
-        acceleration_events = congestion_factor * 10  # Estimate 10 acceleration events per km in heavy congestion
+            # Idle fuel consumption (assuming 30% idle time in congested conditions)
+            idle_time_hours = 0.3 * (distance / avg_speed_kmh) if avg_speed_kmh > 0 else 0.3
+            idle_fuel = idle_consumption * idle_time_hours
 
-        # Calculate fuel consumption
-        base_consumption = (alpha * engine_displacement + beta * weight + gamma * road_gradient) * distance
-        traffic_effect = base_consumption * traffic_flow
-        acceleration_effect = acceleration_coef * acceleration_events * distance
+            # Total fuel consumption for congested conditions
+            total_fuel_consumption = (base_consumption + traffic_effect + acceleration_effect + idle_fuel) * count
 
-        total_fuel_consumption = (base_consumption + traffic_effect + acceleration_effect) * count
+            # Free flow fuel consumption (simplified, no traffic or acceleration effects)
+            free_flow_consumption = (alpha * engine_displacement + beta * weight) * distance * 0.7 * count
 
-        # For free flow (simplified)
-        free_flow_consumption = (alpha * engine_displacement + beta * weight) * distance * 0.7 * count
+            return free_flow_consumption, total_fuel_consumption
+        except Exception as e:
+            logger.error(f"Error calculating Barth fuel consumption for {vehicle_type}: {str(e)}", exc_info=True)
+            return 0.0, 0.0
 
-        return free_flow_consumption, total_fuel_consumption
+    def calculate_fuel_consumption_moves(self, avg_speed_kmh: float, stops_per_km: float, road_grade: float,
+                                        temperature_c: float, vehicle_type: str, distance: float, count: int) -> Tuple[float, float]:
+        """Calculate fuel consumption using MOVES approximation model."""
+        try:
+            vehicle_params = self.vehicle_parameters.get(vehicle_type, {})
+            if not vehicle_params:
+                logger.warning(f"No parameters for vehicle type: {vehicle_type}")
+                return 0.0, 0.0
+
+            # Extract parameters
+            fuel_type = vehicle_params.get('fuel_type', 'petrol')
+            base_rate = vehicle_params.get('fuel_consumption_l_per_km_congested', 0.1)
+
+            # MOVES model adjustments
+            speed_factor = 1.0 + self.MOVES_SPEED_CORRECTION_FACTOR * (avg_speed_kmh - 30.0) / 30.0
+            stop_factor = 1.0 + 0.1 * stops_per_km
+            grade_factor = 1.0 + 0.05 * road_grade
+            temp_factor = 1.0 + 0.02 * (temperature_c - 25.0) / 25.0
+
+            # Congested fuel consumption
+            total_fuel_consumption = base_rate * distance * speed_factor * stop_factor * grade_factor * temp_factor * count
+
+            # Free flow fuel consumption (simpler, using free flow base rate)
+            free_flow_base = vehicle_params.get('fuel_consumption_l_per_km_free_flow', 0.07)
+            free_flow_consumption = free_flow_base * distance * count
+
+            return free_flow_consumption, total_fuel_consumption
+        except Exception as e:
+            logger.error(f"Error calculating MOVES fuel consumption for {vehicle_type}: {str(e)}", exc_info=True)
+            return 0.0, 0.0
 
     def calculate_barth_emissions(self, vehicle_type: str, count: int, distance: float,
-                                  speed: float, acceleration: float, idle_time: float) -> float:
-        """
-        Calculate emissions using Barth's model.
-
-        Barth's model: Emissions = α * engine_displacement + β * weight + γ * gradient +
-                              traffic_flow * speed + acceleration_factor * acceleration +
-                              idle_factor * idle_time
-        """
+                                 speed: float, acceleration: float, idle_time: float) -> float:
+        """Calculate emissions using Barth's model."""
         try:
-            vehicle_params = self.vehicle_parameters[vehicle_type]
+            vehicle_params = self.vehicle_parameters.get(vehicle_type, {})
+            if not vehicle_params:
+                logger.warning(f"No parameters for vehicle type: {vehicle_type}")
+                return 0.0
             alpha = self.BARTH_COEFFICIENTS['alpha']
             beta = self.BARTH_COEFFICIENTS['beta']
             gamma = self.BARTH_COEFFICIENTS['gamma']
             traffic_flow = self.BARTH_COEFFICIENTS['traffic_flow']
             acceleration_factor = self.BARTH_COEFFICIENTS['acceleration']
-
-            # Assume a default road gradient of 0% (flat road)
             road_gradient = 0.0
-
-            # Calculate base emissions using Barth's formula
             base_emissions = (
-                    alpha * vehicle_params['engine_displacement_cc'] +
-                    beta * vehicle_params['weight_kg'] +
-                    gamma * road_gradient +
-                    traffic_flow * speed +
-                    acceleration_factor * acceleration
+                alpha * vehicle_params.get('engine_displacement_cc', 1500) +
+                beta * vehicle_params.get('weight_kg', 1000) +
+                gamma * road_gradient +
+                traffic_flow * speed +
+                acceleration_factor * acceleration
             )
-
-            # Add idle emissions
             idle_emissions = 0
             if idle_time > 0:
-                if vehicle_params['fuel_type'] == 'petrol':
+                if vehicle_params.get('fuel_type', 'petrol') == 'petrol':
                     idle_emissions = self.BARTH_IDLE_FUEL_CONSUMPTION_PETROL * idle_time * 60
                 else:
                     idle_emissions = self.BARTH_IDLE_FUEL_CONSUMPTION_DIESEL * idle_time * 60
-
-            # Total emissions for this vehicle type
             total_emissions = (base_emissions * distance + idle_emissions) * count
-
             return total_emissions
         except Exception as e:
-            logger.error(f"Error calculating Barth emissions for {vehicle_type}: {str(e)}")
+            logger.error(f"Error calculating Barth emissions for {vehicle_type}: {str(e)}", exc_info=True)
             return 0.0
 
     def calculate_moves_emissions(self, vehicle_type: str, count: int, distance: float,
-                                  speed: float, acceleration: float) -> float:
-        """
-        Calculate emissions using MOVES-like model.
-
-        MOVES model: Emissions = base_rate * (1 + speed_correction * speed) *
-                             (1 + accel_correction * acceleration) * distance
-        """
+                                 speed: float, acceleration: float) -> float:
+        """Calculate emissions using MOVES-like model."""
         try:
-            vehicle_params = self.vehicle_parameters[vehicle_type]
-
-            if vehicle_params['fuel_type'] == 'petrol':
+            vehicle_params = self.vehicle_parameters.get(vehicle_type, {})
+            if not vehicle_params:
+                logger.warning(f"No parameters for vehicle type: {vehicle_type}")
+                return 0.0
+            if vehicle_params.get('fuel_type', 'petrol') == 'petrol':
                 base_rate = self.MOVES_BASE_EMISSION_RATE_PETROL
             else:
                 base_rate = self.MOVES_BASE_EMISSION_RATE_DIESEL
-
-            # Apply speed and acceleration corrections
             speed_correction = self.MOVES_SPEED_CORRECTION_FACTOR * speed
             accel_correction = self.MOVES_ACCEL_CORRECTION_FACTOR * acceleration
-
-            # Calculate emissions
             emissions = base_rate * (1 + speed_correction) * (1 + accel_correction) * distance * count
-
             return emissions
         except Exception as e:
-            logger.error(f"Error calculating MOVES emissions for {vehicle_type}: {str(e)}")
+            logger.error(f"Error calculating MOVES emissions for {vehicle_type}: {str(e)}", exc_info=True)
             return 0.0
 
     def calculate_basic_emissions(self, vehicle_type: str, count: int, distance: float) -> float:
-        """
-        Calculate emissions using basic model (fuel consumption * emission factor).
-        """
+        """Calculate emissions using basic model (fuel consumption * emission factor)."""
         try:
-            vehicle_params = self.vehicle_parameters[vehicle_type]
-
-            # Get fuel consumption
-            fuel_consumption = vehicle_params['fuel_consumption_l_per_km_congested'] * distance
-
-            # Get appropriate emission factor
-            if vehicle_params['fuel_type'] == 'petrol':
+            vehicle_params = self.vehicle_parameters.get(vehicle_type, {})
+            if not vehicle_params:
+                logger.warning(f"No parameters for vehicle type: {vehicle_type}")
+                return 0.0
+            fuel_consumption = vehicle_params.get('fuel_consumption_l_per_km_congested', 0.1) * distance
+            if vehicle_params.get('fuel_type', 'petrol') == 'petrol':
                 emission_factor = self.EMISSION_FACTOR_PETROL
             else:
                 emission_factor = self.EMISSION_FACTOR_DIESEL
-
-            # Calculate emissions
             emissions = fuel_consumption * emission_factor * count
-
             return emissions
         except Exception as e:
-            logger.error(f"Error calculating basic emissions for {vehicle_type}: {str(e)}")
+            logger.error(f"Error calculating basic emissions for {vehicle_type}: {str(e)}", exc_info=True)
             return 0.0
 
     def analyze_all_roads(self) -> Dict[str, Any]:
         """Analyze traffic data for all roads."""
         try:
+            if self.data.empty or not self.road_data:
+                raise ValueError("No valid data available for analysis")
             road_results = {}
             total_summary = {
                 'total_vehicles_all_roads': 0,
@@ -367,214 +439,650 @@ class TrafficAnalysisModel:
                 'total_co2_all_roads': 0.0,
                 'total_productivity_loss_all_roads': 0.0
             }
-
             for road in self.road_data:
                 road_data = self.data[self.data['Road'] == road]
+                if road_data.empty:
+                    logger.warning(f"No data for road: {road}")
+                    continue
                 total_vehicles = road_data['Real_Vehicle_Count'].sum()
                 total_people = sum(
-                    row['Real_Vehicle_Count'] * self.vehicle_parameters[row['Vehicle Type']]['occupancy_avg']
+                    row['Real_Vehicle_Count'] * self.vehicle_parameters.get(row['Vehicle Type'], {}).get(
+                        'occupancy_avg', 1.0)
                     for _, row in road_data.iterrows()
                 )
-
-                # Calculate fuel consumption using Barth model
                 total_excess_fuel = 0
                 total_fuel_cost = 0
-
-                for _, row in road_data.iterrows():
-                    # Get free flow and congested fuel consumption from Barth model
-                    free_flow_fuel, congested_fuel = self._calculate_barth_fuel_consumption(row)
-
-                    # Calculate excess fuel (difference between congested and free flow)
-                    excess_fuel = congested_fuel - free_flow_fuel
-                    total_excess_fuel += excess_fuel
-
-                    # Calculate fuel cost
-                    vehicle_params = self.vehicle_parameters[row['Vehicle Type']]
-                    if vehicle_params['fuel_type'] == 'petrol':
-                        fuel_cost = excess_fuel * self.FUEL_PRICE_PETROL
-                    else:
-                        fuel_cost = excess_fuel * self.FUEL_PRICE_DIESEL
-
-                    total_fuel_cost += fuel_cost
-
-                # Calculate CO2 emissions based on selected model
                 total_co2 = 0.0
                 for _, row in road_data.iterrows():
                     vehicle_type = row['Vehicle Type']
                     count = row['Real_Vehicle_Count']
+                    distance = row['Distance_KM']
+                    speed = row.get('Congested_Speed_KPH', 8.0)
+                    acceleration = row.get('Avg_Acceleration', 0.5)
+                    idle_time = row.get('Idle_Time_Percentage', 0.3) * row.get('Congested_Travel_Time_Minutes', 45.0) / 60.0
+                    stops_per_km = row.get('Stops_Per_KM', 2.0)
+                    road_grade = row.get('Road_Grade', 0.0)
+                    temperature_c = row.get('Temperature_C', 25.0)
 
+                    # Select fuel consumption model based on emission_model
                     if self.emission_model == EmissionModelType.BARTH:
-                        # Use Barth model with additional parameters
-                        speed = row.get('Congested_Speed_KHP', 8.0)
-                        acceleration = row.get('Avg_Acceleration', 0.5)
-                        idle_time = row.get('Idle_Time_Percentage', 0.3) * row.get('Congested_Travel_Time_Minutes',
-                                                                                   45.0) / 60.0
-                        total_co2 += self.calculate_barth_emissions(vehicle_type, count, self.CORRIDOR_LENGTH,
-                                                                    speed, acceleration, idle_time)
+                        free_flow_fuel, congested_fuel = self.calculate_fuel_consumption_barth(
+                            avg_speed_kmh=speed, vehicle_type=vehicle_type, distance=distance, count=count
+                        )
                     elif self.emission_model == EmissionModelType.MOVES:
-                        # Use MOVES model
-                        speed = row.get('Congested_Speed_KPH', 8.0)
-                        acceleration = row.get('Avg_Acceleration', 0.5)
-                        total_co2 += self.calculate_moves_emissions(vehicle_type, count, self.CORRIDOR_LENGTH,
-                                                                    speed, acceleration)
+                        free_flow_fuel, congested_fuel = self.calculate_fuel_consumption_moves(
+                            avg_speed_kmh=speed, stops_per_km=stops_per_km, road_grade=road_grade,
+                            temperature_c=temperature_c, vehicle_type=vehicle_type, distance=distance, count=count
+                        )
+                    else:  # BASIC model
+                        vehicle_params = self.vehicle_parameters.get(vehicle_type, {})
+                        free_flow_fuel = vehicle_params.get('fuel_consumption_l_per_km_free_flow', 0.07) * distance * count
+                        congested_fuel = vehicle_params.get('fuel_consumption_l_per_km_congested', 0.1) * distance * count
+
+                    excess_fuel = congested_fuel - free_flow_fuel
+                    total_excess_fuel += excess_fuel
+                    vehicle_params = self.vehicle_parameters.get(vehicle_type, {})
+                    if not vehicle_params:
+                        continue
+                    if vehicle_params.get('fuel_type', 'petrol') == 'petrol':
+                        fuel_cost = excess_fuel * self.FUEL_PRICE_PETROL
                     else:
-                        # Use basic model
-                        total_co2 += self.calculate_basic_emissions(vehicle_type, count, self.CORRIDOR_LENGTH)
+                        fuel_cost = excess_fuel * self.FUEL_PRICE_DIESEL
+                    total_fuel_cost += fuel_cost
 
-                # Calculate productivity loss
-                total_productivity_loss = total_people * (road_data['Congested_Travel_Time_Minutes'].iloc[0] -
-                                                          road_data['Free_Flow_Time_Minutes'].iloc[
-                                                              0]) * self.VALUE_PER_MINUTE
+                    # Emission calculations based on selected model
+                    if self.emission_model == EmissionModelType.BARTH:
+                        total_co2 += self.calculate_barth_emissions(
+                            vehicle_type, count, distance, speed, acceleration, idle_time
+                        )
+                    elif self.emission_model == EmissionModelType.MOVES:
+                        total_co2 += self.calculate_moves_emissions(
+                            vehicle_type, count, distance, speed, acceleration
+                        )
+                    else:
+                        total_co2 += self.calculate_basic_emissions(vehicle_type, count, distance)
 
+                total_productivity_loss = total_people * (
+                    road_data['Congested_Travel_Time_Minutes'].iloc[0] -
+                    road_data['Free_Flow_Time_Minutes'].iloc[0]
+                ) * self.VALUE_PER_MINUTE
                 road_results[road] = {
-                    'total_vehicles': total_vehicles,
-                    'total_people': total_people,
-                    'total_excess_fuel_l': total_excess_fuel,
-                    'total_co2_kg': total_co2,
-                    'total_fuel_cost_naira': total_fuel_cost,
-                    'total_productivity_loss_naira': total_productivity_loss
+                    'total_vehicles': int(total_vehicles),
+                    'total_people': int(total_people),
+                    'total_excess_fuel_l': round(total_excess_fuel, 2),
+                    'total_co2_kg': round(total_co2, 2),
+                    'total_fuel_cost_naira': round(total_fuel_cost, 2),
+                    'total_productivity_loss_naira': round(total_productivity_loss, 2)
                 }
-
                 total_summary['total_vehicles_all_roads'] += total_vehicles
                 total_summary['total_people_all_roads'] += total_people
                 total_summary['total_excess_fuel_all_roads'] += total_excess_fuel
                 total_summary['total_co2_all_roads'] += total_co2
                 total_summary['total_fuel_cost_all_roads'] += total_fuel_cost
                 total_summary['total_productivity_loss_all_roads'] += total_productivity_loss
-                total_summary['total_delay_hours_all_roads'] += (road_data['Congested_Travel_Time_Minutes'].iloc[0] -
-                                                                 road_data['Free_Flow_Time_Minutes'].iloc[
-                                                                     0]) / 60.0 * total_people
-
-            return {
-                'road_results': road_results,
-                'total_summary': total_summary
-            }
+                total_summary['total_delay_hours_all_roads'] += (
+                    road_data['Congested_Travel_Time_Minutes'].iloc[0] -
+                    road_data['Free_Flow_Time_Minutes'].iloc[0]
+                ) / 60.0 * total_people
+            total_summary = {k: round(v, 2) if isinstance(v, float) else int(v) for k, v in total_summary.items()}
+            return {'road_results': road_results, 'total_summary': total_summary}
         except Exception as e:
-            logger.error(f"Error analyzing roads: {str(e)}")
+            logger.error(f"Error analyzing roads: {str(e)}", exc_info=True)
             return {'road_results': {}, 'total_summary': {}}
 
     def generate_report(self) -> pd.DataFrame:
         """Generate a detailed report DataFrame."""
         try:
             results = self.analyze_all_roads()
+            if not results['road_results']:
+                logger.warning("No analysis results available for report generation")
+                return pd.DataFrame()
             data = []
             for road, road_data in results['road_results'].items():
                 data.append({
                     'Road': road,
-                    'Vehicle Count': road_data['total_vehicles'],
-                    'People Affected': road_data['total_people'],
-                    'Excess Fuel (L)': road_data['total_excess_fuel_l'],
-                    'CO2 Emissions (kg)': road_data['total_co2_kg'],
-                    'Fuel Cost (Naira)': road_data['total_fuel_cost_naira'],
-                    'Productivity Loss (Naira)': road_data['total_productivity_loss_naira'],
-                    'Total Economic Impact (Naira)': road_data['total_fuel_cost_naira'] + road_data[
-                        'total_productivity_loss_naira'],
+                    'Vehicle Count': int(road_data['total_vehicles']),
+                    'People Affected': int(road_data['total_people']),
+                    'Excess Fuel (L)': round(road_data['total_excess_fuel_l'], 2),
+                    'CO2 Emissions (kg)': round(road_data['total_co2_kg'], 2),
+                    'Fuel Cost (Naira)': round(road_data['total_fuel_cost_naira'], 2),
+                    'Productivity Loss (Naira)': round(road_data['total_productivity_loss_naira'], 2),
+                    'Total Economic Impact (Naira)': round(
+                        road_data['total_fuel_cost_naira'] + road_data['total_productivity_loss_naira'], 2),
                     'Emission Model': self.emission_model.value
                 })
             df = pd.DataFrame(data)
             return df
         except Exception as e:
-            logger.error(f"Error generating report: {str(e)}")
+            logger.error(f"Error generating report: {str(e)}", exc_info=True)
             return pd.DataFrame()
 
     def get_available_models(self) -> List[str]:
         """Return list of available emission models."""
         return [model.value for model in EmissionModelType]
 
-    def generate_charts(self, output_dir: str = "static/charts") -> Dict[str, str]:
-        """
-        Generate and save pie and bar charts for the report.
-        Returns a dictionary of chart file paths.
-        """
+    def generate_chart_images(self) -> Dict[str, str]:
+        """Generate chart images as temporary files for PDF report."""
         try:
-            os.makedirs(output_dir, exist_ok=True)
-            chart_files = {}
+            chart_images = {}
+            if not self.road_data:
+                logger.warning("No road data available for chart generation")
+                return chart_images
 
-            # Generate pie charts for vehicle distribution per road
+            colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2']
+            temp_dir = Path('temp_charts')
+            temp_dir.mkdir(exist_ok=True)
+
+            # Pie charts for vehicle distribution
             for road_name in self.road_data.keys():
                 vehicle_dist = self.get_vehicle_distribution(road_name)
                 if not vehicle_dist:
                     logger.warning(f"No vehicle distribution data for {road_name}")
                     continue
-
                 vehicle_types = [item["vehicle_type"] for item in vehicle_dist]
                 counts = [item["count"] for item in vehicle_dist]
-
-                plt.figure(figsize=(6, 4))
-                plt.pie(counts, labels=vehicle_types, autopct='%1.1f%%')
-                plt.title(f"{road_name} Vehicle Distribution")
-                pie_chart_path = os.path.join(output_dir, f"pie_{road_name.replace(' ', '_')}.png")
-                plt.savefig(pie_chart_path, format="png", bbox_inches="tight")
+                plt.figure(figsize=(8, 6))
+                plt.pie(counts, labels=vehicle_types, autopct='%1.1f%%', colors=colors[:len(vehicle_types)],
+                        startangle=90, textprops={'fontsize': 12})
+                plt.title(f"{road_name} Vehicle Distribution", fontsize=14, pad=15, weight='bold')
+                chart_path = temp_dir / f"pie_{road_name.replace(' ', '_').lower()}.png"
+                plt.savefig(chart_path, format='png', bbox_inches='tight', dpi=150)
                 plt.close()
-                chart_files[f"pie_{road_name.replace(' ', '_')}"] = pie_chart_path
-                logger.info(f"Saved pie chart for {road_name} at {pie_chart_path}")
+                chart_images[f"pie_{road_name.replace(' ', '_').lower()}"] = str(chart_path)
+                logger.info(f"Generated pie chart for {road_name} at {chart_path}")
 
-            # Generate bar charts for summary metrics
-            summary = self.analyze_all_roads()['total_summary']
+            # Bar charts for summary metrics
+            results = self.analyze_all_roads()
             roads = list(self.road_data.keys())
 
-            # Bar chart: People Affected
-            people_data = [self.analyze_all_roads()['road_results'][road]['total_people'] for road in roads]
-            plt.figure(figsize=(6, 4))
-            plt.bar(roads, people_data)
-            plt.title("People Affected by Congestion")
-            plt.xlabel("Road")
-            plt.ylabel("Number of People")
-            plt.xticks(rotation=45)
-            people_chart_path = os.path.join(output_dir, "people_chart.png")
-            plt.savefig(people_chart_path, format="png", bbox_inches="tight")
-            plt.close()
-            chart_files["people_chart"] = people_chart_path
-            logger.info(f"Saved people chart at {people_chart_path}")
+            # People Affected
+            people_data = [results['road_results'][road]['total_people'] for road in roads]
+            if any(x > 0 for x in people_data):
+                plt.figure(figsize=(10, 6))
+                bars = plt.bar(range(len(roads)), people_data, color=colors[:len(roads)])
+                plt.title("People Affected by Congestion", fontsize=16, pad=20, weight='bold')
+                plt.ylabel("Number of People", fontsize=12)
+                plt.xticks(range(len(roads)), roads, rotation=45, ha='right', fontsize=10)
+                for bar in bars:
+                    height = bar.get_height()
+                    if height > 0:
+                        plt.text(bar.get_x() + bar.get_width() / 2., height + max(people_data) * 0.01,
+                                 f'{int(height):,}', ha='center', va='bottom', fontsize=10)
+                plt.tight_layout()
+                chart_path = temp_dir / "people.png"
+                plt.savefig(chart_path, format='png', bbox_inches='tight', dpi=150)
+                plt.close()
+                chart_images["people"] = str(chart_path)
+                logger.info(f"Generated people bar chart at {chart_path}")
 
-            # Bar chart: Excess Fuel Consumption
-            fuel_data = [self.analyze_all_roads()['road_results'][road]['total_excess_fuel_l'] for road in roads]
-            plt.figure(figsize=(6, 4))
-            plt.bar(roads, fuel_data)
-            plt.title("Excess Fuel Consumption")
-            plt.xlabel("Road")
-            plt.ylabel("Liters")
-            plt.xticks(rotation=45)
-            fuel_chart_path = os.path.join(output_dir, "fuel_chart.png")
-            plt.savefig(fuel_chart_path, format="png", bbox_inches="tight")
-            plt.close()
-            chart_files["fuel_chart"] = fuel_chart_path
-            logger.info(f"Saved fuel chart at {fuel_chart_path}")
+            # Excess Fuel Consumption
+            fuel_data = [results['road_results'][road]['total_excess_fuel_l'] for road in roads]
+            if any(x > 0 for x in fuel_data):
+                plt.figure(figsize=(10, 6))
+                bars = plt.bar(range(len(roads)), fuel_data, color=colors[:len(roads)])
+                plt.title("Excess Fuel Consumption", fontsize=16, pad=20, weight='bold')
+                plt.ylabel("Liters", fontsize=12)
+                plt.xticks(range(len(roads)), roads, rotation=45, ha='right', fontsize=10)
+                for bar in bars:
+                    height = bar.get_height()
+                    if height > 0:
+                        plt.text(bar.get_x() + bar.get_width() / 2., height + max(fuel_data) * 0.01,
+                                 f'{int(height):,}', ha='center', va='bottom', fontsize=10)
+                plt.tight_layout()
+                chart_path = temp_dir / "fuel.png"
+                plt.savefig(chart_path, format='png', bbox_inches='tight', dpi=150)
+                plt.close()
+                chart_images["fuel"] = str(chart_path)
+                logger.info(f"Generated fuel bar chart at {chart_path}")
 
-            # Bar chart: CO2 Emissions
-            co2_data = [self.analyze_all_roads()['road_results'][road]['total_co2_kg'] for road in roads]
-            plt.figure(figsize=(6, 4))
-            plt.bar(roads, co2_data)
-            plt.title("Excess CO₂ Emissions")
-            plt.xlabel("Road")
-            plt.ylabel("kg")
-            plt.xticks(rotation=45)
-            co2_chart_path = os.path.join(output_dir, "co2_chart.png")
-            plt.savefig(co2_chart_path, format="png", bbox_inches="tight")
-            plt.close()
-            chart_files["co2_chart"] = co2_chart_path
-            logger.info(f"Saved CO2 chart at {co2_chart_path}")
+            # CO2 Emissions
+            co2_data = [results['road_results'][road]['total_co2_kg'] for road in roads]
+            if any(x > 0 for x in co2_data):
+                plt.figure(figsize=(10, 6))
+                bars = plt.bar(range(len(roads)), co2_data, color=colors[:len(roads)])
+                plt.title("Excess CO₂ Emissions", fontsize=16, pad=20, weight='bold')
+                plt.ylabel("kg", fontsize=12)
+                plt.xticks(range(len(roads)), roads, rotation=45, ha='right', fontsize=10)
+                for bar in bars:
+                    height = bar.get_height()
+                    if height > 0:
+                        plt.text(bar.get_x() + bar.get_width() / 2., height + max(co2_data) * 0.01,
+                                 f'{int(height):,}', ha='center', va='bottom', fontsize=10)
+                plt.tight_layout()
+                chart_path = temp_dir / "co2.png"
+                plt.savefig(chart_path, format='png', bbox_inches='tight', dpi=150)
+                plt.close()
+                chart_images["co2"] = str(chart_path)
+                logger.info(f"Generated CO2 bar chart at {chart_path}")
 
-            # Bar chart: Total Cost
+            # Total Cost
             cost_data = [
-                self.analyze_all_roads()['road_results'][road]['total_fuel_cost_naira'] +
-                self.analyze_all_roads()['road_results'][road]['total_productivity_loss_naira']
+                results['road_results'][road]['total_fuel_cost_naira'] +
+                results['road_results'][road]['total_productivity_loss_naira']
                 for road in roads
             ]
-            plt.figure(figsize=(6, 4))
-            plt.bar(roads, cost_data)
-            plt.title("Total Cost (Fuel + Productivity Loss)")
-            plt.xlabel("Road")
-            plt.ylabel("Naira")
-            plt.xticks(rotation=45)
-            cost_chart_path = os.path.join(output_dir, "cost_chart.png")
-            plt.savefig(cost_chart_path, format="png", bbox_inches="tight")
-            plt.close()
-            chart_files["cost_chart"] = cost_chart_path
-            logger.info(f"Saved cost chart at {cost_chart_path}")
+            if any(x > 0 for x in cost_data):
+                plt.figure(figsize=(10, 6))
+                bars = plt.bar(range(len(roads)), cost_data, color=colors[:len(roads)])
+                plt.title("Total Cost (Fuel + Productivity Loss)", fontsize=16, pad=20, weight='bold')
+                plt.ylabel("Naira", fontsize=12)
+                plt.xticks(range(len(roads)), roads, rotation=45, ha='right', fontsize=10)
+                plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'₦{int(x):,}'))
+                for bar in bars:
+                    height = bar.get_height()
+                    if height > 0:
+                        plt.text(bar.get_x() + bar.get_width() / 2., height + max(cost_data) * 0.01,
+                                 f'₦{int(height):,}', ha='center', va='bottom', fontsize=10)
+                plt.tight_layout()
+                chart_path = temp_dir / "cost.png"
+                plt.savefig(chart_path, format='png', bbox_inches='tight', dpi=150)
+                plt.close()
+                chart_images["cost"] = str(chart_path)
+                logger.info(f"Generated cost bar chart at {chart_path}")
 
-            logger.info(f"Generated charts and saved to {output_dir}")
-            return chart_files
+            return chart_images
         except Exception as e:
-            logger.error(f"Error generating charts: {str(e)}")
+            logger.error(f"Error generating chart images: {str(e)}", exc_info=True)
             return {}
+
+    def generate_pdf_report(self, output_path: str = "traffic_analysis_report.pdf",
+                           homepage_data: Optional[Dict[str, Any]] = None) -> Optional[str]:
+        """Generate a PDF report with homepage and analysis report using ReportLab."""
+        try:
+            # Validate output_path
+            if not output_path.endswith('.pdf'):
+                output_path = output_path + '.pdf'
+            output_path = Path(output_path)
+            os.makedirs(output_path.parent, exist_ok=True)
+
+            # Get analysis results
+            results = self.analyze_all_roads()
+            if not results['road_results']:
+                logger.error("No analysis results available for PDF generation")
+                return None
+
+            # Generate report DataFrame
+            report_df = self.generate_report()
+            if report_df.empty:
+                logger.error("No report data available for PDF generation")
+                return None
+
+            # Get vehicle distributions and chart images
+            vehicle_distributions = {road: self.get_vehicle_distribution(road) for road in self.road_data}
+            chart_images = self.generate_chart_images()
+
+            # Use provided homepage_data or default
+            if homepage_data is None:
+                homepage_data = {
+                    'title': "Abuja Traffic Analysis System",
+                    'subtitle': "Comprehensive Traffic Congestion Analysis Report",
+                    'stats': [
+                        {'label': 'Total Vehicles Analyzed',
+                         'value': f"{results['total_summary']['total_vehicles_all_roads']:,}"},
+                        {'label': 'Total People Affected',
+                         'value': f"{results['total_summary']['total_people_all_roads']:,}"},
+                        {'label': 'Total CO2 Emissions',
+                         'value': f"{results['total_summary']['total_co2_all_roads']:,.0f} kg"},
+                        {'label': 'Total Economic Impact',
+                         'value': f"₦{results['total_summary']['total_fuel_cost_all_roads'] + results['total_summary']['total_productivity_loss_all_roads']:,.0f}"}
+                    ],
+                    'features': [
+                        "Accurate vehicle counting and classification",
+                        "Real-time congestion analysis",
+                        "Emission modeling (Basic, Barth, MOVES)",
+                        "Economic impact assessment"
+                    ],
+                    'how_it_works': [
+                        "Collect traffic data via sensors or manual input",
+                        "Analyze vehicle counts and congestion metrics",
+                        "Calculate fuel consumption and CO2 emissions",
+                        "Generate comprehensive reports and visualizations"
+                    ],
+                    'methodology': {
+                        'description': "This assessment uses vehicle-specific parameters to calculate congestion impacts:",
+                        'parameters': [
+                            f"Fuel Prices: ₦{self.FUEL_PRICE_PETROL:,.2f}/L (petrol), ₦{self.FUEL_PRICE_DIESEL:,.2f}/L (diesel)",
+                            f"Emission Factors: {self.EMISSION_FACTOR_PETROL:,.2f} kg CO₂/L (petrol), {self.EMISSION_FACTOR_DIESEL:,.2f} kg CO₂/L (diesel)",
+                            f"Productivity Value: ₦{self.VALUE_PER_MINUTE:,.2f}/minute",
+                            f"Corridor Length: {self.CORRIDOR_LENGTH:,.1f} km",
+                            f"Time Parameters: Free flow: 4.0 min, Congested: 45.0 min",
+                            f"Advanced Parameters: Free flow speed: 60.0 km/h, Congested speed: 8.0 km/h, Acceleration: 0.5 m/s², Idle time: 30.0%, Stops per km: 2.0, Road grade: 0.0%, Temperature: 25.0°C"
+                        ] if self.emission_model != EmissionModelType.BASIC else [
+                            f"Fuel Prices: ₦{self.FUEL_PRICE_PETROL:,.2f}/L (petrol), ₦{self.FUEL_PRICE_DIESEL:,.2f}/L (diesel)",
+                            f"Emission Factors: {self.EMISSION_FACTOR_PETROL:,.2f} kg CO₂/L (petrol), {self.EMISSION_FACTOR_DIESEL:,.2f} kg CO₂/L (diesel)",
+                            f"Productivity Value: ₦{self.VALUE_PER_MINUTE:,.2f}/minute",
+                            f"Corridor Length: {self.CORRIDOR_LENGTH:,.1f} km",
+                            f"Time Parameters: Free flow: 4.0 min, Congested: 45.0 min"
+                        ]
+                    },
+                    'recommendations': {
+                        'key_findings': [
+                            f"{max(results['road_results'].items(), key=lambda x: x[1]['total_vehicles'])[0]} shows the highest congestion impact, accounting for approximately {(max(results['road_results'].items(), key=lambda x: x[1]['total_vehicles'])[1]['total_vehicles'] / results['total_summary']['total_vehicles_all_roads'] * 100):,.1f}% of total vehicles and {(max(results['road_results'].items(), key=lambda x: x[1]['total_productivity_loss_naira'])[1]['total_productivity_loss_naira'] / results['total_summary']['total_productivity_loss_all_roads'] * 100):,.1f}% of productivity losses.",
+                            f"Evening rush hour congestion affects nearly {results['total_summary']['total_people_all_roads']:,} commuters across all corridors.",
+                            f"Total economic impact exceeds ₦{results['total_summary']['total_fuel_cost_all_roads'] + results['total_summary']['total_productivity_loss_all_roads']:,.0f} during the observed period.",
+                            f"Environmental impact includes {results['total_summary']['total_co2_all_roads']:,.0f} kg of excess CO₂ emissions.",
+                            f"Average delay per vehicle is {(results['total_summary']['total_delay_hours_all_roads'] * 60 / results['total_summary']['total_vehicles_all_roads']):,.1f} minutes across all corridors.",
+                            f"Analysis performed using {self.emission_model.value.upper()} emission model for enhanced accuracy."
+                        ],
+                        'strategic_recommendations': [
+                            f"Immediate Interventions: Implement targeted traffic management systems on {max(results['road_results'].items(), key=lambda x: x[1]['total_vehicles'])[0]}, which shows the highest congestion metrics.",
+                            "Public Transportation: Enhance alternative transportation options to reduce private vehicle numbers during peak hours.",
+                            "Infrastructure Investment: Prioritize road improvements based on specific vehicle type distributions observed.",
+                            "Policy Measures: Consider congestion pricing or staggered work hours to distribute traffic more evenly.",
+                            "Data Collection: Expand monitoring to understand daily and weekly patterns beyond current snapshot data.",
+                            f"Environmental Mitigation: Implement measures to offset {results['total_summary']['total_co2_all_roads']:,.0f} kg of CO₂ emissions generated.",
+                            f"Model Selection: Continue using {self.emission_model.value.upper()} model for future analyses to maintain consistency in emission calculations."
+                        ]
+                    }
+                }
+            else:
+                required_keys = ['title', 'subtitle', 'stats', 'features', 'how_it_works', 'methodology',
+                                'recommendations']
+                if not all(key in homepage_data for key in required_keys):
+                    logger.error(f"Provided homepage_data missing required keys: {required_keys}")
+                    return None
+
+            # Initialize PDF document
+            doc = SimpleDocTemplate(str(output_path), pagesize=A4, rightMargin=2 * cm, leftMargin=2 * cm,
+                                    topMargin=2 * cm, bottomMargin=2 * cm)
+
+            # Get styles and avoid redefining 'Normal' style
+            styles = getSampleStyleSheet()
+
+            if not hasattr(styles, 'TitleStyle'):
+                styles.add(ParagraphStyle(name='TitleStyle', fontSize=18, alignment=TA_CENTER, spaceAfter=12,
+                                         textColor=colors.HexColor('#1f77b4')))
+
+            if not hasattr(styles, 'SubtitleStyle'):
+                styles.add(ParagraphStyle(name='SubtitleStyle', fontSize=14, alignment=TA_CENTER, spaceAfter=12))
+
+            if not hasattr(styles, 'SectionTitle'):
+                styles.add(ParagraphStyle(name='SectionTitle', fontSize=12, spaceBefore=12, spaceAfter=6,
+                                         fontName='Helvetica-Bold'))
+
+            if not hasattr(styles, 'Footer'):
+                styles.add(ParagraphStyle(name='Footer', fontSize=8, alignment=TA_CENTER, textColor=colors.grey))
+
+            if not hasattr(styles, 'ModelBadge'):
+                styles.add(
+                    ParagraphStyle(name='ModelBadge', fontSize=10, fontName='Helvetica-Bold', textColor=colors.white,
+                                  backColor=colors.HexColor('#1f77b4'), spaceAfter=6, leading=12))
+
+            # Build PDF content
+            elements = []
+
+            # Front Page
+            elements.append(Paragraph(homepage_data['title'], styles['TitleStyle']))
+            elements.append(Paragraph(homepage_data['subtitle'], styles['SubtitleStyle']))
+            elements.append(Paragraph(
+                f"Generated on {self.analysis_date} at {self.analysis_time} | Emission Model: {self.emission_model.value.capitalize()}",
+                styles['Normal']))
+            elements.append(Spacer(1, 0.5 * cm))
+
+            # Stats Section
+            stats_data = [[stat['label'], stat['value']] for stat in homepage_data['stats']]
+            stats_table = Table(stats_data, colWidths=[8 * cm, 8 * cm])
+            stats_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#e9ecef')),
+                ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+                ('FONT', (0, 0), (-1, -1), 'Helvetica', 10),
+                ('BOX', (0, 0), (-1, -1), 0.5, colors.black),
+                ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+                ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ]))
+            elements.append(stats_table)
+            elements.append(Spacer(1, 0.5 * cm))
+
+            # Features Section
+            elements.append(Paragraph("Features", styles['SectionTitle']))
+            for feature in homepage_data['features']:
+                elements.append(Paragraph(f"• {feature}", styles['Normal']))
+            elements.append(Spacer(1, 0.5 * cm))
+
+            # How It Works Section
+            elements.append(Paragraph("How It Works", styles['SectionTitle']))
+            for step in homepage_data['how_it_works']:
+                elements.append(Paragraph(f"• {step}", styles['Normal']))
+            elements.append(Spacer(1, 0.5 * cm))
+
+            # Header
+            elements.append(PageBreak())
+            elements.append(Paragraph("Abuja Traffic Congestion Analysis Report", styles['TitleStyle']))
+            elements.append(
+                Paragraph("Comprehensive Analysis of Traffic Impact on Major Abuja Corridors", styles['Normal']))
+            elements.append(Paragraph(f"Generated on: {self.analysis_date} at {self.analysis_time}", styles['Normal']))
+            elements.append(Paragraph("Analysis Period: Evening Rush Hour (18:00)", styles['Normal']))
+            elements.append(Spacer(1, 0.5 * cm))
+
+            # Emission Model Information
+            elements.append(Paragraph("Analysis Methodology", styles['SectionTitle']))
+            model_description = {
+                EmissionModelType.BASIC: "Using simple fuel consumption-based emission calculations with fixed emission factors.",
+                EmissionModelType.BARTH: "Using Barth's comprehensive fuel consumption model with acceleration, deceleration, and idle time factors.",
+                EmissionModelType.MOVES: "Using EPA MOVES-like emission model with speed, acceleration, and vehicle standard corrections."
+            }.get(self.emission_model, f"Using {self.emission_model.value.upper()} emission calculation model.")
+            elements.append(
+                Paragraph(f"<b>{self.emission_model.value.upper()}</b> {model_description}", styles['ModelBadge']))
+            elements.append(Spacer(1, 0.3 * cm))
+
+            # Executive Summary
+            elements.append(Paragraph("Executive Summary", styles['SectionTitle']))
+            elements.append(Paragraph(
+                "This report provides a comprehensive analysis of traffic congestion impacts across major Abuja road corridors, quantifying economic and environmental consequences including fuel costs, productivity losses, and CO₂ emissions.",
+                styles['Normal']))
+            summary_data = [
+                ["Total Vehicles", f"{results['total_summary']['total_vehicles_all_roads']:,}", "vehicles"],
+                ["People Affected", f"{results['total_summary']['total_people_all_roads']:,}", "commuters"],
+                ["Total Delay", f"{results['total_summary']['total_delay_hours_all_roads']:,.1f}", "hours"],
+                ["Excess Fuel", f"{results['total_summary']['total_excess_fuel_all_roads']:,.1f}", "liters"],
+                ["Fuel Cost", f"₦{results['total_summary']['total_fuel_cost_all_roads']:,.0f}", "naira"],
+                ["CO₂ Emissions", f"{results['total_summary']['total_co2_all_roads']:,.0f}", "kg"]
+            ]
+            summary_table = Table(summary_data, colWidths=[6 * cm, 6 * cm, 4 * cm])
+            summary_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f8f9fa')),
+                ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+                ('FONT', (0, 0), (-1, -1), 'Helvetica', 10),
+                ('BOX', (0, 0), (-1, -1), 0.5, colors.black),
+                ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+                ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
+                ('BOTTOMPadding', (0, 0), (-1, -1), 4),
+            ]))
+            elements.append(summary_table)
+            elements.append(Paragraph(
+                f"<b>Key Insight:</b> The analysis reveals significant congestion across all corridors, with a total economic impact exceeding ₦{results['total_summary']['total_fuel_cost_all_roads'] + results['total_summary']['total_productivity_loss_all_roads']:,.0f} during the observed period.",
+                styles['Normal']))
+            elements.append(Spacer(1, 0.5 * cm))
+
+            # Methodology
+            elements.append(PageBreak())
+            elements.append(Paragraph("Methodology", styles['SectionTitle']))
+            elements.append(Paragraph(homepage_data['methodology']['description'], styles['Normal']))
+            for param in homepage_data['methodology']['parameters']:
+                elements.append(Paragraph(f"• {param}", styles['Normal']))
+            elements.append(Spacer(1, 0.5 * cm))
+
+            # Grand Totals
+            elements.append(PageBreak())
+            elements.append(Paragraph("Grand Totals Across All Roads", styles['SectionTitle']))
+            totals_data = [
+                ["Performance Metric", "Value", "Unit"],
+                ["Total Vehicles Observed", f"{results['total_summary']['total_vehicles_all_roads']:,}", "vehicles"],
+                ["Total People Affected", f"{results['total_summary']['total_people_all_roads']:,}", "people"],
+                ["Total Delay Time", f"{results['total_summary']['total_delay_hours_all_roads']:,.1f}", "hours"],
+                ["Total Excess Fuel Consumption", f"{results['total_summary']['total_excess_fuel_all_roads']:,.1f}",
+                 "liters"],
+                ["Total Fuel Cost", f"₦{results['total_summary']['total_fuel_cost_all_roads']:,.0f}", "naira"],
+                ["Total CO₂ Emissions", f"{results['total_summary']['total_co2_all_roads']:,.0f}", "kg"],
+                ["Total Productivity Loss", f"₦{results['total_summary']['total_productivity_loss_all_roads']:,.0f}",
+                 "naira"],
+                ["Total Economic Impact",
+                 f"₦{results['total_summary']['total_fuel_cost_all_roads'] + results['total_summary']['total_productivity_loss_all_roads']:,.0f}",
+                 "naira"]
+            ]
+            totals_table = Table(totals_data, colWidths=[8 * cm, 6 * cm, 2 * cm])
+            totals_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1f77b4')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                ('FONT', (0, 0), (-1, -1), 'Helvetica', 9),
+                ('BOX', (0, 0), (-1, -1), 0.5, colors.black),
+                ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+                ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+                ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#e3f2fd')),
+                ('FONT', (0, -1), (-1, -1), 'Helvetica-Bold', 9),
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ]))
+            elements.append(totals_table)
+            elements.append(Spacer(1, 0.5 * cm))
+
+            # Per-Road Analysis
+            elements.append(PageBreak())
+            elements.append(Paragraph("Per-Road Analysis", styles['SectionTitle']))
+            for road, road_data in results['road_results'].items():
+                road_table_data = [
+                    ["Metric", "Value"],
+                    ["Vehicles", f"{road_data['total_vehicles']:,}"],
+                    ["People Affected", f"{road_data['total_people']:,}"],
+                    ["Excess Fuel", f"{road_data['total_excess_fuel_l']:,.1f} L"],
+                    ["Fuel Cost", f"₦{road_data['total_fuel_cost_naira']:,.0f}"],
+                    ["CO₂ Emissions", f"{road_data['total_co2_kg']:,.0f} kg"],
+                    ["Productivity Loss", f"₦{road_data['total_productivity_loss_naira']:,.0f}"],
+                    ["Total Impact",
+                     f"₦{road_data['total_fuel_cost_naira'] + road_data['total_productivity_loss_naira']:,.0f}"]
+                ]
+                road_table = Table(road_table_data, colWidths=[8 * cm, 8 * cm])
+                road_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1f77b4')),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('FONT', (0, 0), (-1, -1), 'Helvetica', 9),
+                    ('BOX', (0, 0), (-1, -1), 0.5, colors.black),
+                    ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+                    ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+                    ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#e3f2fd')),
+                    ('FONT', (0, -1), (-1, -1), 'Helvetica-Bold', 9),
+                    ('TOPPADDING', (0, 0), (-1, -1), 4),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                ]))
+                elements.append(Paragraph(road, styles['SectionTitle']))
+                elements.append(road_table)
+                elements.append(Spacer(1, 0.3 * cm))
+
+            # Visualizations
+            elements.append(PageBreak())
+            elements.append(Paragraph("Visual Analysis", styles['SectionTitle']))
+            for road in vehicle_distributions:
+                elements.append(Paragraph(f"{road} Vehicle Distribution", styles['SectionTitle']))
+                if f"pie_{road.replace(' ', '_').lower()}" in chart_images:
+                    img_path = chart_images[f"pie_{road.replace(' ', '_').lower()}"]
+                    elements.append(Image(img_path, width=16 * cm, height=12 * cm))
+                for item in vehicle_distributions[road]:
+                    elements.append(Paragraph(f"• {item['vehicle_type']}: {item['count']:,}", styles['Normal']))
+                elements.append(Spacer(1, 0.3 * cm))
+            for chart_key, chart_title in [
+                ('people', 'People Affected by Congestion'),
+                ('fuel', 'Excess Fuel Consumption'),
+                ('co2', 'Excess CO₂ Emissions'),
+                ('cost', 'Total Cost (Fuel + Productivity Loss)')
+            ]:
+                if chart_key in chart_images:
+                    elements.append(Paragraph(chart_title, styles['SectionTitle']))
+                    elements.append(Image(chart_images[chart_key], width=16 * cm, height=12 * cm))
+                    elements.append(Spacer(1, 0.3 * cm))
+
+            # Detailed Report
+            elements.append(PageBreak())
+            elements.append(Paragraph("Detailed Report", styles['SectionTitle']))
+            table_data = [
+                ['Road', 'Vehicle Count', 'People Affected', 'Excess Fuel (L)', 'CO2 Emissions (kg)',
+                 'Fuel Cost (Naira)', 'Productivity Loss (Naira)', 'Total Economic Impact (Naira)', 'Emission Model']
+            ]
+            for row in report_df.to_dict('records'):
+                table_data.append([
+                    row['Road'],
+                    f"{row['Vehicle Count']:,}",
+                    f"{row['People Affected']:,}",
+                    f"{row['Excess Fuel (L)']:.1f}",
+                    f"{row['CO2 Emissions (kg)']:.1f}",
+                    f"₦{row['Fuel Cost (Naira)']:,.0f}",
+                    f"₦{row['Productivity Loss (Naira)']:,.0f}",
+                    f"₦{row['Total Economic Impact (Naira)']:,.0f}",
+                    row['Emission Model']
+                ])
+            results_table = Table(table_data,
+                                 colWidths=[3 * cm, 2 * cm, 2 * cm, 2 * cm, 2 * cm, 2 * cm, 2 * cm, 3 * cm, 2 * cm])
+            results_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1f77b4')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                ('FONT', (0, 0), (-1, -1), 'Helvetica', 9),
+                ('BOX', (0, 0), (-1, -1), 0.5, colors.black),
+                ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+                ('ALIGN', (1, 0), (-2, -1), 'RIGHT'),
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ]))
+            elements.append(results_table)
+            elements.append(Spacer(1, 0.5 * cm))
+
+            # Conclusions & Recommendations
+            elements.append(PageBreak())
+            elements.append(Paragraph("Conclusions & Recommendations", styles['SectionTitle']))
+            elements.append(Paragraph("Key Findings", styles['SectionTitle']))
+            for finding in homepage_data['recommendations']['key_findings']:
+                elements.append(Paragraph(f"• {finding}", styles['Normal']))
+            elements.append(Spacer(1, 0.3 * cm))
+            elements.append(Paragraph("Strategic Recommendations", styles['SectionTitle']))
+            for recommendation in homepage_data['recommendations']['strategic_recommendations']:
+                elements.append(Paragraph(f"• {recommendation}", styles['Normal']))
+            elements.append(Spacer(1, 0.5 * cm))
+
+            # Footer
+            elements.append(Paragraph(
+                f"Generated on {self.analysis_date} at {self.analysis_time} by Abuja Traffic Analysis System<br/>&copy; {datetime.now().year} | Powered by Opygoal Technology Ltd | Developed by Oladotun Ajakaiye",
+                styles['Footer']
+            ))
+
+            # Build the PDF
+            doc.build(elements)
+            logger.info(f"PDF report generated successfully at {output_path}")
+
+            # Clean up temporary chart files
+            temp_dir = Path('temp_charts')
+            if temp_dir.exists():
+                for chart_file in temp_dir.glob("*.png"):
+                    try:
+                        chart_file.unlink()
+                    except Exception as e:
+                        logger.warning(f"Failed to delete temporary chart file {chart_file}: {str(e)}")
+                try:
+                    temp_dir.rmdir()
+                except Exception as e:
+                    logger.warning(f"Failed to delete temporary directory {temp_dir}: {str(e)}")
+
+            return str(output_path)
+        except Exception as e:
+            logger.error(f"Error generating PDF report: {str(e)}", exc_info=True)
+            return None
+
+if __name__ == "__main__":
+    # Example usage with different emission models
+    for model_type in ['basic', 'barth', 'moves']:
+        model = TrafficAnalysisModel(emission_model=EmissionModelType(model_type.upper()))
+        pdf_path = model.generate_pdf_report(output_path=f"traffic_analysis_report_{model_type}.pdf")
+        if pdf_path:
+            print(f"PDF report for {model_type} model generated at: {pdf_path}")
+        else:
+            print(f"Failed to generate PDF report for {model_type} model")

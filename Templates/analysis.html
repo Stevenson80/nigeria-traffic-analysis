@@ -5,13 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Abuja Traffic Congestion Analysis - Comprehensive Report</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Data passed from Flask backend -->
+    <script id="summaryData" type="application/json">{{ summary | tojson }}</script>
+    <script id="roadResultsData" type="application/json">{{ road_results | tojson }}</script>
+    <script id="vehicleDistributionsData" type="application/json">{{ vehicle_distributions | tojson }}</script>
+    <script id="emissionModelData" type="application/json">{{ current_emission_model | tojson }}</script>
+
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #4CAF50;
-            --light-color: #f8f9fa;
-            --dark-color: #343a40;
+            --primary-color: #1a2a6c;
+            --secondary-color: #b21f1f;
+            --accent-color: #fdbb2d;
+            --light-color: #f0f7ff;
+            --dark-color: #2c3e50;
             --border-color: #dee2e6;
             --success-color: #d4edda;
             --error-color: #f8d7da;
@@ -28,10 +36,10 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, #f5f7fa 0%, #e6e9f0 100%);
             color: var(--dark-color);
             line-height: 1.6;
             min-height: 100vh;
@@ -44,26 +52,36 @@
             margin-bottom: 25px;
             text-align: center;
             box-shadow: var(--box-shadow);
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .navbar a {
-            margin: 0 8px;
-            padding: 10px 20px;
+            padding: 12px 24px;
             text-decoration: none;
             color: var(--dark-color);
             font-weight: 500;
             background-color: var(--light-color);
             border-radius: 50px;
             transition: var(--transition);
-            display: inline-block;
+            display: flex;
+            align-items: center;
             border: 2px solid transparent;
+            font-family: 'Poppins', sans-serif;
         }
 
         .navbar a:hover {
-            background-color: var(--accent-color);
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
             color: white;
-            transform: translateY(-2px);
-            border-color: var(--accent-color);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .navbar a.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
         }
 
         .navbar a i {
@@ -82,6 +100,7 @@
         h1, h2, h3, h4 {
             color: var(--primary-color);
             margin-bottom: 20px;
+            font-family: 'Poppins', sans-serif;
         }
 
         h1 {
@@ -89,17 +108,20 @@
             text-align: center;
             margin-bottom: 10px;
             color: var(--primary-color);
+            font-weight: 700;
         }
 
         h2 {
-            border-bottom: 3px solid var(--secondary-color);
+            border-bottom: 3px solid var(--accent-color);
             padding-bottom: 10px;
             margin-top: 30px;
+            font-weight: 600;
         }
 
         h3 {
             color: var(--secondary-color);
             margin-top: 25px;
+            font-weight: 500;
         }
 
         h4 {
@@ -107,13 +129,17 @@
             margin-top: 20px;
             padding-left: 10px;
             border-left: 4px solid var(--accent-color);
+            font-weight: 500;
         }
 
         .flash-message {
             margin-bottom: 25px;
-            padding: 15px;
+            padding: 15px 20px;
             border-radius: var(--border-radius);
             border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .flash-message.success {
@@ -142,31 +168,35 @@
         }
 
         .summary-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 20px;
+            background: linear-gradient(135deg, var(--light-color) 0%, #e9ecef 100%);
+            padding: 25px 20px;
             border-radius: var(--border-radius);
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border-left: 4px solid var(--secondary-color);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--primary-color);
             transition: var(--transition);
+            position: relative;
+            overflow: hidden;
         }
 
         .summary-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.12);
         }
 
         .summary-card h3 {
             margin: 0 0 15px 0;
             color: var(--primary-color);
             font-size: 1.1em;
+            font-weight: 600;
         }
 
         .summary-card .value {
-            font-size: 1.8em;
+            font-size: 2em;
             font-weight: bold;
             color: var(--primary-color);
             margin: 10px 0;
+            font-family: 'Poppins', sans-serif;
         }
 
         .summary-card .unit {
@@ -180,20 +210,23 @@
             border-collapse: collapse;
             margin: 20px 0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-radius: var(--border-radius);
+            overflow: hidden;
         }
 
         th, td {
             border: 1px solid var(--border-color);
-            padding: 12px;
+            padding: 14px 16px;
             text-align: left;
         }
 
         th {
-            background-color: var(--secondary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             font-weight: 600;
             position: sticky;
             top: 0;
+            font-family: 'Poppins', sans-serif;
         }
 
         tr:nth-child(even) {
@@ -202,6 +235,7 @@
 
         tr:hover {
             background-color: #e9ecef;
+            transition: background-color 0.2s ease;
         }
 
         .chart-container {
@@ -213,24 +247,25 @@
         }
 
         .chart-box {
-            flex: 1 1 400px;
-            min-width: 300px;
+            flex: 1 1 450px;
+            min-width: 320px;
             background: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
             text-align: center;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease;
+        }
+
+        .chart-box:hover {
+            transform: translateY(-3px);
         }
 
         .chart-box h4 {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             color: var(--primary-color);
-        }
-
-        .chart-box img {
-            max-width: 100%;
-            height: auto;
-            border-radius: var(--border-radius);
+            font-weight: 600;
         }
 
         .download-btn {
@@ -243,7 +278,7 @@
 
         .download-btn a {
             padding: 15px 25px;
-            background: linear-gradient(135deg, var(--accent-color), #45a049);
+            background: linear-gradient(135deg, var(--accent-color), #e65c00);
             color: white;
             text-decoration: none;
             border-radius: 50px;
@@ -252,90 +287,103 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            box-shadow: 0 4px 15px rgba(253, 187, 45, 0.4);
+            font-family: 'Poppins', sans-serif;
         }
 
         .download-btn a:hover {
-            background: linear-gradient(135deg, #45a049, var(--accent-color));
+            background: linear-gradient(135deg, #e65c00, var(--accent-color));
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+            box-shadow: 0 6px 20px rgba(253, 187, 45, 0.5);
         }
 
         .methodology {
             background: #e8f4fc;
-            padding: 20px;
+            padding: 25px;
             border-radius: var(--border-radius);
-            margin: 20px 0;
-            border-left: 4px solid var(--secondary-color);
+            margin: 25px 0;
+            border-left: 4px solid var(--primary-color);
         }
 
         .recommendations {
             background: #f0f7ff;
-            padding: 20px;
+            padding: 25px;
             border-radius: var(--border-radius);
-            margin: 20px 0;
+            margin: 25px 0;
             border-left: 4px solid var(--accent-color);
         }
 
         .recommendations ul {
-            padding-left: 20px;
-            margin: 15px 0;
+            padding-left: 25px;
+            margin: 18px 0;
         }
 
         .recommendations li {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             line-height: 1.6;
         }
 
         footer {
             text-align: center;
-            margin-top: 40px;
-            padding: 20px;
+            margin-top: 50px;
+            padding: 25px;
             color: #6c757d;
             font-size: 14px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
         }
 
         .data-info {
             background: #f8f9fa;
-            padding: 15px;
+            padding: 20px;
             border-radius: var(--border-radius);
-            margin: 15px 0;
+            margin: 20px 0;
             font-size: 0.95em;
+            border-left: 4px solid var(--secondary-color);
         }
 
         .road-comparison {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 25px 0;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
         }
 
         .road-card {
             background: var(--light-color);
-            padding: 20px;
+            padding: 25px;
             border-radius: var(--border-radius);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .road-card:hover {
+            transform: translateY(-3px);
         }
 
         .road-card h4 {
             color: var(--secondary-color);
-            margin-bottom: 15px;
-            padding-bottom: 10px;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
             border-bottom: 2px solid var(--secondary-color);
+            font-weight: 600;
         }
 
         /* Model selection styles */
         .model-selection {
             background: #f8f9fa;
-            padding: 20px;
+            padding: 25px;
             border-radius: var(--border-radius);
-            margin: 25px 0;
+            margin: 30px 0;
             border: 2px solid var(--secondary-color);
         }
 
         .model-selection h3 {
             margin-top: 0;
             color: var(--primary-color);
+            font-weight: 600;
         }
 
         .model-form {
@@ -348,32 +396,35 @@
         .model-select {
             flex: 1;
             min-width: 200px;
-            padding: 12px;
+            padding: 14px;
             border: 2px solid var(--border-color);
             border-radius: var(--border-radius);
             font-size: 16px;
             background-color: white;
+            font-family: 'Roboto', sans-serif;
         }
 
         .model-submit {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, var(--secondary-color), #2980b9);
+            padding: 14px 28px;
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
             color: white;
             border: none;
             border-radius: var(--border-radius);
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
         }
 
         .model-submit:hover {
-            background: linear-gradient(135deg, #2980b9, var(--secondary-color));
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .model-info-box {
-            margin-top: 15px;
-            padding: 15px;
+            margin-top: 20px;
+            padding: 20px;
             background: #e8f4fc;
             border-radius: var(--border-radius);
             border-left: 4px solid var(--secondary-color);
@@ -382,43 +433,47 @@
         .model-info-box p {
             margin: 0;
             font-size: 14px;
+            line-height: 1.5;
         }
 
         .model-badge {
             display: inline-block;
-            padding: 4px 10px;
-            background: var(--secondary-color);
+            padding: 6px 14px;
+            background: var(--primary-color);
             color: white;
             border-radius: 20px;
             font-size: 12px;
             font-weight: bold;
-            margin-right: 10px;
+            margin-right: 12px;
+            font-family: 'Poppins', sans-serif;
         }
 
         /* Advanced parameters section */
         .advanced-params {
             background: #fff3cd;
-            padding: 20px;
+            padding: 25px;
             border-radius: var(--border-radius);
-            margin: 20px 0;
+            margin: 25px 0;
             border-left: 4px solid #ffc107;
         }
 
         .advanced-params h4 {
             color: #856404;
             margin-top: 0;
+            border-left: 4px solid #ffc107;
+            font-weight: 600;
         }
 
         .param-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin-top: 18px;
         }
 
         .param-item {
             background: white;
-            padding: 12px;
+            padding: 16px;
             border-radius: var(--border-radius);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
@@ -426,7 +481,8 @@
         .param-item strong {
             color: #856404;
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            font-family: 'Poppins', sans-serif;
         }
 
         @media (max-width: 768px) {
@@ -434,10 +490,16 @@
                 padding: 20px;
             }
 
+            .navbar {
+                flex-direction: column;
+                align-items: center;
+            }
+
             .navbar a {
-                display: block;
-                margin: 8px 0;
-                text-align: center;
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+                margin: 5px 0;
             }
 
             .summary-grid {
@@ -467,7 +529,7 @@
             }
 
             th, td {
-                padding: 8px;
+                padding: 10px;
             }
 
             .model-form {
@@ -482,7 +544,7 @@
 
         @media (max-width: 480px) {
             body {
-                padding: 10px;
+                padding: 15px;
             }
 
             .container {
@@ -494,11 +556,11 @@
             }
 
             .summary-card {
-                padding: 15px;
+                padding: 20px 15px;
             }
 
             .summary-card .value {
-                font-size: 1.5em;
+                font-size: 1.6em;
             }
         }
 
@@ -523,14 +585,125 @@
 
         .scrollable-table {
             overflow-x: auto;
-            margin: 20px 0;
+            margin: 25px 0;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Loading indicator for charts */
+        .chart-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            flex-direction: column;
+        }
+
+        .chart-loading .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--secondary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Simple chart styles */
+        .simple-bar-chart {
+            margin-top: 15px;
+        }
+
+        .chart-bar {
+            margin: 12px 0;
+        }
+
+        .chart-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .chart-bar-container {
+            background: #e9ecef;
+            height: 22px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .chart-bar-fill {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            height: 100%;
+            transition: width 1s ease-in-out;
+        }
+
+        .simple-pie-chart {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 0 auto;
+            background: conic-gradient(
+                #1a2a6c 0% 30%,
+                #b21f1f 30% 60%,
+                #fdbb2d 60% 80%,
+                #1c6b3d 80% 95%,
+                #6b2c90 95% 100%
+            );
+        }
+
+        .pie-legend {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .pie-legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .pie-legend-color {
+            width: 14px;
+            height: 14px;
+            margin-right: 6px;
+            border-radius: 3px;
+        }
+
+        .data-highlight {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .data-highlight .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .data-highlight .label {
+            font-size: 1.1em;
+            opacity: 0.9;
         }
     </style>
 </head>
 <body>
     <div class="navbar" role="navigation" aria-label="Main navigation">
         <a href="{{ url_for('welcome') }}" aria-label="Home page"><i class="fas fa-home"></i> Home</a>
-        <a href="{{ url_for('analysis') }}" aria-label="Analysis page" style="background-color: var(--accent-color); color: white;"><i class="fas fa-chart-bar"></i> Analysis</a>
+        <a href="{{ url_for('analysis') }}" aria-label="Analysis page" class="active"><i class="fas fa-chart-bar"></i> Analysis</a>
         <a href="{{ url_for('data_entry') }}" aria-label="Data entry page"><i class="fas fa-pen-to-square"></i> Data Entry</a>
         <a href="{{ url_for('download_report') }}" aria-label="Download CSV report"><i class="fas fa-file-csv"></i> CSV Report</a>
         <a href="{{ url_for('download_pdf') }}" aria-label="Download PDF report"><i class="fas fa-file-pdf"></i> PDF Report</a>
@@ -539,9 +712,12 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <div class="flash-message {{ messages[0][0] }}" role="alert">
-                {% for category, message in messages %}
-                    <p><i class="fas fa-{% if category == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i> {{ message }}</p>
-                {% endfor %}
+                <i class="fas fa-{% if messages[0][0] == 'success' %}check-circle{% elif messages[0][0] == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                <div>
+                    {% for category, message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
             </div>
         {% endif %}
     {% endwith %}
@@ -556,8 +732,8 @@
             <form method="get" action="{{ url_for('analysis') }}" class="model-form">
                 <select name="emission_model" class="model-select" onchange="this.form.submit()">
                     {% for model in emission_models %}
-                    <option value="{{ model.value }}" {% if current_emission_model == model.value %}selected{% endif %}>
-                        {{ model.name }}
+                    <option value="{{ model }}" {% if current_emission_model == model %}selected{% endif %}>
+                        {{ model|upper }}
                     </option>
                     {% endfor %}
                 </select>
@@ -587,33 +763,33 @@
             <div class="param-grid">
                 <div class="param-item">
                     <strong>Free Flow Speed</strong>
-                    {{ summary.get('Free_Flow_Speed_KPH', 60.0) | float | format_float }} km/h
+                    <span id="freeFlowSpeed">{{ summary.get('Free_Flow_Speed_KPH', 60.0) }}</span> km/h
                 </div>
                 <div class="param-item">
                     <strong>Congested Speed</strong>
-                    {{ summary.get('Congested_Speed_KPH', 8.0) | float | format_float }} km/h
+                    <span id="congestedSpeed">{{ summary.get('Congested_Speed_KPH', 8.0) }}</span> km/h
                 </div>
                 <div class="param-item">
                     <strong>Acceleration</strong>
-                    {{ summary.get('Avg_Acceleration', 0.5) | float | format_float }} m/s²
+                    <span id="acceleration">{{ summary.get('Avg_Acceleration', 0.5) }}</span> m/s²
                 </div>
                 <div class="param-item">
                     <strong>Deceleration</strong>
-                    {{ summary.get('Avg_Deceleration', 0.5) | float | format_float }} m/s²
+                    <span id="deceleration">{{ summary.get('Avg_Deceleration', 0.5) }}</span> m/s²
                 </div>
                 <div class="param-item">
                     <strong>Idle Time</strong>
-                    {{ (summary.get('Idle_Time_Percentage', 0.3) * 100) | float | format_float }}%
+                    <span id="idleTime">{{ (summary.get('Idle_Time_Percentage', 0.3) * 100) }}</span>%
                 </div>
             </div>
         </div>
         {% endif %}
 
         <div class="data-info">
-            <p><strong><i class="fas fa-calendar-alt"></i> Data Entry Date:</strong> {{ summary.get('date', 'N/A') }}</p>
-            <p><strong><i class="fas fa-clock"></i> Data Entry Time:</strong> {{ summary.get('time', 'N/A') }}</p>
+            <p><strong><i class="fas fa-calendar-alt"></i> Analysis Date:</strong> <span id="analysisDate"></span></p>
+            <p><strong><i class="fas fa-clock"></i> Analysis Time:</strong> <span id="analysisTime"></span></p>
             <p><strong><i class="fas fa-calculator"></i> Emission Model:</strong> {{ current_emission_model|upper }}</p>
-            <p><strong><i class="fas fa-info-circle"></i> Note:</strong> Data represents a snapshot at {{ summary.get('time', 'N/A') }} on {{ summary.get('date', 'N/A') }}, which may not reflect daily averages.</p>
+            <p><strong><i class="fas fa-info-circle"></i> Note:</strong> Data represents current traffic conditions analysis.</p>
         </div>
 
         <h2><i class="fas fa-chart-line"></i> Executive Summary</h2>
@@ -621,41 +797,47 @@
         <div class="summary-grid">
             <div class="summary-card">
                 <h3>Total Vehicles</h3>
-                <div class="value">{{ summary.get('total_vehicles_all_roads', 0) | int | format_number }}</div>
+                <div class="value" id="totalVehicles">0</div>
                 <div class="unit">across all corridors</div>
             </div>
             <div class="summary-card">
                 <h3>People Affected</h3>
-                <div class="value">{{ summary.get('total_people_all_roads', 0) | int | format_number }}</div>
+                <div class="value" id="totalPeople">0</div>
                 <div class="unit">commuters impacted</div>
             </div>
             <div class="summary-card">
                 <h3>Total Delay</h3>
-                <div class="value">{{ summary.get('total_delay_hours_all_roads', 0.0) | float | format_float }}</div>
+                <div class="value" id="totalDelay">0 hours</div>
                 <div class="unit">hours lost</div>
             </div>
             <div class="summary-card">
                 <h3>Economic Impact</h3>
-                <div class="value">₦{{ (summary.get('total_fuel_cost_all_roads', 0.0) + summary.get('total_productivity_loss_all_roads', 0.0)) | float | format_number }}</div>
+                <div class="value" id="totalEconomicImpact">₦0</div>
                 <div class="unit">fuel + productivity loss</div>
             </div>
+        </div>
+
+        <div class="data-highlight">
+            <div class="label">Total Environmental Impact</div>
+            <div class="value" id="totalCO2">0 kg CO₂</div>
+            <div class="label">Equivalent to <span id="treeEquivalent">0</span> average trees' annual absorption</div>
         </div>
 
         <h2><i class="fas fa-calculator"></i> Methodology</h2>
         <div class="methodology">
             <p>This analysis uses vehicle-specific occupancy rates and fuel consumption parameters with the following key assumptions:</p>
             <ul>
-                <li><strong>Fuel Prices:</strong> ₦{{ summary.get('Fuel_Cost_Per_Liter_Petrol', 850.0) | float | format_currency }}/L (petrol), ₦{{ summary.get('Fuel_Cost_Per_Liter_Diesel', 1000.0) | float | format_currency }}/L (diesel)</li>
-                <li><strong>Emission Factors:</strong> {{ summary.get('Emission_Factor_Petrol', 2.31) | float | format_float }} kg CO₂/L (petrol), {{ summary.get('Emission_Factor_Diesel', 2.68) | float | format_float }} kg CO₂/L (diesel)</li>
-                <li><strong>Productivity Value:</strong> ₦{{ summary.get('Value_Per_Minute_Naira', 7.29) | float | format_currency }}/minute based on minimum wage calculations</li>
-                <li><strong>Corridor Length:</strong> {{ summary.get('Distance_KM', 6.0) | float | format_float }} km average distance</li>
-                <li><strong>Time Parameters:</strong> Free flow: {{ summary.get('Free_Flow_Time_Minutes', 4.0) | float | format_float }} min, Congested: {{ summary.get('Congested_Travel_Time_Minutes', 45.0) | float | format_float }} min</li>
+                <li><strong>Fuel Prices (2026):</strong> ₦1,045.0/L (petrol), ₦1,210.0/L (diesel)</li>
+                <li><strong>Emission Factors:</strong> 2.31 kg CO₂/L (petrol), 2.68 kg CO₂/L (diesel)</li>
+                <li><strong>Productivity Value:</strong> ₦8.80/minute based on economic calculations</li>
+                <li><strong>Corridor Length:</strong> 6.0 km average distance</li>
+                <li><strong>Time Parameters:</strong> Free flow: 4.0 min, Congested: 45.0 min</li>
                 {% if current_emission_model != 'basic' %}
                 <li><strong>Advanced Parameters:</strong>
-                    Free flow speed: {{ summary.get('Free_Flow_Speed_KPH', 60.0) | float | format_float }} km/h,
-                    Congested speed: {{ summary.get('Congested_Speed_KPH', 8.0) | float | format_float }} km/h,
-                    Acceleration: {{ summary.get('Avg_Acceleration', 0.5) | float | format_float }} m/s²,
-                    Idle time: {{ (summary.get('Idle_Time_Percentage', 0.3) * 100) | float | format_float }}%
+                    Free flow speed: <span id="methodologyFreeFlowSpeed">{{ summary.get('Free_Flow_Speed_KPH', 60.0) }}</span> km/h,
+                    Congested speed: <span id="methodologyCongestedSpeed">{{ summary.get('Congested_Speed_KPH', 8.0) }}</span> km/h,
+                    Acceleration: <span id="methodologyAcceleration">{{ summary.get('Avg_Acceleration', 0.5) }}</span> m/s²,
+                    Idle time: <span id="methodologyIdleTime">{{ (summary.get('Idle_Time_Percentage', 0.3) * 100) }}</span>%
                 </li>
                 {% endif %}
                 <li><strong>Emission Model:</strong> {{ current_emission_model|upper }}</li>
@@ -672,139 +854,56 @@
                         <th>Unit</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>Total Vehicles Observed</td>
-                        <td>{{ summary.get('total_vehicles_all_roads', 0) | int | format_number }}</td>
-                        <td>vehicles</td>
-                    </tr>
-                    <tr>
-                        <td>Total People Affected</td>
-                        <td>{{ summary.get('total_people_all_roads', 0) | int | format_number }}</td>
-                        <td>people</td>
-                    </tr>
-                    <tr>
-                        <td>Total Delay Time</td>
-                        <td>{{ summary.get('total_delay_hours_all_roads', 0.0) | float | format_float }}</td>
-                        <td>hours</td>
-                    </tr>
-                    <tr>
-                        <td>Total Excess Fuel Consumption</td>
-                        <td>{{ summary.get('total_excess_fuel_all_roads', 0.0) | float | format_float }}</td>
-                        <td>liters</td>
-                    </tr>
-                    <tr>
-                        <td>Total Fuel Cost</td>
-                        <td>{{ summary.get('total_fuel_cost_all_roads', 0.0) | float | format_currency }}</td>
-                        <td>naira</td>
-                    </tr>
-                    <tr>
-                        <td>Average Fuel Cost per Vehicle</td>
-                        <td>{{ summary.get('avg_fuel_cost_per_vehicle', 0.0) | float | format_currency }}</td>
-                        <td>naira/vehicle</td>
-                    </tr>
-                    <tr>
-                        <td>Total CO2 Emissions</td>
-                        <td>{{ summary.get('total_co2_all_roads', 0.0) | float | format_float }}</td>
-                        <td>kg</td>
-                    </tr>
-                    <tr>
-                        <td>Total Productivity Loss</td>
-                        <td>{{ summary.get('total_productivity_loss_all_roads', 0.0) | float | format_currency }}</td>
-                        <td>naira</td>
-                    </tr>
-                    <tr style="background-color: #e3f2fd;">
-                        <td><strong>Total Economic Impact</strong></td>
-                        <td><strong>₦{{ (summary.get('total_fuel_cost_all_roads', 0.0) + summary.get('total_productivity_loss_all_roads', 0.0)) | float | format_number }}</strong></td>
-                        <td><strong>naira</strong></td>
-                    </tr>
+                <tbody id="grandTotalsBody">
+                    <!-- Will be populated by JavaScript -->
                 </tbody>
             </table>
         </div>
 
         <h2><i class="fas fa-road"></i> Per-Road Analysis</h2>
-        <div class="road-comparison">
-            {% for road_name, road_data in road_results.items() %}
-            <div class="road-card">
-                <h4>{{ road_name }}</h4>
-                <table>
-                    <tr>
-                        <td>Vehicles</td>
-                        <td>{{ road_data.get('total_vehicles', 0) | int | format_number }}</td>
-                    </tr>
-                    <tr>
-                        <td>People Affected</td>
-                        <td>{{ road_data.get('total_people', 0) | int | format_number }}</td>
-                    </tr>
-                    <tr>
-                        <td>Excess Fuel</td>
-                        <td>{{ road_data.get('total_excess_fuel_l', 0.0) | float | format_float }} L</td>
-                    </tr>
-                    <tr>
-                        <td>Fuel Cost</td>
-                        <td>{{ road_data.get('total_fuel_cost_naira', 0.0) | float | format_currency }}</td>
-                    </tr>
-                    <tr>
-                        <td>CO2 Emissions</td>
-                        <td>{{ road_data.get('total_co2_kg', 0.0) | float | format_float }} kg</td>
-                    </tr>
-                    <tr>
-                        <td>Productivity Loss</td>
-                        <td>{{ road_data.get('total_productivity_loss_naira', 0.0) | float | format_currency }}</td>
-                    </tr>
-                    <tr style="background-color: #e8f4fc;">
-                        <td><strong>Total Impact</strong></td>
-                        <td><strong>₦{{ (road_data.get('total_fuel_cost_naira', 0.0) + road_data.get('total_productivity_loss_naira', 0.0)) | float | format_number }}</strong></td>
-                    </tr>
-                </table>
-            </div>
-            {% endfor %}
+        <div class="road-comparison" id="roadComparison">
+            <!-- Will be populated by JavaScript -->
         </div>
 
         <h2><i class="fas fa-chart-pie"></i> Vehicle Distribution Analysis</h2>
         <p>The pie charts below illustrate the distribution of vehicle types across each road corridor:</p>
 
-        <div class="chart-container">
-            {% for road_name in vehicle_distributions.keys() %}
-            <div class="chart-box">
-                <h4>{{ road_name }}</h4>
-                {% if chart_images.get('pie_' + road_name.replace(' ', '_')) %}
-                    <img src="{{ chart_images['pie_' + road_name.replace(' ', '_')] }}" alt="Pie chart showing vehicle distribution for {{ road_name }}" aria-label="Pie chart for {{ road_name }}">
-                {% else %}
-                    <div class="no-data">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 2em; margin-bottom: 10px;"></i>
-                        <p>Chart not available for {{ road_name }}</p>
-                    </div>
-                {% endif %}
-            </div>
-            {% endfor %}
+        <div class="chart-container" id="vehicleDistributionCharts">
+            <!-- Will be populated by JavaScript -->
         </div>
 
         <h2><i class="fas fa-chart-bar"></i> Comparative Analysis</h2>
-        <p>The following charts compare key metrics across the three road corridors:</p>
+        <p>The following charts compare key metrics across the road corridors:</p>
 
-        <div class="chart-container">
-            {% set chart_titles = {
-                'people': 'People Affected by Congestion',
-                'fuel': 'Excess Fuel Consumption (Liters)',
-                'co2': 'CO2 Emissions (kg)',
-                'cost': 'Total Cost (Fuel + Productivity Loss)',
-                'avg_fuel_cost': 'Average Fuel Cost per Vehicle'
-            } %}
-
-            {% for chart_id, chart_title in chart_titles.items() %}
+        <div class="chart-container" id="comparativeCharts">
             <div class="chart-box">
-                <h4>{{ chart_title }}</h4>
-                {% if chart_images.get(chart_id) %}
-                    <img src="{{ chart_images[chart_id] }}" alt="Bar chart for {{ chart_title }}" aria-label="{{ chart_title }} chart">
-                {% else %}
-                    <div class="no-data">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 2em; margin-bottom: 10px;"></i>
-                        <p>{{ chart_title }} chart not available</p>
-                    </div>
-                {% endif %}
+                <h4>People Affected by Congestion</h4>
+                <div class="chart-loading" id="peopleChart">
+                    <div class="spinner"></div>
+                    <p>Loading chart...</p>
+                </div>
             </div>
-            {% endfor %}
+            <div class="chart-box">
+                <h4>Excess Fuel Consumption (Liters)</h4>
+                <div class="chart-loading" id="fuelChart">
+                    <div class="spinner"></div>
+                    <p>Loading chart...</p>
+                </div>
+            </div>
+            <div class="chart-box">
+                <h4>CO2 Emissions (kg)</h4>
+                <div class="chart-loading" id="co2Chart">
+                    <div class="spinner"></div>
+                    <p>Loading chart...</p>
+                </div>
+            </div>
+            <div class="chart-box">
+                <h4>Total Cost (Fuel + Productivity Loss)</h4>
+                <div class="chart-loading" id="costChart">
+                    <div class="spinner"></div>
+                    <p>Loading chart...</p>
+                </div>
+            </div>
         </div>
 
         <h2><i class="fas fa-file-alt"></i> Detailed Report Data</h2>
@@ -824,25 +923,8 @@
                         <th>Emission Model</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {% for row in report_data | default([]) %}
-                    <tr>
-                        <td>{{ row.get('Road', 'N/A') }}</td>
-                        <td>{{ row.get('Vehicle Type', 'N/A') }}</td>
-                        <td>{{ row.get('Vehicle Count', 0) | int | format_number }}</td>
-                        <td>{{ row.get('People Affected', 0) | int | format_number }}</td>
-                        <td>{{ row.get('Delay per Vehicle (min)', 0.0) | float | format_float }}</td>
-                        <td>{{ row.get('Total Excess Fuel (L)', 0.0) | float | format_float }}</td>
-                        <td>{{ row.get('Fuel Cost (₦)', 0.0) | float | format_currency }}</td>
-                        <td>{{ row.get('CO2 Emissions (kg)', 0.0) | float | format_float }}</td>
-                        <td>{{ row.get('Productivity Loss (₦)', 0.0) | float | format_currency }}</td>
-                        <td>{{ row.get('Emission Model', current_emission_model|upper) }}</td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="10" class="no-data">No report data available</td>
-                    </tr>
-                    {% endfor %}
+                <tbody id="reportDataBody">
+                    <!-- Will be populated by JavaScript -->
                 </tbody>
             </table>
         </div>
@@ -870,7 +952,345 @@
     </div>
 
     <footer>
-        <p>© 2025 | Powered by Opygoal Technology Ltd | Developed by Oladotun Ajakaiye | Service Manager & Data Analyst</p>
+        <p>© <span id="currentYear"></span> | Powered by Opygoal Technology Ltd | Developed by Oladotun Ajakaiye | Service Manager & Data Analyst</p>
+        <p>Abuja Traffic Analysis System v2.0 | {{ current_emission_model|upper }} Emission Model</p>
     </footer>
+
+    <script>
+        // Parse data from Flask backend
+        const summaryData = JSON.parse(document.getElementById('summaryData').textContent || '{}');
+        const roadResultsData = JSON.parse(document.getElementById('roadResultsData').textContent || '{}');
+        const vehicleDistributionsData = JSON.parse(document.getElementById('vehicleDistributionsData').textContent || '{}');
+        const emissionModel = JSON.parse(document.getElementById('emissionModelData').textContent || '"basic"');
+
+        // Set current date and year
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        document.getElementById('analysisDate').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric'
+        });
+        document.getElementById('analysisTime').textContent = new Date().toLocaleTimeString('en-US', {
+            hour: '2-digit', minute: '2-digit'
+        });
+
+        // Format number with commas
+        function formatNumber(number) {
+            return new Intl.NumberFormat('en-US').format(number);
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return '₦' + formatNumber(amount.toFixed(2));
+        }
+
+        // Format float with 1 decimal
+        function formatFloat(number, decimals = 1) {
+            return parseFloat(number).toFixed(decimals);
+        }
+
+        // Create a simple bar chart
+        function createSimpleBarChart(data, title, containerId, formatter = formatNumber) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const maxValue = Math.max(...Object.values(data));
+            let chartHTML = `<div class="simple-bar-chart">`;
+
+            for (const [label, value] of Object.entries(data)) {
+                const percentage = maxValue > 0 ? (value / maxValue) * 100 : 0;
+                chartHTML += `
+                    <div class="chart-bar">
+                        <div class="chart-label">
+                            <span>${label}</span>
+                            <span>${formatter(value)}</span>
+                        </div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar-fill" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            chartHTML += `</div>`;
+            container.innerHTML = chartHTML;
+
+            // Animate the bars
+            setTimeout(() => {
+                const bars = container.querySelectorAll('.chart-bar-fill');
+                bars.forEach(bar => {
+                    bar.style.width = bar.style.width;
+                });
+            }, 100);
+        }
+
+        // Create a simple pie chart for vehicle distribution
+        function createSimplePieChart(data, title, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            // Generate conic gradient string
+            let cumulativePercentage = 0;
+            let gradientString = '';
+            const colors = ['#1a2a6c', '#b21f1f', '#fdbb2d', '#1c6b3d', '#6b2c90', '#2a6b55', '#6b2c4d'];
+
+            data.forEach((item, index) => {
+                const percentage = (item.count / data.reduce((sum, curr) => sum + curr.count, 0)) * 100;
+                const start = cumulativePercentage;
+                const end = cumulativePercentage + percentage;
+
+                gradientString += `${colors[index % colors.length]} ${start}% ${end}%, `;
+                cumulativePercentage = end;
+            });
+
+            // Remove trailing comma and space
+            gradientString = gradientString.slice(0, -2);
+
+            let chartHTML = `
+                <h4>${title}</h4>
+                <div class="simple-pie-chart" style="background: conic-gradient(${gradientString})"></div>
+                <div class="pie-legend">
+            `;
+
+            data.forEach((item, index) => {
+                chartHTML += `
+                    <div class="pie-legend-item">
+                        <div class="pie-legend-color" style="background: ${colors[index % colors.length]}"></div>
+                        <span>${item.vehicle_type}</span>
+                    </div>
+                `;
+            });
+
+            chartHTML += `</div>`;
+            container.innerHTML = chartHTML;
+        }
+
+        // Populate the report with data
+        function populateReportWithData() {
+            // Update summary cards
+            document.getElementById('totalVehicles').textContent = formatNumber(summaryData.total_vehicles_all_roads || 0);
+            document.getElementById('totalPeople').textContent = formatNumber(summaryData.total_people_all_roads || 0);
+            document.getElementById('totalDelay').textContent = formatFloat(summaryData.total_delay_hours_all_roads || 0) + ' hours';
+
+            const totalEconomicImpact = (summaryData.total_fuel_cost_all_roads || 0) + (summaryData.total_productivity_loss_all_roads || 0);
+            document.getElementById('totalEconomicImpact').textContent = formatCurrency(totalEconomicImpact);
+
+            // Update CO2 and tree equivalent
+            const totalCO2 = summaryData.total_co2_all_roads || 0;
+            document.getElementById('totalCO2').textContent = formatFloat(totalCO2) + ' kg CO₂';
+            document.getElementById('treeEquivalent').textContent = Math.round(totalCO2 / 20);
+
+            // Format advanced parameters
+            if (summaryData.Free_Flow_Speed_KPH !== undefined) {
+                document.getElementById('freeFlowSpeed').textContent = formatFloat(summaryData.Free_Flow_Speed_KPH);
+                document.getElementById('methodologyFreeFlowSpeed').textContent = formatFloat(summaryData.Free_Flow_Speed_KPH);
+            }
+
+            if (summaryData.Congested_Speed_KPH !== undefined) {
+                document.getElementById('congestedSpeed').textContent = formatFloat(summaryData.Congested_Speed_KPH);
+                document.getElementById('methodologyCongestedSpeed').textContent = formatFloat(summaryData.Congested_Speed_KPH);
+            }
+
+            if (summaryData.Avg_Acceleration !== undefined) {
+                document.getElementById('acceleration').textContent = formatFloat(summaryData.Avg_Acceleration);
+                document.getElementById('methodologyAcceleration').textContent = formatFloat(summaryData.Avg_Acceleration);
+            }
+
+            if (summaryData.Avg_Deceleration !== undefined) {
+                document.getElementById('deceleration').textContent = formatFloat(summaryData.Avg_Deceleration);
+            }
+
+            if (summaryData.Idle_Time_Percentage !== undefined) {
+                const idleTimePercent = summaryData.Idle_Time_Percentage * 100;
+                document.getElementById('idleTime').textContent = formatFloat(idleTimePercent);
+                document.getElementById('methodologyIdleTime').textContent = formatFloat(idleTimePercent);
+            }
+
+            // Populate grand totals table
+            const grandTotalsBody = document.getElementById('grandTotalsBody');
+            grandTotalsBody.innerHTML = `
+                <tr>
+                    <td>Total Vehicles Observed</td>
+                    <td>${formatNumber(summaryData.total_vehicles_all_roads || 0)}</td>
+                    <td>vehicles</td>
+                </tr>
+                <tr>
+                    <td>Total People Affected</td>
+                    <td>${formatNumber(summaryData.total_people_all_roads || 0)}</td>
+                    <td>people</td>
+                </tr>
+                <tr>
+                    <td>Total Delay Time</td>
+                    <td>${formatFloat(summaryData.total_delay_hours_all_roads || 0)}</td>
+                    <td>hours</td>
+                </tr>
+                <tr>
+                    <td>Total Excess Fuel Consumption</td>
+                    <td>${formatFloat(summaryData.total_excess_fuel_all_roads || 0)}</td>
+                    <td>liters</td>
+                </tr>
+                <tr>
+                    <td>Total Fuel Cost</td>
+                    <td>${formatCurrency(summaryData.total_fuel_cost_all_roads || 0)}</td>
+                    <td>naira</td>
+                </tr>
+                <tr>
+                    <td>Total CO2 Emissions</td>
+                    <td>${formatFloat(summaryData.total_co2_all_roads || 0)}</td>
+                    <td>kg</td>
+                </tr>
+                <tr>
+                    <td>Total Productivity Loss</td>
+                    <td>${formatCurrency(summaryData.total_productivity_loss_all_roads || 0)}</td>
+                    <td>naira</td>
+                </tr>
+                <tr style="background-color: #e3f2fd;">
+                    <td><strong>Total Economic Impact</strong></td>
+                    <td><strong>${formatCurrency(totalEconomicImpact)}</strong></td>
+                    <td><strong>naira</strong></td>
+                </tr>
+            `;
+
+            // Populate road comparison
+            const roadComparison = document.getElementById('roadComparison');
+            roadComparison.innerHTML = '';
+
+            for (const [roadName, roadData] of Object.entries(roadResultsData)) {
+                const roadImpact = (roadData.total_fuel_cost_naira || 0) + (roadData.total_productivity_loss_naira || 0);
+
+                roadComparison.innerHTML += `
+                    <div class="road-card">
+                        <h4>${roadName}</h4>
+                        <table>
+                            <tr>
+                                <td>Vehicles</td>
+                                <td>${formatNumber(roadData.total_vehicles || 0)}</td>
+                            </tr>
+                            <tr>
+                                <td>People Affected</td>
+                                <td>${formatNumber(roadData.total_people || 0)}</td>
+                            </tr>
+                            <tr>
+                                <td>Excess Fuel</td>
+                                <td>${formatFloat(roadData.total_excess_fuel_l || 0)} L</td>
+                            </tr>
+                            <tr>
+                                <td>Fuel Cost</td>
+                                <td>${formatCurrency(roadData.total_fuel_cost_naira || 0)}</td>
+                            </tr>
+                            <tr>
+                                <td>CO2 Emissions</td>
+                                <td>${formatFloat(roadData.total_co2_kg || 0)} kg</td>
+                            </tr>
+                            <tr>
+                                <td>Productivity Loss</td>
+                                <td>${formatCurrency(roadData.total_productivity_loss_naira || 0)}</td>
+                            </tr>
+                            <tr style="background-color: #e8f4fc;">
+                                <td><strong>Total Impact</strong></td>
+                                <td><strong>${formatCurrency(roadImpact)}</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                `;
+            }
+
+            // Populate vehicle distribution charts section
+            const vehicleDistributionCharts = document.getElementById('vehicleDistributionCharts');
+            vehicleDistributionCharts.innerHTML = '';
+
+            for (const [roadName, vehicles] of Object.entries(vehicleDistributionsData)) {
+                if (vehicles && vehicles.length > 0) {
+                    const chartId = `vehicleChart-${roadName.replace(/\s+/g, '-')}`;
+                    vehicleDistributionCharts.innerHTML += `
+                        <div class="chart-box" id="${chartId}">
+                            <div class="chart-loading">
+                                <div class="spinner"></div>
+                                <p>Loading chart data...</p>
+                            </div>
+                        </div>
+                    `;
+
+                    // Create the chart after a short delay to allow DOM update
+                    setTimeout(() => {
+                        createSimplePieChart(vehicles, `${roadName} Vehicle Distribution`, chartId);
+                    }, 100);
+                }
+            }
+
+            // Create comparative charts
+            setTimeout(() => {
+                // People affected chart
+                const peopleData = {};
+                for (const [roadName, roadData] of Object.entries(roadResultsData)) {
+                    peopleData[roadName] = roadData.total_people || 0;
+                }
+                createSimpleBarChart(peopleData, "People Affected by Congestion", "peopleChart", formatNumber);
+
+                // Fuel consumption chart
+                const fuelData = {};
+                for (const [roadName, roadData] of Object.entries(roadResultsData)) {
+                    fuelData[roadName] = roadData.total_excess_fuel_l || 0;
+                }
+                createSimpleBarChart(fuelData, "Excess Fuel Consumption (Liters)", "fuelChart", formatFloat);
+
+                // CO2 emissions chart
+                const co2Data = {};
+                for (const [roadName, roadData] of Object.entries(roadResultsData)) {
+                    co2Data[roadName] = roadData.total_co2_kg || 0;
+                }
+                createSimpleBarChart(co2Data, "CO2 Emissions (kg)", "co2Chart", formatFloat);
+
+                // Total cost chart
+                const costData = {};
+                for (const [roadName, roadData] of Object.entries(roadResultsData)) {
+                    costData[roadName] = (roadData.total_fuel_cost_naira || 0) + (roadData.total_productivity_loss_naira || 0);
+                }
+                createSimpleBarChart(costData, "Total Cost (Fuel + Productivity Loss)", "costChart", formatCurrency);
+            }, 200);
+
+            // Populate report data table
+            const reportDataBody = document.getElementById('reportDataBody');
+            reportDataBody.innerHTML = '';
+
+            let hasData = false;
+
+            for (const [roadName, roadData] of Object.entries(roadResultsData)) {
+                if (roadData.vehicle_types) {
+                    for (const [vehicleType, vehicleData] of Object.entries(roadData.vehicle_types)) {
+                        hasData = true;
+                        reportDataBody.innerHTML += `
+                            <tr>
+                                <td>${roadName}</td>
+                                <td>${vehicleType}</td>
+                                <td>${formatNumber(vehicleData.count || 0)}</td>
+                                <td>${formatNumber(vehicleData.people || 0)}</td>
+                                <td>${formatFloat(vehicleData.delay_min || 0)}</td>
+                                <td>${formatFloat(vehicleData.excess_fuel_l || 0)}</td>
+                                <td>${formatCurrency(vehicleData.fuel_cost_naira || 0)}</td>
+                                <td>${formatFloat(vehicleData.co2_kg || 0)}</td>
+                                <td>${formatCurrency(vehicleData.productivity_loss_naira || 0)}</td>
+                                <td>${emissionModel}</td>
+                            </tr>
+                        `;
+                    }
+                }
+            }
+
+            if (!hasData) {
+                reportDataBody.innerHTML = `
+                    <tr>
+                        <td colspan="10" class="no-data">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>No detailed data available. Please check your data input.</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Initialize the report when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            populateReportWithData();
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abuja Traffic Analysis Report</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 10pt;
+                color: #666;
+            }
+            @bottom-left {
+                content: "© {{ current_year }} | Powered by Opygoa! Technology Ltd | Developed by Oladotun Ajakaive";
+                font-size: 8pt;
+                color: #666;
+            }
+        }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #2E8B57;
+            padding-bottom: 10px;
+        }
+        .header h1 {
+            color: #2E8B57;
+            margin-bottom: 5px;
+        }
+        .header .subtitle {
+            color: #666;
+            font-size: 14pt;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .summary-item {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+        }
+        .summary-item h3 {
+            margin: 0;
+            font-size: 14pt;
+            color: #2E8B57;
+        }
+        .summary-item .value {
+            font-size: 18pt;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .summary-item .label {
+            font-size: 10pt;
+            color: #666;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 10pt;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #2E8B57;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .chart-container {
+            margin: 20px 0;
+            page-break-inside: avoid;
+            text-align: center;
+        }
+        .chart-container img {
+            max-width: 90%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        .chart-container h3 {
+            color: #2E8B57;
+            margin-bottom: 10px;
+        }
+        .section {
+            margin: 30px 0;
+            page-break-inside: avoid;
+        }
+        .section h2 {
+            color: #2E8B57;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .footer {
+            text-align: center;
+            font-size: 8pt;
+            color: #666;
+            margin-top: 30px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+        .methodology {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .conclusions {
+            background-color: #e9f7ef;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .conclusions h3 {
+            color: #2E8B57;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Abuja Traffic Congestion Analysis Report</h1>
+        <div class="subtitle">Comprehensive Analysis of Traffic Impact on Major Abuja Corridors</div>
+        <div>Generated on: {{ current_date }} at {{ current_time }}</div>
+        <div>Emission Model: {{ emission_model }}</div>
+    </div>
+
+    <div class="section">
+        <h2>Executive Summary</h2>
+        <p>This report provides a comprehensive analysis of traffic congestion impacts across major Abuja road corridors. The analysis quantifies economic and environmental consequences including fuel costs, productivity losses, and CO2 emissions.</p>
+
+        <div class="summary-grid">
+            <div class="summary-item">
+                <h3>TOTAL VEHICLES</h3>
+                <div class="value">{{ summary.total_vehicles|format_number }}</div>
+                <div class="label">across all corridors</div>
+            </div>
+            <div class="summary-item">
+                <h3>PEOPLE AFFECTED</h3>
+                <div class="value">{{ summary.total_people|format_number }}</div>
+                <div class="label">commutes impacted</div>
+            </div>
+            <div class="summary-item">
+                <h3>TOTAL DELAY</h3>
+                <div class="value">{{ summary.total_delay_hours|format_float }}</div>
+                <div class="label">hours lost</div>
+            </div>
+            <div class="summary-item">
+                <h3>EXCESS FUEL</h3>
+                <div class="value">{{ summary.total_excess_fuel_l|format_float }}L</div>
+                <div class="label">liters consumed</div>
+            </div>
+            <div class="summary-item">
+                <h3>FUEL COST</h3>
+                <div class="value">₦{{ summary.total_fuel_cost_naira|format_number }}</div>
+                <div class="label">economic impact</div>
+            </div>
+            <div class="summary-item">
+                <h3>CO2 EMISSIONS</h3>
+                <div class="value">{{ summary.total_co2_kg|format_float }}kg</div>
+                <div class="label">environmental impact</div>
+            </div>
+        </div>
+
+        <p><strong>Key insight:</strong> The analysis reveals significant congestion across all corridors, with total economic impact exceeding ₦{{ (summary.total_fuel_cost_naira + summary.total_productivity_loss_naira)|format_number }} during the observed period.</p>
+    </div>
+
+    <div class="section methodology">
+        <h2>Methodology</h2>
+        <p><strong>Analysis Framework:</strong> This assessment uses vehicle-specific parameters to calculate congestion impacts:</p>
+        <ul>
+            <li><strong>Fuel Prices:</strong> ₦850.0/L (petrol), ₦1000.0/L (diesel)</li>
+            <li><strong>Emission Factors:</strong> 2.31 kg CO2/L (petrol), 2.68 kg CO2/L (diesel)</li>
+            <li><strong>Productivity Value:</strong> ₦7.29/minute based on minimum wage calculations</li>
+            <li><strong>Corridor Length:</strong> 6.0 km average distance</li>
+            <li><strong>Time Parameters:</strong> Free flow: 4.0 min, Congested: 45.0 min</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Grand Totals Across All Roads</h2>
+        <table>
+            <tr>
+                <th>PERFORMANCE METRIC</th>
+                <th>VALUE</th>
+                <th>UNIT</th>
+            </tr>
+            <tr>
+                <td>Total Vehicles Observed</td>
+                <td>{{ summary.total_vehicles|format_number }}</td>
+                <td>vehicles</td>
+            </tr>
+            <tr>
+                <td>Total People Affected</td>
+                <td>{{ summary.total_people|format_number }}</td>
+                <td>people</td>
+            </tr>
+            <tr>
+                <td>Total Delay Time</td>
+                <td>{{ summary.total_delay_hours|format_float }}</td>
+                <td>hours</td>
+            </tr>
+            <tr>
+                <td>Total Excess Fuel Consumption</td>
+                <td>{{ summary.total_excess_fuel_l|format_float }}</td>
+                <td>liters</td>
+            </tr>
+            <tr>
+                <td>Total Fuel Cost</td>
+                <td>₦{{ summary.total_fuel_cost_naira|format_number }}</td>
+                <td>naira</td>
+            </tr>
+            <tr>
+                <td>Total CO2 Emissions</td>
+                <td>{{ summary.total_co2_kg|format_float }}</td>
+                <td>kg</td>
+            </tr>
+            <tr>
+                <td>Total Productivity Loss</td>
+                <td>₦{{ summary.total_productivity_loss_naira|format_number }}</td>
+                <td>naira</td>
+            </tr>
+            <tr>
+                <td><strong>Total Economic Impact</strong></td>
+                <td><strong>₦{{ (summary.total_fuel_cost_naira + summary.total_productivity_loss_naira)|format_number }}</strong></td>
+                <td><strong>naira</strong></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Per-Road Analysis</h2>
+        {% for road_name, road_data in road_results.items() %}
+        <h3>{{ road_name }}</h3>
+        <table>
+            <tr>
+                <th>Metric</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>Vehicles</td>
+                <td>{{ road_data.total_vehicles|format_number }}</td>
+            </tr>
+            <tr>
+                <td>People Affected</td>
+                <td>{{ road_data.total_people|format_number }}</td>
+            </tr>
+            <tr>
+                <td>Excess Fuel</td>
+                <td>{{ road_data.total_excess_fuel_l|format_float }}L</td>
+            </tr>
+            <tr>
+                <td>Fuel Cost</td>
+                <td>₦{{ road_data.total_fuel_cost_naira|format_number }}</td>
+            </tr>
+            <tr>
+                <td>CO2 Emissions</td>
+                <td>{{ road_data.total_co2_kg|format_float }} kg</td>
+            </tr>
+            <tr>
+                <td>Productivity Loss</td>
+                <td>₦{{ road_data.total_productivity_loss_naira|format_number }}</td>
+            </tr>
+            <tr>
+                <td><strong>Total Impact</strong></td>
+                <td><strong>₦{{ (road_data.total_fuel_cost_naira + road_data.total_productivity_loss_naira)|format_number }}</strong></td>
+            </tr>
+        </table>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <h2>Visual Analysis</h2>
+        {% for road_name, vehicles in vehicle_distributions.items() %}
+        <div class="chart-container">
+            <h3>{{ road_name }} Vehicle Distribution</h3>
+            <ul>
+                {% for vehicle in vehicles %}
+                <li>{{ vehicle.vehicle_type }}: {{ vehicle.count }} vehicles ({{ (vehicle.count / road_results[road_name].total_vehicles * 100)|round(1) }}%)</li>
+                {% endfor %}
+            </ul>
+            {% if chart_images[road_name.lower().replace(' ', '_') + '_vehicle_distribution'] %}
+            <img src="{{ chart_images[road_name.lower().replace(' ', '_') + '_vehicle_distribution'] }}" alt="{{ road_name }} Vehicle Distribution">
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% for chart_key, chart_path in chart_images.items() %}
+        {% if chart_key not in ['nyanya_road_vehicle_distribution', 'lugbe_road_vehicle_distribution', 'kubwa_road_vehicle_distribution'] %}
+        <div class="chart-container">
+            <h3>{{ chart_key|replace('_', ' ')|title }}</h3>
+            <img src="{{ chart_path }}" alt="{{ chart_key|replace('_', ' ')|title }}">
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <div class="section conclusions">
+        <h2>Conclusions & Recommendations</h2>
+        <h3>Key Findings</h3>
+        <ul>
+            <li>Nyanya Road shows the highest congestion impact, accounting for approximately {{ (road_results['Nyanya Road'].total_vehicles / summary.total_vehicles * 100)|round(1) }}% of total vehicles</li>
+            <li>Evening rush hour congestion affects nearly {{ summary.total_people|format_number }} commuters across the three corridors</li>
+            <li>Total economic impact exceeds ₦{{ (summary.total_fuel_cost_naira + summary.total_productivity_loss_naira)|format_number }} during the observed period</li>
+            <li>Environmental impact includes {{ summary.total_co2_kg|format_float }} kg of excess CO2 emissions</li>
+            <li>Average delay per vehicle is {{ (summary.total_delay_hours * 60 / summary.total_vehicles)|round(1) }} minutes across all corridors</li>
+            <li>Analysis performed using {{ emission_model }} emission model for enhanced accuracy</li>
+        </ul>
+
+        <h3>Strategic Recommendations</h3>
+        <ul>
+            <li><strong>Immediate Interventions:</strong> Implement targeted traffic management systems on Nyanya Road, which shows the highest congestion metrics</li>
+            <li><strong>Public Transportation:</strong> Enhance alternative transportation options to reduce private vehicle numbers during peak hours</li>
+            <li><strong>Infrastructure Investment:</strong> Prioritize road improvements based on specific vehicle type distributions observed</li>
+            <li><strong>Policy Measures:</strong> Consider congestion pricing or staggered work hours to distribute traffic more evenly</li>
+            <li><strong>Data Collection:</strong> Expand monitoring to understand daily and weekly patterns beyond current snapshot data</li>
+            <li><strong>Environmental Mitigation:</strong> Implement measures to offset {{ summary.total_co2_kg|format_float }} kg of CO2 emissions generated</li>
+            <li><strong>Model Selection:</strong> Continue using {{ emission_model }} model for future analyses to maintain consistency in emission calculations</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        © {{ current_year }} | Powered by Opygoa! Technology Ltd | Developed by Oladotun Ajakaive | Service Manager & Data Analyst
+    </div>
+</body>
+</html>
