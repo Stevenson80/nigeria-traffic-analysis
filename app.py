@@ -39,7 +39,6 @@ EMISSION_FACTOR_PETROL = 2.31
 EMISSION_FACTOR_DIESEL = 2.68
 CORRIDOR_LENGTH = 6.0
 
-
 # Utility function to convert numpy types to native Python types for JSON serialization
 def convert_numpy_types(obj):
     """Convert numpy data types to native Python types for JSON serialization."""
@@ -59,7 +58,6 @@ def convert_numpy_types(obj):
         return None
     return obj
 
-
 # Custom filters for formatting
 @app.template_filter('format_number')
 def format_number(value):
@@ -72,7 +70,6 @@ def format_number(value):
         logger.warning(f"Invalid value for number formatting: {value}")
         return "0"
 
-
 @app.template_filter('format_float')
 def format_float(value):
     """Format float values to one decimal place."""
@@ -84,7 +81,6 @@ def format_float(value):
         logger.warning(f"Invalid value for float formatting: {value}")
         return "0.0"
 
-
 @app.template_filter('format_currency')
 def format_currency(value):
     """Format currency values with Naira symbol."""
@@ -95,7 +91,6 @@ def format_currency(value):
     except (ValueError, TypeError):
         logger.warning(f"Invalid value for currency formatting: {value}")
         return "₦0.00"
-
 
 def get_analysis_results(emission_model=EmissionModelType.BASIC):
     """Perform traffic analysis and generate results."""
@@ -150,26 +145,15 @@ def get_analysis_results(emission_model=EmissionModelType.BASIC):
 
     return results, report_data, vehicle_distributions, chart_images, emission_model.value, model
 
-
 # Routes
 @app.route('/')
 def welcome():
     """Render the welcome page."""
-    if not Path('templates/welcome.html').exists():
-        logger.error("welcome.html template not found")
-        flash("Welcome page template not found", "error")
-        return redirect(url_for('data_entry'))
     return render_template('welcome.html', current_year=datetime.now().year)
-
 
 @app.route('/data_entry', methods=['GET', 'POST'])
 def data_entry():
     """Handle data entry form and save traffic data."""
-    if not Path('templates/data_entry.html').exists():
-        logger.error("data_entry.html template not found")
-        flash("Data entry template not found", "error")
-        return redirect(url_for('welcome'))
-
     roads = ["Nyanya Road", "Lugbe Road", "Kubwa Road"]
     vehicle_types = ['Motorcycles', 'Cars', 'SUVs', 'Sedans', 'Wagons',
                      'Short Buses', 'Minibusses', 'Long Buses', 'Truck', 'Tanker and Trailer']
@@ -375,7 +359,6 @@ def data_entry():
                            emission_models=emission_models,
                            current_year=datetime.now().year)
 
-
 @app.route('/analysis')
 def analysis():
     """Render the analysis page with traffic data and charts."""
@@ -451,7 +434,6 @@ def analysis():
         flash(f"Error loading analysis: {str(e)}", "error")
         return redirect(url_for('data_entry'))
 
-
 @app.route('/temp_charts/<filename>')
 def serve_temp_chart(filename):
     """Serve temporary chart images for web display."""
@@ -461,7 +443,6 @@ def serve_temp_chart(filename):
         logger.error(f"Chart file not found: {file_path}")
         return "File not found", 404
     return send_file(file_path, mimetype='image/png')
-
 
 @app.route('/analysis_data')
 def analysis_data():
@@ -483,7 +464,6 @@ def analysis_data():
     except Exception as e:
         logger.error(f"Error in analysis_data route: {str(e)}", exc_info=True)
         return jsonify({'error': str(e)}), 500
-
 
 @app.route('/dashboard')
 def dashboard():
@@ -513,7 +493,6 @@ def dashboard():
         flash(f"Error loading dashboard: {str(e)}", "error")
         return redirect(url_for('data_entry'))
 
-
 @app.route('/download_report')
 def download_report():
     """Download the CSV report."""
@@ -525,7 +504,6 @@ def download_report():
         logger.error(f"Error in download_report route: {str(e)}", exc_info=True)
         flash(f"Error downloading CSV report: {str(e)}", "error")
         return redirect(url_for('analysis'))
-
 
 @app.route('/download_pdf')
 def download_pdf():
@@ -579,7 +557,6 @@ def download_pdf():
                 "Calculate fuel consumption and CO₂ emissions",
                 "Generate comprehensive reports and visualizations"
             ],
-            # Add methodology and recommendations to match pdf_report.html
             'methodology': {
                 'description': "This assessment uses vehicle-specific parameters to calculate congestion impacts:",
                 'parameters': [
@@ -658,7 +635,6 @@ def download_pdf():
         flash(f"Failed to generate PDF: {str(e)}", "error")
         return redirect(url_for('analysis'))
 
-
 @app.route('/download_traffic_data')
 def download_traffic_data():
     """Download the backup traffic data CSV."""
@@ -670,7 +646,6 @@ def download_traffic_data():
         logger.error(f"Error downloading traffic_data_backup.csv: {str(e)}", exc_info=True)
         flash(f"Error downloading backup data: {str(e)}", "error")
         return redirect(url_for('analysis'))
-
 
 if __name__ == "__main__":
     print("Starting Abuja Traffic Analysis System...")
