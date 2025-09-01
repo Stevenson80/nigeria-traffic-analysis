@@ -3,9 +3,8 @@ services:
     name: abuja-traffic-analysis
     env: python
     plan: free
-    repo: https://github.com/Stevenson80/Abuja_Traffic_Management_Analysis
-    buildCommand: |
-      apt-get update && apt-get install -y wkhtmltopdf
-      pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
-    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
