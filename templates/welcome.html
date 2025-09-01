@@ -156,52 +156,6 @@
             color: #444;
         }
 
-        .features {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            gap: 30px;
-            margin: 40px 0;
-        }
-
-        .feature {
-            flex: 1;
-            min-width: 280px;
-            background: var(--light-color);
-            padding: 30px 25px;
-            border-radius: var(--border-radius);
-            text-align: center;
-            transition: var(--transition);
-            border-left: 4px solid var(--secondary-color);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
-        }
-
-        .feature:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-        }
-
-        .feature h3 {
-            color: var(--primary-color);
-            margin: 20px 0 15px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.4em;
-        }
-
-        .feature p {
-            color: #555;
-            font-size: 1.05em;
-        }
-
-        .feature i {
-            font-size: 3em;
-            color: var(--secondary-color);
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
         .stats {
             display: flex;
             justify-content: space-around;
@@ -238,6 +192,129 @@
             font-size: 1.2em;
             opacity: 0.95;
             font-weight: 400;
+        }
+
+        .vehicle-types-section {
+            margin: 40px 0;
+            background: var(--light-color);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .vehicle-types-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.8em;
+        }
+
+        .vehicle-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1.05em;
+        }
+
+        .vehicle-table th, .vehicle-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .vehicle-table th {
+            background: var(--light-color);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .vehicle奢
+            color: var(--dark-color);
+        }
+
+        .vehicle-table td {
+            color: #444;
+        }
+
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .feature {
+            flex: 1;
+            min-width: 280px;
+            background: var(--light-color);
+            padding: 30px 25px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            transition: var(--transition);
+            border-left: 4px solid var(--secondary-color);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+
+        .feature:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+        }
+
+        .feature h3 {
+            color: var(--primary-color);
+            margin: 20px 0 15px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.4em;
+        }
+
+        .feature pទ
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature p {
+            color: #555;
+            font-size: 1.05em;
+        }
+
+        .feature i {
+            font-size: 3em;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .methodology-highlights {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            margin: 40px 0;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .methodology-highlights h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .methodology-highlights ul {
+            columns: 2;
+            column-gap: 30px;
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .methodology-highlights li {
+            margin-bottom: 12px;
+            break-inside: avoid;
+            color: #555;
         }
 
         ol {
@@ -313,33 +390,6 @@
             font-family: 'Poppins', sans-serif;
         }
 
-        .methodology-highlights {
-            background: #f8f9fa;
-            padding: 30px;
-            border-radius: var(--border-radius);
-            margin: 40px 0;
-            border-left: 4px solid var(--accent-color);
-        }
-
-        .methodology-highlights h3 {
-            color: var(--primary-color);
-            margin-bottom: 20px;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .methodology-highlights ul {
-            columns: 2;
-            column-gap: 30px;
-            margin: 0;
-            padding-left: 20px;
-        }
-
-        .methodology-highlights li {
-            margin-bottom: 12px;
-            break-inside: avoid;
-            color: #555;
-        }
-
         @media (max-width: 768px) {
             header h1 {
                 font-size: 2.4em;
@@ -382,6 +432,10 @@
 
             .methodology-highlights ul {
                 columns: 1;
+            }
+
+            .vehicle-table th, .vehicle-table td {
+                padding: 8px;
             }
         }
 
@@ -486,112 +540,122 @@
 
         <div class="welcome-content">
             <h2>Welcome to the Abuja Traffic Analysis System</h2>
-            <p>This advanced system provides comprehensive analysis of traffic congestion on major Abuja roads, helping transportation planners, policymakers, and urban developers make data-driven decisions to improve traffic flow, reduce congestion, and minimize environmental impact.</p>
-
+            <p>This advanced system provides comprehensive analysis of traffic congestion on major Abuja roads, helping transportation planners, policymakers, and urban developers make data-driven decisions to improve traffic flow, reduce congestion,宝贝
             <div class="stats">
                 <div class="stat-item">
                     <h3>3</h3>
                     <p>Major Roads Analyzed</p>
                 </div>
                 <div class="stat-item">
-                    <h3>10</h3>
+                    <h3>5</h3>
                     <p>Vehicle Types Tracked</p>
                 </div>
                 <div class="stat-item">
                     <h3>8</h3>
-                    <p>Key Performance Metrics</p>
-                </div>
-                <div class="stat-item">
-                    <h3>3</h3>
-                    <p>Emission Models</p>
-                </div>
+                    <dnl environmental impact.</p>
+        </div>
+
+        <div class="vehicle-types-section">
+            <h3>Tracked Vehicle Types</h3>
+ HDR     <table class="vehicle-table">
+                <thead>
+                    <tr>
+                        <th>Vehicle Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, name in VEHICLE_CLASSES.items() %}
+                    <tr>
+                        <td>{{ name }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h2>System Features</h2>
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-pen-to-square"></i>
+                <h3>Intuitive Data Entry</h3>
+                <p>Easily input traffic data for different vehicle types across Abuja's major roads with our user-friendly form interface.</p>
             </div>
-
-            <h2>System Features</h2>
-            <div class="features">
-                <div class="feature">
-                    <i class="fas fa-pen-to-square"></i>
-                    <h3>Intuitive Data Entry</h3>
-                    <p>Easily input traffic data for different vehicle types across Abuja's major roads with our user-friendly form interface.</p>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-chart-line"></i>
-                    <h3>Comprehensive Analysis</h3>
-                    <p>Get detailed analysis of traffic congestion, including fuel costs, CO2 emissions, productivity losses, and economic impact using advanced models.</p>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-download"></i>
-                    <h3>Professional Reporting</h3>
-                    <p>Download detailed reports in CSV and PDF formats for further analysis, presentations, and official documentation.</p>
-                </div>
+            <div class="feature">
+                <i class="fas fa-chart-line"></i>
+                <h3>Comprehensive Analysis</h3>
+                <p>Get detailed analysis of traffic congestion, including fuel costs, CO2 emissions, productivity losses, and economic impact using advanced models.</p>
             </div>
-
-            <div class="methodology-highlights">
-                <h3>Advanced Analysis Methodology</h3>
-                <ul>
-                    <li><strong>Multiple Emission Models:</strong> Basic, Barth, and MOVES models for accurate calculations</li>
-                    <li><strong>Real-time Data Processing:</strong> Instant analysis with up-to-date fuel prices and parameters</li>
-                    <li><strong>Vehicle-specific Parameters:</strong> Different fuel consumption rates for each vehicle type</li>
-                    <li><strong>Economic Impact Assessment:</strong> Comprehensive cost analysis including fuel and productivity</li>
-                    <li><strong>Environmental Impact:</strong> CO2 emissions calculation with industry-standard factors</li>
-                    <li><strong>Customizable Parameters:</strong> Adjustable values for different scenarios and time periods</li>
-                </ul>
-            </div>
-
-            <h2>How It Works</h2>
-            <ol>
-                <li><strong>Data Collection:</strong> Navigate to the Data Entry page to input traffic data for different vehicle types across major Abuja corridors</li>
-                <li><strong>Analysis:</strong> View comprehensive analysis on the Analysis page with interactive visual charts and detailed metrics</li>
-                <li><strong>Reporting:</strong> Download professional reports in CSV or PDF format for your records, presentations, and decision-making</li>
-                <li><strong>Decision Support:</strong> Use the data-driven insights to make informed transportation and urban planning decisions</li>
-            </ol>
-
-            <div style="text-align: center;">
-                <a href="{{ url_for('data_entry') }}" class="cta-button">
-                    <i class="fas fa-rocket"></i> Get Started - Enter Data Now
-                </a>
-                <p style="margin-top: 15px; color: #666; font-size: 1.1em;">Start analyzing Abuja traffic patterns in minutes with our intuitive system</p>
+            <div class="feature">
+                <i class="fas fa-download"></i>
+                <h3>Professional Reporting</h3>
+                <p>Download detailed reports in CSV and PDF formats for further analysis, presentations, and official documentation.</p>
             </div>
         </div>
 
-        <footer>
-            <div class="logo">Opygoal Technology Ltd</div>
-            <p>© 2025 | Powered by Opygoal Technology Ltd | Developed by Oladotun Ajakaiye</p>
-            <p>Service Manager & Data Analyst | Abuja Traffic Analysis System v2.0</p>
-        </footer>
+        <div class="methodology-highlights">
+            <h3>Advanced Analysis Methodology</h3>
+            <ul>
+                <li><strong>Multiple Emission Models:</strong> Basic, Barth, and MOVES models for accurate calculations</li>
+                <li><strong>Real-time Data Processing:</strong> Instant analysis with up-to-date fuel prices and parameters</li>
+                <li><strong>Vehicle-specific Parameters:</strong> Different fuel consumption rates for each vehicle type</li>
+                <li><strong>Economic Impact Assessment:</strong> Comprehensive cost analysis including fuel and productivity</li>
+                <li><strong>Environmental Impact:</strong> CO2 emissions calculation with industry-standard factors</li>
+                <li><strong>Customizable Parameters:</strong> Adjustable values for different scenarios and time periods</li>
+            </ul>
+        </div>
+
+        <h2>How It Works</h2>
+        <ol>
+            <li><strong>Data Collection:</strong> Navigate to the Data Entry page to input traffic data for different vehicle types across major Abuja corridors</li>
+            <li><strong>Analysis:</strong> View comprehensive analysis on the Analysis page with interactive visual charts and detailed metrics</li>
+            <li><strong>Reporting:</strong> Download professional reports in CSV or PDF format for your records, presentations, and decision-making</li>
+            <li><strong>Decision Support:</strong> Use the data-driven insights to make informed transportation and urban planning decisions</li>
+        </ol>
+
+        <div style="text-align: center;">
+            <a href="{{ url_for('data_entry') }}" class="cta-button">
+                <i class="fas fa-rocket"></i> Get Started - Enter Data Now
+            </a>
+            <p style="margin-top: 15px; color: #666; font-size: 1.1em;">Start analyzing Abuja traffic patterns in minutes with our intuitive system</p>
+        </div>
     </div>
 
-    <script>
-        // Enhanced animation for stats
-        document.addEventListener('DOMContentLoaded', function() {
-            const statItems = document.querySelectorAll('.stat-item');
-            const options = {
-                threshold: 0.5,
-                rootMargin: '0px 0px -50px 0px'
-            };
+    <footer>
+        <div class="logo">Opygoal Technology Ltd</div>
+        <p>© 2025 | Powered by Opygoal Technology Ltd | Developed by Oladotun Ajakaiye</p>
+        <p>Service Manager & Data Analyst | Abuja Traffic Analysis System v2.0</p>
+    </footer>
+</div>
 
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const valueElement = entry.target.querySelector('h3');
-                        if (valueElement && !entry.target.classList.contains('animated')) {
-                            entry.target.classList.add('animated');
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const statItems = document.querySelectorAll('.stat-item');
+        const options = {
+            threshold: 0.5,
+            rootMargin: '0px 0px -50px 0px'
+        };
 
-                            const target = parseInt(valueElement.textContent);
-                            let current = 0;
-                            const increment = Math.ceil(target / 30);
-                            const duration = 1500;
-                            const steps = duration / 30;
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const valueElement = entry.target.querySelector('h3');
+                    if (valueElement && !entry.target.classList.contains('animated')) {
+                        entry.target.classList.add('animated');
 
-                            const timer = setInterval(() => {
-                                current += increment;
-                                if (current >= target) {
-                                    current = target;
-                                    clearInterval(timer);
-                                }
-                                valueElement.textContent = current;
-                            }, steps);
-                        }
+                        const target = parseInt(valueElement.textContent);
+                        let current = 0;
+                        const increment = Math.ceil(target / 30);
+                        const duration = 1500;
+                        const steps = duration / 30;
+
+                        const timer = setInterval(() => {
+                            current += increment;
+                            if (current >= target) {
+                                current = target;
+                                clearInterval(timer);
+                            }
+                            valueElement.textContent = current;
+                        }, steps);
                     }
                 });
             }, options);
@@ -600,7 +664,6 @@
                 observer.observe(item);
             });
 
-            // Add hover effect to features
             const features = document.querySelectorAll('.feature');
             features.forEach(feature => {
                 feature.addEventListener('mouseenter', () => {

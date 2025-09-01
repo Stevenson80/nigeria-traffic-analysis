@@ -2,7 +2,7 @@
 """
 Standalone script to run Abuja traffic analysis without the web interface.
 Generates comprehensive reports (CSV and PDF) using the updated TrafficAnalysisModel,
-including a homepage and detailed analysis report.
+supporting five vehicle classes: Motorcycles, Cars, Buses, Light Trucks, Heavy Trucks.
 """
 
 import pandas as pd
@@ -28,7 +28,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 def format_number(value):
     """Format numbers with commas for readability."""
     try:
@@ -36,7 +35,6 @@ def format_number(value):
     except (ValueError, TypeError):
         logger.warning(f"Invalid value for number formatting: {value}")
         return "0"
-
 
 def format_currency(value):
     """Format currency values with Naira symbol."""
@@ -46,7 +44,6 @@ def format_currency(value):
         logger.warning(f"Invalid value for currency formatting: {value}")
         return "₦0"
 
-
 def format_float(value, decimals=1):
     """Format float values with specified decimal places."""
     try:
@@ -54,7 +51,6 @@ def format_float(value, decimals=1):
     except (ValueError, TypeError):
         logger.warning(f"Invalid value for float formatting: {value}")
         return f"0.{'0' * decimals}"
-
 
 def generate_pdf_report(model, output_path=None):
     """
@@ -89,7 +85,6 @@ def generate_pdf_report(model, output_path=None):
         logger.error(f"Error generating PDF report: {str(e)}", exc_info=True)
         return None
 
-
 def validate_csv_file(csv_file):
     """
     Validate the CSV file and provide helpful error messages.
@@ -101,38 +96,38 @@ def validate_csv_file(csv_file):
         bool: True if file is valid, False otherwise
     """
     if not csv_file:
-        logger.info("No CSV file provided, using hardcoded data")
+        logger.info("No CSV file provided, expecting command-line arguments or hardcoded data")
         return False
 
     csv_path = Path(csv_file)
     if not csv_path.exists():
-        logger.warning(f"CSV file {csv_file} not found. Using hardcoded data.")
+        logger.warning(f"CSV file {csv_file} not found. Expecting command-line arguments or hardcoded data.")
         return False
 
     if csv_path.stat().st_size == 0:
-        logger.warning(f"CSV file {csv_file} is empty. Using hardcoded data.")
+        logger.warning(f"CSV file {csv_file} is empty. Expecting command-line arguments or hardcoded data.")
         return False
 
     try:
         # Try to read the CSV to check if it's valid
         test_df = pd.read_csv(csv_file)
         if test_df.empty:
-            logger.warning(f"CSV file {csv_file} contains no data. Using hardcoded data.")
+            logger.warning(f"CSV file {csv_file} contains no data. Expecting command-line arguments or hardcoded data.")
             return False
 
-        required_columns = ['Road', 'Vehicle Type', 'Real_Vehicle_Count']
+        required_columns = ['Road', 'Motorcycle_Count', 'Car_Count', 'Bus_Count', 'Light_Truck_Count', 'Heavy_Truck_Count']
         missing_columns = [col for col in required_columns if col not in test_df.columns]
         if missing_columns:
-            logger.warning(f"CSV file missing required columns: {missing_columns}. Using hardcoded data.")
+            logger.warning(f"CSV file missing required columns: {missing_columns}. Expecting command-line arguments or hardcoded data.")
             return False
 
         return True
     except Exception as e:
-        logger.warning(f"Error reading CSV file {csv_file}: {str(e)}. Using hardcoded data.")
+        logger.warning(f"Error reading CSV file {csv_file}: {str(e)}. Expecting command-line arguments or hardcoded data.")
         return False
 
-
-def run_analysis(csv_file=None, generate_pdf=True, emission_model="basic"):
+def run_analysis(csv_file=None, generate_pdf=True, emission_model="basic",
+                motorcycles=0, cars=0, buses=0, light_trucks=0, heavy_trucks=0):
     """
     Run traffic analysis and generate CSV and PDF reports.
 
@@ -140,6 +135,11 @@ def run_analysis(csv_file=None, generate_pdf=True, emission_model="basic"):
         csv_file (str): Path to the CSV file with traffic data.
         generate_pdf (bool): Whether to generate a PDF report.
         emission_model (str): Emission model to use ('basic', 'barth', or 'moves').
+        motorcycles (int): Number of motorcycles (used if no CSV).
+        cars (int): Number of cars (used if no CSV).
+        buses (int): Number of buses (used if no CSV).
+        light_trucks (int): Number of light trucks (used if no CSV).
+        heavy_trucks (int): Number of heavy trucks (used if no CSV).
 
     Returns:
         dict: Analysis results including summary, road results, report DataFrame, and file paths.
@@ -147,8 +147,25 @@ def run_analysis(csv_file=None, generate_pdf=True, emission_model="basic"):
     try:
         # Validate CSV file
         use_csv = validate_csv_file(csv_file)
+
+        # Validate command-line vehicle volumes if no CSV is used
+        vehicle_volumes = {
+            'Motorcycles': motorcycles,
+            'Cars': cars,
+            'Buses': buses,
+            'Light Trucks': light_trucks,
+            'Heavy Trucks': heavy_trucks
+        }
         if not use_csv:
-            csv_file = None  # Let model handle fallback to hardcoded data
+            for vehicle_type, volume in vehicle_volumes.items():
+                try:
+                    volume = int(volume)
+                    if volume < 0:
+                        logger.error(f"Invalid {vehicle_type} volume: {volume}. Must be non-negative.")
+                        raise ValueError(f"Invalid {vehicle_type} volume: {volume}. Must be non-negative.")
+                except (ValueError, TypeError):
+                    logger.error(f"Invalid {vehicle_type} volume: {volume}. Must be a non-negative integer.")
+                    raise ValueError(f"Invalid {vehicle_type} volume: {volume}. Must be a non-negative integer.")
 
         # Map emission model string to EmissionModelType
         emission_model_map = {
@@ -162,10 +179,18 @@ def run_analysis(csv_file=None, generate_pdf=True, emission_model="basic"):
 
         # Initialize model
         logger.info(f"Initializing TrafficAnalysisModel with emission model: {emission_model}")
-        model = TrafficAnalysisModel(
-            csv_file_path=csv_file if use_csv else None,
-            emission_model=emission_model_map[emission_model]
-        )
+        if use_csv:
+            model = TrafficAnalysisModel(
+                csv_file_path=csv_file,
+                emission_model=emission_model_map[emission_model]
+            )
+        else:
+            # Pass vehicle volumes as a dictionary to the model
+            model = TrafficAnalysisModel(
+                csv_file_path=None,
+                emission_model=emission_model_map[emission_model],
+                vehicle_volumes=vehicle_volumes
+            )
 
         # Check if we have data
         if model.data.empty:
@@ -173,7 +198,7 @@ def run_analysis(csv_file=None, generate_pdf=True, emission_model="basic"):
             raise ValueError("No traffic data available for analysis")
 
         # Run analysis
-        logger.info("Starting traffic analysis...")
+        logger.info("Starting traffic analysis...")  # Fixed: Changed _logger to logger
         results = model.analyze_all_roads()
         if not results or not results['road_results']:
             logger.error("Analysis returned no results.")
@@ -209,9 +234,14 @@ def run_analysis(csv_file=None, generate_pdf=True, emission_model="basic"):
         print("           ABUJA TRAFFIC ANALYSIS SUMMARY")
         print("=" * 60)
         print(f"Analysis Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"Data Source: {csv_file if csv_file and use_csv else 'Hardcoded Data'}")
+        print(f"Data Source: {csv_file if use_csv else 'Command-line or Hardcoded Data'}")
         print(f"Emission Model: {model.emission_model.value.upper()}")
         print(f"Total Vehicles: {format_number(summary.get('total_vehicles_all_roads', 0))}")
+        print(f"  Motorcycles: {format_number(summary.get('total_motorcycles', 0))}")
+        print(f"  Cars: {format_number(summary.get('total_cars', 0))}")
+        print(f"  Buses: {format_number(summary.get('total_buses', 0))}")
+        print(f"  Light Trucks: {format_number(summary.get('total_light_trucks', 0))}")
+        print(f"  Heavy Trucks: {format_number(summary.get('total_heavy_trucks', 0))}")
         print(f"Total People Affected: {format_number(summary.get('total_people_all_roads', 0))}")
         print(f"Total Delay: {format_float(summary.get('total_delay_hours_all_roads', 0.0), 1)} hours")
         print(f"Total Excess Fuel: {format_float(summary.get('total_excess_fuel_all_roads', 0.0), 1)} liters")
@@ -231,6 +261,11 @@ def run_analysis(csv_file=None, generate_pdf=True, emission_model="basic"):
             for road_name, road_data in road_results.items():
                 print(f"\n{road_name.upper()}:")
                 print(f"  Vehicles: {format_number(road_data.get('total_vehicles', 0))}")
+                print(f"    Motorcycles: {format_number(road_data.get('total_motorcycles', 0))}")
+                print(f"    Cars: {format_number(road_data.get('total_cars', 0))}")
+                print(f"    Buses: {format_number(road_data.get('total_buses', 0))}")
+                print(f"    Light Trucks: {format_number(road_data.get('total_light_trucks', 0))}")
+                print(f"    Heavy Trucks: {format_number(road_data.get('total_heavy_trucks', 0))}")
                 print(f"  People: {format_number(road_data.get('total_people', 0))}")
                 print(f"  Excess Fuel: {format_float(road_data.get('total_excess_fuel_l', 0.0), 1)} L")
                 print(f"  Fuel Cost: {format_currency(road_data.get('total_fuel_cost_naira', 0.0))}")
@@ -261,21 +296,30 @@ def run_analysis(csv_file=None, generate_pdf=True, emission_model="basic"):
         print(f"ERROR: {str(e)}")
         raise
 
-
 def main():
     """Main function to handle command line execution."""
     import argparse
 
     # Set up command line argument parsing
-    parser = argparse.ArgumentParser(description='Run Abuja Traffic Analysis')
+    parser = argparse.ArgumentParser(description='Run Abuja Traffic Analysis with updated vehicle classes')
     parser.add_argument('--csv-file', default=None,
-                        help='Path to the CSV file with traffic data')
+                        help='Path to the CSV file with traffic data (Road, Motorcycle_Count, Car_Count, Bus_Count, Light_Truck_Count, Heavy_Truck_Count)')
     parser.add_argument('--no-pdf', action='store_true',
                         help='Skip PDF generation (only generate CSV report)')
     parser.add_argument('--emission-model', choices=['basic', 'barth', 'moves'], default='basic',
                         help='Emission model to use for calculations')
     parser.add_argument('--list-models', action='store_true',
                         help='List available emission models and exit')
+    parser.add_argument('--motorcycles', type=int, default=0,
+                        help='Number of motorcycles (used if no CSV file)')
+    parser.add_argument('--cars', type=int, default=0,
+                        help='Number of cars (used if no CSV file)')
+    parser.add_argument('--buses', type=int, default=0,
+                        help='Number of buses (used if no CSV file)')
+    parser.add_argument('--light-trucks', type=int, default=0,
+                        help='Number of light trucks (used if no CSV file)')
+    parser.add_argument('--heavy-trucks', type=int, default=0,
+                        help='Number of heavy trucks (used if no CSV file)')
 
     args = parser.parse_args()
 
@@ -294,7 +338,12 @@ def main():
         results = run_analysis(
             csv_file=args.csv_file,
             generate_pdf=not args.no_pdf,
-            emission_model=args.emission_model
+            emission_model=args.emission_model,
+            motorcycles=args.motorcycles,
+            cars=args.cars,
+            buses=args.buses,
+            light_trucks=args.light_trucks,
+            heavy_trucks=args.heavy_trucks
         )
 
         # Return success exit code
@@ -303,7 +352,6 @@ def main():
     except Exception as e:
         print(f"Analysis failed: {str(e)}")
         return 1
-
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -139,7 +139,7 @@
             line-height: 1;
         }
 
-        .features-section {
+        .vehicle-types-section {
             margin: 40px 0;
         }
 
@@ -150,6 +150,32 @@
             padding-bottom: 10px;
             border-bottom: 2px solid #fdbb2d;
             font-weight: 600;
+        }
+
+        .vehicle-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+
+        .vehicle-table th, .vehicle-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .vehicle-table th {
+            background: #f8f9fa;
+            color: #1a2a6c;
+            font-weight: 600;
+        }
+
+        .vehicle-table td {
+            color: #2c3e50;
+        }
+
+        .features-section {
+            margin: 40px 0;
         }
 
         .feature-list {
@@ -283,6 +309,10 @@
             .methodology-list {
                 columns: 1;
             }
+
+            .vehicle-table th, .vehicle-table td {
+                padding: 8px;
+            }
         }
 
         .watermark {
@@ -349,7 +379,7 @@
                 </div>
                 <div class="stat-box">
                     <h3>Vehicle Types</h3>
-                    <div class="value">10</div>
+                    <div class="value">5</div>
                 </div>
                 <div class="stat-box">
                     <h3>Performance Metrics</h3>
@@ -359,6 +389,24 @@
                     <h3>Emission Models</h3>
                     <div class="value">3</div>
                 </div>
+            </div>
+
+            <div class="vehicle-types-section">
+                <h3 class="section-title">Analyzed Vehicle Types</h3>
+                <table class="vehicle-table">
+                    <thead>
+                        <tr>
+                            <th>Vehicle Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for key, name in VEHICLE_CLASSES.items() %}
+                        <tr>
+                            <td>{{ name }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
 
             <div class="features-section">

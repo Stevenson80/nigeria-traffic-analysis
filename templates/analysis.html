@@ -172,7 +172,7 @@
             padding: 25px 20px;
             border-radius: var(--border-radius);
             text-align: center;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+            box-shadow: 0 3px 6px rgba(0,0,0,08);
             border-left: 4px solid var(--primary-color);
             transition: var(--transition);
             position: relative;
@@ -963,6 +963,90 @@
         const vehicleDistributionsData = JSON.parse(document.getElementById('vehicleDistributionsData').textContent || '{}');
         const emissionModel = JSON.parse(document.getElementById('emissionModelData').textContent || '"basic"');
 
+        // Define vehicle classes for consistency
+        const VEHICLE_CLASSES = {
+            'car': 'Cars',
+            'bus': 'Buses',
+            'truck': 'Trucks',
+            'motorcycle': 'Motorcycles',
+            'suv': 'SUVs'
+        };
+
+        // Mapping old vehicle types to new ones (adjust based on actual old vehicle types)
+        const VEHICLE_TYPE_MAPPING = {
+            'saloon_car': 'car',
+            'taxi': 'car',
+            'mini_bus': 'bus',
+            'large_bus': 'bus',
+            'light_truck': 'truck',
+            'heavy_truck': 'truck',
+            'motorcycle': 'motorcycle',
+            'suv': 'suv'
+        };
+
+        // Preprocess roadResultsData to map old vehicle types to new ones
+        function preprocessVehicleData(data) {
+            const processedData = {};
+            for (const [roadName, roadData] of Object.entries(data)) {
+                if (roadData.vehicle_types) {
+                    const newVehicleTypes = {};
+                    for (const [oldType, vehicleData] of Object.entries(roadData.vehicle_types)) {
+                        const newType = VEHICLE_TYPE_MAPPING[oldType] || 'car'; // Default to 'car' if unknown
+                        if (!newVehicleTypes[newType]) {
+                            newVehicleTypes[newType] = {
+                                count: 0,
+                                people: 0,
+                                delay_min: 0,
+                                excess_fuel_l: 0,
+                                fuel_cost_naira: 0,
+                                co2_kg: 0,
+                                productivity_loss_naira: 0
+                            };
+                        }
+                        newVehicleTypes[newType].count += vehicleData.count || 0;
+                        newVehicleTypes[newType].people += vehicleData.people || 0;
+                        newVehicleTypes[newType].delay_min += vehicleData.delay_min || 0;
+                        newVehicleTypes[newType].excess_fuel_l += vehicleData.excess_fuel_l || 0;
+                        newVehicleTypes[newType].fuel_cost_naira += vehicleData.fuel_cost_naira || 0;
+                        newVehicleTypes[newType].co2_kg += vehicleData.co2_kg || 0;
+                        newVehicleTypes[newType].productivity_loss_naira += vehicleData.productivity_loss_naira || 0;
+                    }
+                    processedData[roadName] = { ...roadData, vehicle_types: newVehicleTypes };
+                } else {
+                    processedData[roadName] = roadData;
+                }
+            }
+            return processedData;
+        }
+
+        // Preprocess vehicleDistributionsData to map old vehicle types to new ones
+        function preprocessVehicleDistributions(data) {
+            const processedData = {};
+            for (const [roadName, vehicles] of Object.entries(data)) {
+                const newVehicles = [];
+                const vehicleCounts = {};
+                Object.keys(VEHICLE_CLASSES).forEach(vt => vehicleCounts[vt] = 0);
+
+                vehicles.forEach(v => {
+                    const newType = VEHICLE_TYPE_MAPPING[v.vehicle_type] || 'car';
+                    vehicleCounts[newType] += v.count || 0;
+                });
+
+                Object.entries(vehicleCounts).forEach(([vehicleType, count]) => {
+                    if (count > 0) {
+                        newVehicles.push({ vehicle_type: VEHICLE_CLASSES[vehicleType], count });
+                    }
+                });
+
+                processedData[roadName] = newVehicles;
+            }
+            return processedData;
+        }
+
+        // Apply preprocessing
+        const processedRoadResultsData = preprocessVehicleData(roadResultsData);
+        const processedVehicleDistributionsData = preprocessVehicleDistributions(vehicleDistributionsData);
+
         // Set current date and year
         document.getElementById('currentYear').textContent = new Date().getFullYear();
         document.getElementById('analysisDate').textContent = new Date().toLocaleDateString('en-US', {
@@ -1030,7 +1114,7 @@
             // Generate conic gradient string
             let cumulativePercentage = 0;
             let gradientString = '';
-            const colors = ['#1a2a6c', '#b21f1f', '#fdbb2d', '#1c6b3d', '#6b2c90', '#2a6b55', '#6b2c4d'];
+            const colors = ['#1a2a6c', '#b21f1f', '#fdbb2d', '#1c6b3d', '#6b2c90'];
 
             data.forEach((item, index) => {
                 const percentage = (item.count / data.reduce((sum, curr) => sum + curr.count, 0)) * 100;
@@ -1153,7 +1237,7 @@
             const roadComparison = document.getElementById('roadComparison');
             roadComparison.innerHTML = '';
 
-            for (const [roadName, roadData] of Object.entries(roadResultsData)) {
+            for (const [roadName, roadData] of Object.entries(processedRoadResultsData)) {
                 const roadImpact = (roadData.total_fuel_cost_naira || 0) + (roadData.total_productivity_loss_naira || 0);
 
                 roadComparison.innerHTML += `
@@ -1197,7 +1281,7 @@
             const vehicleDistributionCharts = document.getElementById('vehicleDistributionCharts');
             vehicleDistributionCharts.innerHTML = '';
 
-            for (const [roadName, vehicles] of Object.entries(vehicleDistributionsData)) {
+            for (const [roadName, vehicles] of Object.entries(processedVehicleDistributionsData)) {
                 if (vehicles && vehicles.length > 0) {
                     const chartId = `vehicleChart-${roadName.replace(/\s+/g, '-')}`;
                     vehicleDistributionCharts.innerHTML += `
@@ -1220,28 +1304,28 @@
             setTimeout(() => {
                 // People affected chart
                 const peopleData = {};
-                for (const [roadName, roadData] of Object.entries(roadResultsData)) {
+                for (const [roadName, roadData] of Object.entries(processedRoadResultsData)) {
                     peopleData[roadName] = roadData.total_people || 0;
                 }
                 createSimpleBarChart(peopleData, "People Affected by Congestion", "peopleChart", formatNumber);
 
                 // Fuel consumption chart
                 const fuelData = {};
-                for (const [roadName, roadData] of Object.entries(roadResultsData)) {
+                for (const [roadName, roadData] of Object.entries(processedRoadResultsData)) {
                     fuelData[roadName] = roadData.total_excess_fuel_l || 0;
                 }
                 createSimpleBarChart(fuelData, "Excess Fuel Consumption (Liters)", "fuelChart", formatFloat);
 
                 // CO2 emissions chart
                 const co2Data = {};
-                for (const [roadName, roadData] of Object.entries(roadResultsData)) {
+                for (const [roadName, roadData] of Object.entries(processedRoadResultsData)) {
                     co2Data[roadName] = roadData.total_co2_kg || 0;
                 }
                 createSimpleBarChart(co2Data, "CO2 Emissions (kg)", "co2Chart", formatFloat);
 
                 // Total cost chart
                 const costData = {};
-                for (const [roadName, roadData] of Object.entries(roadResultsData)) {
+                for (const [roadName, roadData] of Object.entries(processedRoadResultsData)) {
                     costData[roadName] = (roadData.total_fuel_cost_naira || 0) + (roadData.total_productivity_loss_naira || 0);
                 }
                 createSimpleBarChart(costData, "Total Cost (Fuel + Productivity Loss)", "costChart", formatCurrency);
@@ -1253,21 +1337,30 @@
 
             let hasData = false;
 
-            for (const [roadName, roadData] of Object.entries(roadResultsData)) {
+            for (const [roadName, roadData] of Object.entries(processedRoadResultsData)) {
                 if (roadData.vehicle_types) {
-                    for (const [vehicleType, vehicleData] of Object.entries(roadData.vehicle_types)) {
+                    for (const vehicleType of Object.keys(VEHICLE_CLASSES)) {
+                        const vehicleData = roadData.vehicle_types[vehicleType] || {
+                            count: 0,
+                            people: 0,
+                            delay_min: 0,
+                            excess_fuel_l: 0,
+                            fuel_cost_naira: 0,
+                            co2_kg: 0,
+                            productivity_loss_naira: 0
+                        };
                         hasData = true;
                         reportDataBody.innerHTML += `
                             <tr>
                                 <td>${roadName}</td>
-                                <td>${vehicleType}</td>
-                                <td>${formatNumber(vehicleData.count || 0)}</td>
-                                <td>${formatNumber(vehicleData.people || 0)}</td>
-                                <td>${formatFloat(vehicleData.delay_min || 0)}</td>
-                                <td>${formatFloat(vehicleData.excess_fuel_l || 0)}</td>
-                                <td>${formatCurrency(vehicleData.fuel_cost_naira || 0)}</td>
-                                <td>${formatFloat(vehicleData.co2_kg || 0)}</td>
-                                <td>${formatCurrency(vehicleData.productivity_loss_naira || 0)}</td>
+                                <td>${VEHICLE_CLASSES[vehicleType]}</td>
+                                <td>${formatNumber(vehicleData.count)}</td>
+                                <td>${formatNumber(vehicleData.people)}</td>
+                                <td>${formatFloat(vehicleData.delay_min)}</td>
+                                <td>${formatFloat(vehicleData.excess_fuel_l)}</td>
+                                <td>${formatCurrency(vehicleData.fuel_cost_naira)}</td>
+                                <td>${formatFloat(vehicleData.co2_kg)}</td>
+                                <td>${formatCurrency(vehicleData.productivity_loss_naira)}</td>
                                 <td>${emissionModel}</td>
                             </tr>
                         `;

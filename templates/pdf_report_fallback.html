@@ -290,11 +290,21 @@
         {% for road_name, vehicles in vehicle_distributions.items() %}
         <div class="chart-container">
             <h3>{{ road_name }} Vehicle Distribution</h3>
-            <ul>
-                {% for vehicle in vehicles %}
-                <li>{{ vehicle.vehicle_type }}: {{ vehicle.count }} vehicles ({{ (vehicle.count / road_results[road_name].total_vehicles * 100)|round(1) }}%)</li>
+            <table>
+                <tr>
+                    <th>Vehicle Type</th>
+                    <th>Count</th>
+                    <th>Percentage</th>
+                </tr>
+                {% for vehicle_class in ['sedan', 'suv', 'truck', 'bus', 'motorcycle'] %}
+                {% set vehicle_data = vehicles|selectattr('vehicle_type', 'equalto', vehicle_class)|first %}
+                <tr>
+                    <td>{{ VEHICLE_CLASSES.get(vehicle_class, vehicle_class|title) }}</td>
+                    <td>{{ vehicle_data.count if vehicle_data else 0|format_number }}</td>
+                    <td>{{ ((vehicle_data.count if vehicle_data else 0) / road_results[road_name].total_vehicles * 100)|round(1) }}%</td>
+                </tr>
                 {% endfor %}
-            </ul>
+            </table>
             {% if chart_images[road_name.lower().replace(' ', '_') + '_vehicle_distribution'] %}
             <img src="{{ chart_images[road_name.lower().replace(' ', '_') + '_vehicle_distribution'] }}" alt="{{ road_name }} Vehicle Distribution">
             {% endif %}

@@ -722,26 +722,58 @@
     <script>
         // Initialize charts when the page loads
         document.addEventListener('DOMContentLoaded', function() {
-            // Sample data - in a real application, this would come from your backend
-            const roadNames = ['Nyanya Road', 'Lugbe Road', 'Kubwa Road'];
-            const vehicleTypes = ['Cars', 'Motorcycles', 'SUVs', 'Sedans', 'Wagons', 'Short Buses', 'Minibusses', 'Long Buses', 'Truck', 'Tanker and Trailer'];
+            // Define vehicle classes for consistency
+            const VEHICLE_CLASSES = {
+                'passenger_car': 'Passenger Cars',
+                'motorcycle': 'Motorcycles',
+                'bus': 'Buses',
+                'truck': 'Trucks',
+                'trailer': 'Trailers'
+            };
+
+            // Sample data for vehicle distributions (replace with actual data from backend)
+            const vehicleDistributions = {
+                'Nyanya Road': {
+                    'passenger_car': 200,
+                    'motorcycle': 50,
+                    'bus': 30,
+                    'truck': 20,
+                    'trailer': 10
+                },
+                'Lugbe Road': {
+                    'passenger_car': 180,
+                    'motorcycle': 40,
+                    'bus': 25,
+                    'truck': 15,
+                    'trailer': 8
+                },
+                'Kubwa Road': {
+                    'passenger_car': 170,
+                    'motorcycle': 45,
+                    'bus': 20,
+                    'truck': 18,
+                    'trailer': 7
+                }
+            };
 
             // Generate pie charts for each road
+            const roadNames = ['Nyanya Road', 'Lugbe Road', 'Kubwa Road'];
             roadNames.forEach(road => {
                 const canvasId = `pie-${road.replace(' ', '-').toLowerCase()}`;
                 const ctx = document.getElementById(canvasId);
 
                 if (ctx) {
-                    // Generate random data for demonstration
-                    const data = Array.from({length: 5}, () => Math.floor(Math.random() * 30) + 10);
+                    const vehicleData = vehicleDistributions[road] || {};
+                    const data = Object.keys(VEHICLE_CLASSES).map(key => vehicleData[key] || 0);
+                    const labels = Object.values(VEHICLE_CLASSES);
 
                     new Chart(ctx, {
                         type: 'pie',
                         data: {
-                            labels: vehicleTypes.slice(0, 5),
+                            labels: labels,
                             datasets: [{
                                 data: data,
-                                backgroundColor: ['#1a2a6c', '#b21f1f', '#fdbb2d', '#1c6b3d', '#6b2c90', '#2a6b55', '#6b2c4d', '#4d2c6b', '#6b4d2c', '#2c6b6b']
+                                backgroundColor: ['#1a2a6c', '#b21f1f', '#fdbb2d', '#1c6b3d', '#6b2c90']
                             }]
                         },
                         options: {

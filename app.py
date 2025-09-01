@@ -4,7 +4,6 @@ Flask application for Abuja Traffic Analysis System.
 Handles web interface, data entry, analysis, and report generation using ReportLab and Matplotlib.
 """
 import matplotlib
-
 matplotlib.use('Agg')  # Set non-interactive backend before importing pyplot
 from flask import Flask, render_template, send_file, request, redirect, url_for, flash, jsonify
 import pandas as pd
@@ -38,6 +37,9 @@ FUEL_PRICE_DIESEL = 1210.0
 EMISSION_FACTOR_PETROL = 2.31
 EMISSION_FACTOR_DIESEL = 2.68
 CORRIDOR_LENGTH = 6.0
+
+# Define vehicle classes
+vehicle_classes = [f'Class {i}' for i in range(1, 11)]  # Class 1 to Class 10
 
 # Utility function to convert numpy types to native Python types for JSON serialization
 def convert_numpy_types(obj):
@@ -153,10 +155,8 @@ def welcome():
 
 @app.route('/data_entry', methods=['GET', 'POST'])
 def data_entry():
-    """Handle data entry form and save traffic data."""
+    """Handle data entry form and save traffic data with new vehicle classes."""
     roads = ["Nyanya Road", "Lugbe Road", "Kubwa Road"]
-    vehicle_types = ['Motorcycles', 'Cars', 'SUVs', 'Sedans', 'Wagons',
-                     'Short Buses', 'Minibusses', 'Long Buses', 'Truck', 'Tanker and Trailer']
     model = TrafficAnalysisModel()
     emission_models = model.get_available_models()
     current_data = {}
@@ -193,14 +193,14 @@ def data_entry():
                     'barth_road_gradient': row.get('Barth_Road_Gradient', 0.10),
                     'barth_acceleration': row.get('Barth_Acceleration', 0.04)
                 })
-                for vehicle_type in vehicle_types:
-                    field_name = f"emission_factor_{vehicle_type.replace(' ', '_').replace('/', '_')}"
+                for vehicle_class in vehicle_classes:
+                    field_name = f"emission_factor_{vehicle_class.replace(' ', '_')}"
                     current_data[field_name] = row.get('Vehicle_Emission_Factor',
-                                                       model.VEHICLE_EMISSION_FACTORS.get(vehicle_type, 0.2))
+                                                      model.VEHICLE_EMISSION_FACTORS.get(vehicle_class, 0.2))
         else:
             for road, vehicles in model.road_data.items():
-                for vehicle_type, count in vehicles.items():
-                    current_data[(road, vehicle_type)] = count
+                for vehicle_class in vehicle_classes:
+                    current_data[(road, vehicle_class)] = vehicles.get(vehicle_class, 0)
             current_data.update({
                 'entry_date': current_date,
                 'entry_time': current_time,
@@ -225,14 +225,14 @@ def data_entry():
                 'barth_road_gradient': 0.10,
                 'barth_acceleration': 0.04
             })
-            for vehicle_type in vehicle_types:
-                current_data[f'emission_factor_{vehicle_type.replace(" ", "_").replace("/", "_")}'] = \
-                    model.VEHICLE_EMISSION_FACTORS.get(vehicle_type, 0.2)
+            for vehicle_class in vehicle_classes:
+                current_data[f'emission_factor_{vehicle_class.replace(" ", "_")}'] = \
+                    model.VEHICLE_EMISSION_FACTORS.get(vehicle_class, 0.2)
     except Exception as e:
         logger.error(f"Error loading current data: {str(e)}", exc_info=True)
         for road in roads:
-            for vehicle_type in vehicle_types:
-                current_data[(road, vehicle_type)] = 0
+            for vehicle_class in vehicle_classes:
+                current_data[(road, vehicle_class)] = 0
         current_data.update({
             'entry_date': current_date,
             'entry_time': current_time,
@@ -257,9 +257,9 @@ def data_entry():
             'barth_road_gradient': 0.10,
             'barth_acceleration': 0.04
         })
-        for vehicle_type in vehicle_types:
-            current_data[f'emission_factor_{vehicle_type.replace(" ", "_").replace("/", "_")}'] = \
-                model.VEHICLE_EMISSION_FACTORS.get(vehicle_type, 0.2)
+        for vehicle_class in vehicle_classes:
+            current_data[f'emission_factor_{vehicle_class.replace(" ", "_")}'] = \
+                model.VEHICLE_EMISSION_FACTORS.get(vehicle_class, 0.2)
 
     if request.method == 'POST':
         try:
@@ -286,10 +286,10 @@ def data_entry():
             barth_road_gradient = float(request.form.get('barth_road_gradient', 0.10))
             barth_acceleration = float(request.form.get('barth_acceleration', 0.04))
             vehicle_emission_factors = {}
-            for vehicle_type in vehicle_types:
-                field_name = f"emission_factor_{vehicle_type.replace(' ', '_').replace('/', '_')}"
-                factor = float(request.form.get(field_name, model.VEHICLE_EMISSION_FACTORS.get(vehicle_type, 0.2)))
-                vehicle_emission_factors[vehicle_type] = factor
+            for vehicle_class in vehicle_classes:
+                field_name = f"emission_factor_{vehicle_class.replace(' ', '_')}"
+                factor = float(request.form.get(field_name, model.VEHICLE_EMISSION_FACTORS.get(vehicle_class, 0.2)))
+                vehicle_emission_factors[vehicle_class] = factor
 
             if congested_travel_time <= free_flow_time:
                 flash("Congested travel time must be greater than free flow time", "error")
@@ -306,10 +306,10 @@ def data_entry():
 
             data = []
             for road in roads:
-                for vehicle_type in vehicle_types:
-                    field_name = f"{road.replace(' ', '_')}_{vehicle_type.replace(' ', '_').replace('/', '_')}"
+                for vehicle_class in vehicle_classes:
+                    field_name = f"{road.replace(' ', '_')}_class{vehicle_class.split()[1]}_volume"
                     count = int(request.form.get(field_name, 0))
-                    occupancy_rate = model.vehicle_parameters[vehicle_type]['occupancy_avg']
+                    occupancy_rate = model.vehicle_parameters.get(f'class{vehicle_class.split()[1]}', {}).get('occupancy_avg', 1.0)
                     data.append({
                         "Date": entry_date,
                         "Time": entry_time,
@@ -322,7 +322,7 @@ def data_entry():
                         "Emission_Factor_Petrol": emission_factor_petrol,
                         "Emission_Factor_Diesel": emission_factor_diesel,
                         "Road": road,
-                        "Vehicle Type": vehicle_type,
+                        "Vehicle Type": vehicle_class,
                         "Real_Vehicle_Count": count,
                         "Real_VOR": occupancy_rate,
                         "Real_Delay_Time": congested_travel_time - free_flow_time,
@@ -338,7 +338,7 @@ def data_entry():
                         "Barth_Traffic_Flow": barth_traffic_flow,
                         "Barth_Road_Gradient": barth_road_gradient,
                         "Barth_Acceleration": barth_acceleration,
-                        "Vehicle_Emission_Factor": vehicle_emission_factors.get(vehicle_type, 0.2)
+                        "Vehicle_Emission_Factor": vehicle_emission_factors.get(vehicle_class, 0.2)
                     })
 
             df = pd.DataFrame(data)
@@ -354,7 +354,7 @@ def data_entry():
 
     return render_template('data_entry.html',
                            roads=roads,
-                           vehicle_types=vehicle_types,
+                           vehicle_types=vehicle_classes,
                            current_data=current_data,
                            emission_models=emission_models,
                            current_year=datetime.now().year)
@@ -427,7 +427,7 @@ def analysis():
             current_time=datetime.now().strftime('%H:%M'),
             current_year=datetime.now().year,
             results=results,
-            highest_road_name=highest_road_name  # Pass the highest road name to template
+            highest_road_name=highest_road_name
         )
     except Exception as e:
         logger.error(f"Error in analysis route: {str(e)}", exc_info=True)
@@ -467,7 +467,9 @@ def analysis_data():
 
 @app.route('/dashboard')
 def dashboard():
-    """Render the dashboard page, relying on client-side JavaScript."""
+    """Render the dashboard page,
+
+ relying on client-side JavaScript."""
     if not Path('templates/traffic_dashboard_pdf.html').exists():
         logger.error("traffic_dashboard_pdf.html template not found")
         flash("Dashboard template not found", "error")
@@ -516,16 +518,13 @@ def download_pdf():
             logger.warning(f"Invalid emission model: {emission_model_str}. Defaulting to BASIC.")
             emission_model = EmissionModelType.BASIC
 
-        # Get analysis results
         results, report_data, vehicle_distributions, chart_images, model_used, model = get_analysis_results(
             emission_model)
 
-        # Validate analysis results
         if not results or not report_data or not vehicle_distributions or not chart_images:
             logger.error("Incomplete analysis data for PDF generation")
             raise ValueError("Analysis data is incomplete or missing")
 
-        # Find the road with highest vehicle count
         highest_road_name = ""
         max_vehicles = 0
         for road_name, road_data in results['road_results'].items():
@@ -533,7 +532,6 @@ def download_pdf():
                 max_vehicles = road_data['total_vehicles']
                 highest_road_name = road_name
 
-        # Prepare homepage data
         total_summary = results['total_summary']
         homepage_data = {
             'title': "Abuja Traffic Analysis System",
@@ -595,11 +593,9 @@ def download_pdf():
             }
         }
 
-        # Create a temporary directory for PDF generation
         temp_dir = tempfile.mkdtemp()
         pdf_output = os.path.join(temp_dir, 'abuja_traffic_analysis_report.pdf')
 
-        # Generate PDF using the model's generate_pdf_report
         logger.info(f"Generating PDF report with {model_used} emission model")
         pdf_path = model.generate_pdf_report(
             output_path=pdf_output,
@@ -610,7 +606,6 @@ def download_pdf():
             logger.error(f"PDF file was not created at {pdf_path}")
             raise Exception("PDF file was not created")
 
-        # Send the PDF file
         response = send_file(
             pdf_path,
             as_attachment=True,
@@ -618,7 +613,6 @@ def download_pdf():
             mimetype='application/pdf'
         )
 
-        # Clean up temporary directory after sending the file
         @response.call_on_close
         def cleanup_temp_dir():
             try:

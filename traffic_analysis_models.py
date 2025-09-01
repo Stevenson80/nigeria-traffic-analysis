@@ -2,7 +2,6 @@
 """
 TrafficAnalysisModel class for analyzing traffic data and generating rich PDF reports using ReportLab and Matplotlib.
 """
-
 import pandas as pd
 import logging
 import matplotlib
@@ -13,8 +12,6 @@ from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime
 import numpy as np
 from enum import Enum
-import base64
-import io
 from pathlib import Path
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
@@ -34,13 +31,22 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Vehicle Classes Constant (aligned with app.py: Class 1 to Class 10)
+VEHICLE_CLASSES = {
+    f"Class {i}": {
+        "name": f"Vehicle Class {i}",
+        "occupancy": 1.5 + i * 2.0,  # Example: increasing occupancy from 1.5 to 20.5
+        "fuel_type": "petrol" if i % 2 == 1 else "diesel"  # Alternating fuel types
+    } for i in range(1, 11)
+}
+
 class EmissionModelType(Enum):
     BASIC = "basic"
     BARTH = "barth"
     MOVES = "moves"
 
 class TrafficAnalysisModel:
-    # Constants (updated for 2026 with 10% inflation adjustment from 2025)
+    # Constants (aligned with app.py for 2026)
     FUEL_PRICE_PETROL = 1045.0  # Naira/liter
     FUEL_PRICE_DIESEL = 1210.0  # Naira/liter
     EMISSION_FACTOR_PETROL = 2.31  # kg CO2/liter
@@ -65,58 +71,23 @@ class TrafficAnalysisModel:
         'acceleration': 0.04
     }
 
-    VEHICLE_EMISSION_FACTORS = {
-        'Motorcycles': 0.12,
-        'Cars': 0.18,
-        'SUVs': 0.22,
-        'Sedans': 0.19,
-        'Wagons': 0.20,
-        'Short Buses': 0.28,
-        'Minibusses': 0.32,
-        'Long Buses': 0.40,
-        'Truck': 0.50,
-        'Tanker and Trailer': 0.70
-    }
+    VEHICLE_EMISSION_FACTORS = {f"Class {i}": 0.2 + i * 0.05 for i in range(1, 11)}  # Example factors
 
     def __init__(self, csv_file_path: Optional[str] = None,
                  emission_model: EmissionModelType = EmissionModelType.BASIC):
         """Initialize the TrafficAnalysisModel with optional CSV data and emission model."""
         self.vehicle_parameters = {
-            'Motorcycles': {'class': 1, 'occupancy_min': 1.1, 'occupancy_max': 1.7, 'occupancy_avg': 1.4,
-                            'fuel_consumption_l_per_km_free_flow': 0.03, 'fuel_consumption_l_per_km_congested': 0.045,
-                            'fuel_type': 'petrol', 'weight_kg': 150, 'engine_displacement_cc': 125, 'euro_standard': 3},
-            'Cars': {'class': 2, 'occupancy_min': 4.9, 'occupancy_max': 5.5, 'occupancy_avg': 5.2,
-                     'fuel_consumption_l_per_km_free_flow': 0.1, 'fuel_consumption_l_per_km_congested': 0.15,
-                     'fuel_type': 'petrol', 'weight_kg': 1200, 'engine_displacement_cc': 1500, 'euro_standard': 4},
-            'SUVs': {'class': 2, 'occupancy_min': 4.9, 'occupancy_max': 5.5, 'occupancy_avg': 5.2,
-                     'fuel_consumption_l_per_km_free_flow': 0.12, 'fuel_consumption_l_per_km_congested': 0.18,
-                     'fuel_type': 'petrol', 'weight_kg': 1800, 'engine_displacement_cc': 2000, 'euro_standard': 4},
-            'Sedans': {'class': 2, 'occupancy_min': 4.9, 'occupancy_max': 5.5, 'occupancy_avg': 5.2,
-                       'fuel_consumption_l_per_km_free_flow': 0.09, 'fuel_consumption_l_per_km_congested': 0.135,
-                       'fuel_type': 'petrol', 'weight_kg': 1300, 'engine_displacement_cc': 1600, 'euro_standard': 4},
-            'Wagons': {'class': 2, 'occupancy_min': 4.9, 'occupancy_max': 5.5, 'occupancy_avg': 5.2,
-                       'fuel_consumption_l_per_km_free_flow': 0.11, 'fuel_consumption_l_per_km_congested': 0.165,
-                       'fuel_type': 'petrol', 'weight_kg': 1400, 'engine_displacement_cc': 1700, 'euro_standard': 4},
-            'Short Buses': {'class': 2, 'occupancy_min': 4.9, 'occupancy_max': 5.5, 'occupancy_avg': 5.2,
-                            'fuel_consumption_l_per_km_free_flow': 0.15, 'fuel_consumption_l_per_km_congested': 0.225,
-                            'fuel_type': 'petrol', 'weight_kg': 2500, 'engine_displacement_cc': 2500,
-                            'euro_standard': 3},
-            'Minibusses': {'class': 3, 'occupancy_min': 20.2, 'occupancy_max': 22.4, 'occupancy_avg': 21.3,
-                           'fuel_consumption_l_per_km_free_flow': 0.2, 'fuel_consumption_l_per_km_congested': 0.3,
-                           'fuel_type': 'petrol', 'weight_kg': 3500, 'engine_displacement_cc': 3000,
-                           'euro_standard': 3},
-            'Long Buses': {'class': 3, 'occupancy_min': 20.2, 'occupancy_max': 22.4, 'occupancy_avg': 21.3,
-                           'fuel_consumption_l_per_km_free_flow': 0.25, 'fuel_consumption_l_per_km_congested': 0.375,
-                           'fuel_type': 'petrol', 'weight_kg': 5000, 'engine_displacement_cc': 4000,
-                           'euro_standard': 3},
-            'Truck': {'class': 4, 'occupancy_min': 1.5, 'occupancy_max': 1.6, 'occupancy_avg': 1.55,
-                      'fuel_consumption_l_per_km_free_flow': 0.3, 'fuel_consumption_l_per_km_congested': 0.45,
-                      'fuel_type': 'diesel', 'weight_kg': 8000, 'engine_displacement_cc': 6000, 'euro_standard': 3},
-            'Tanker and Trailer': {'class': 5, 'occupancy_min': 1.4, 'occupancy_max': 1.5, 'occupancy_avg': 1.45,
-                                   'fuel_consumption_l_per_km_free_flow': 0.4,
-                                   'fuel_consumption_l_per_km_congested': 0.6,
-                                   'fuel_type': 'diesel', 'weight_kg': 15000, 'engine_displacement_cc': 8000,
-                                   'euro_standard': 2}
+            f"Class {i}": {
+                'name': VEHICLE_CLASSES[f"Class {i}"]['name'],
+                'occupancy_avg': VEHICLE_CLASSES[f"Class {i}"]['occupancy'],
+                'fuel_type': VEHICLE_CLASSES[f"Class {i}"]['fuel_type'],
+                'fuel_consumption_l_per_km_free_flow': 0.03 + i * 0.02,
+                'fuel_consumption_l_per_km_congested': 0.045 + i * 0.03,
+                'weight_kg': 150 + i * 1000,
+                'engine_displacement_cc': 125 + i * 500,
+                'euro_standard': 3 if i <= 5 else 2,
+                'emission_factor': self.VEHICLE_EMISSION_FACTORS[f"Class {i}"]
+            } for i in range(1, 11)
         }
         self.value_per_minute = self.VALUE_PER_MINUTE
         self.data = None
@@ -133,27 +104,18 @@ class TrafficAnalysisModel:
         """Load hardcoded traffic data for testing when no CSV is provided."""
         try:
             self.road_data = {
-                'Nyanya Road': {
-                    'Motorcycles': 100, 'Cars': 200, 'SUVs': 150, 'Sedans': 180, 'Wagons': 50,
-                    'Short Buses': 30, 'Minibusses': 20, 'Long Buses': 10, 'Truck': 15, 'Tanker and Trailer': 5
-                },
-                'Lugbe Road': {
-                    'Motorcycles': 80, 'Cars': 250, 'SUVs': 120, 'Sedans': 200, 'Wagons': 60,
-                    'Short Buses': 25, 'Minibusses': 15, 'Long Buses': 8, 'Truck': 20, 'Tanker and Trailer': 10
-                },
-                'Kubwa Road': {
-                    'Motorcycles': 120, 'Cars': 180, 'SUVs': 100, 'Sedans': 150, 'Wagons': 40,
-                    'Short Buses': 20, 'Minibusses': 10, 'Long Buses': 5, 'Truck': 25, 'Tanker and Trailer': 8
-                }
+                'Nyanya Road': {f"Class {i}": 100 + i * 10 for i in range(1, 11)},
+                'Lugbe Road': {f"Class {i}": 80 + i * 12 for i in range(1, 11)},
+                'Kubwa Road': {f"Class {i}": 120 + i * 8 for i in range(1, 11)}
             }
             self.data = pd.DataFrame([
                 {
                     'Date': self.analysis_date,
                     'Time': self.analysis_time,
                     'Road': road,
-                    'Vehicle Type': vehicle,
+                    'Vehicle Type': vehicle_class,
                     'Real_Vehicle_Count': count,
-                    'Real_VOR': self.vehicle_parameters[vehicle]['occupancy_avg'],
+                    'Real_VOR': self.vehicle_parameters[vehicle_class]['occupancy_avg'],
                     'Congested_Travel_Time_Minutes': 45.0,
                     'Distance_KM': self.CORRIDOR_LENGTH,
                     'Free_Flow_Time_Minutes': 4.0,
@@ -167,9 +129,9 @@ class TrafficAnalysisModel:
                     'Avg_Acceleration': 0.5,
                     'Avg_Deceleration': 0.5,
                     'Idle_Time_Percentage': 0.3,
-                    'Stops_Per_KM': 2.0,  # Added for MOVES model
-                    'Road_Grade': 0.0,    # Added for MOVES model
-                    'Temperature_C': 25.0, # Added for MOVES model
+                    'Stops_Per_KM': 2.0,
+                    'Road_Grade': 0.0,
+                    'Temperature_C': 25.0,
                     'Emission_Model': self.emission_model.value,
                     'Barth_Alpha': self.BARTH_COEFFICIENTS['alpha'],
                     'Barth_Beta': self.BARTH_COEFFICIENTS['beta'],
@@ -177,10 +139,10 @@ class TrafficAnalysisModel:
                     'Barth_Traffic_Flow': self.BARTH_COEFFICIENTS['traffic_flow'],
                     'Barth_Road_Gradient': self.BARTH_COEFFICIENTS['road_gradient'],
                     'Barth_Acceleration': self.BARTH_COEFFICIENTS['acceleration'],
-                    'Vehicle_Emission_Factor': self.VEHICLE_EMISSION_FACTORS.get(vehicle, 0.2)
+                    'Vehicle_Emission_Factor': self.vehicle_parameters[vehicle_class]['emission_factor']
                 }
                 for road in self.road_data
-                for vehicle, count in self.road_data[road].items()
+                for vehicle_class, count in self.road_data[road].items()
             ])
             logger.info("Loaded hardcoded data successfully")
         except Exception as e:
@@ -205,7 +167,6 @@ class TrafficAnalysisModel:
             if (self.data['Real_Vehicle_Count'] < 0).any():
                 raise ValueError("'Real_Vehicle_Count' contains negative values")
 
-            # Ensure all numeric columns are properly converted to float
             numeric_columns = [
                 'Congested_Travel_Time_Minutes', 'Distance_KM', 'Free_Flow_Time_Minutes',
                 'Free_Flow_Speed_KPH', 'Congested_Speed_KPH', 'Avg_Acceleration',
@@ -228,9 +189,9 @@ class TrafficAnalysisModel:
                 'Avg_Acceleration': 0.5,
                 'Avg_Deceleration': 0.5,
                 'Idle_Time_Percentage': 0.3,
-                'Stops_Per_KM': 2.0,      # Default for MOVES
-                'Road_Grade': 0.0,        # Default for MOVES
-                'Temperature_C': 25.0     # Default for MOVES
+                'Stops_Per_KM': 2.0,
+                'Road_Grade': 0.0,
+                'Temperature_C': 25.0
             }
 
             for col, default in default_columns.items():
@@ -244,7 +205,7 @@ class TrafficAnalysisModel:
 
             if 'Vehicle_Emission_Factor' not in self.data.columns:
                 self.data['Vehicle_Emission_Factor'] = self.data['Vehicle Type'].map(
-                    self.VEHICLE_EMISSION_FACTORS).fillna(0.2)
+                    lambda x: self.vehicle_parameters.get(x, {}).get('emission_factor', 0.2))
 
             self.road_data = {}
             for road in self.data['Road'].unique():
@@ -266,7 +227,7 @@ class TrafficAnalysisModel:
                 logger.warning(f"No data for road: {road_name}")
                 return []
             return [
-                {'vehicle_type': vehicle, 'count': int(count) if not pd.isna(count) else 0}
+                {'vehicle_type': VEHICLE_CLASSES[vehicle]['name'], 'count': int(count) if not pd.isna(count) else 0}
                 for vehicle, count in self.road_data[road_name].items() if count > 0
             ]
         except Exception as e:
@@ -281,14 +242,12 @@ class TrafficAnalysisModel:
                 logger.warning(f"No parameters for vehicle type: {vehicle_type}")
                 return 0.0, 0.0
 
-            # Extract parameters
             weight = vehicle_params.get('weight_kg', 1000)
             engine_displacement = vehicle_params.get('engine_displacement_cc', 1500)
             fuel_type = vehicle_params.get('fuel_type', 'petrol')
             accel_factor = self.BARTH_ACCEL_FACTOR_PETROL if fuel_type == 'petrol' else self.BARTH_ACCEL_FACTOR_DIESEL
             idle_consumption = self.BARTH_IDLE_FUEL_CONSUMPTION_PETROL if fuel_type == 'petrol' else self.BARTH_IDLE_FUEL_CONSUMPTION_DIESEL
 
-            # Barth model parameters
             alpha = self.BARTH_COEFFICIENTS['alpha']
             beta = self.BARTH_COEFFICIENTS['beta']
             gamma = self.BARTH_COEFFICIENTS['gamma']
@@ -296,27 +255,15 @@ class TrafficAnalysisModel:
             road_gradient = self.BARTH_COEFFICIENTS['road_gradient']
             acceleration = self.BARTH_COEFFICIENTS['acceleration']
 
-            # Base fuel consumption (liters/km)
             base_consumption = (alpha * engine_displacement + beta * weight + gamma * road_gradient) * distance
-
-            # Adjust for traffic conditions based on speed
             congestion_factor = max(0.1, min(1.0, 60.0 / avg_speed_kmh if avg_speed_kmh > 0 else 1.0))
             traffic_effect = base_consumption * traffic_flow * congestion_factor
-
-            # Acceleration effect (assuming acceleration events scale with congestion)
             acceleration_events = congestion_factor * 10
             acceleration_effect = accel_factor * acceleration_events * distance
-
-            # Idle fuel consumption (assuming 30% idle time in congested conditions)
             idle_time_hours = 0.3 * (distance / avg_speed_kmh) if avg_speed_kmh > 0 else 0.3
             idle_fuel = idle_consumption * idle_time_hours
-
-            # Total fuel consumption for congested conditions
             total_fuel_consumption = (base_consumption + traffic_effect + acceleration_effect + idle_fuel) * count
-
-            # Free flow fuel consumption (simplified, no traffic or acceleration effects)
             free_flow_consumption = (alpha * engine_displacement + beta * weight) * distance * 0.7 * count
-
             return free_flow_consumption, total_fuel_consumption
         except Exception as e:
             logger.error(f"Error calculating Barth fuel consumption for {vehicle_type}: {str(e)}", exc_info=True)
@@ -331,23 +278,15 @@ class TrafficAnalysisModel:
                 logger.warning(f"No parameters for vehicle type: {vehicle_type}")
                 return 0.0, 0.0
 
-            # Extract parameters
             fuel_type = vehicle_params.get('fuel_type', 'petrol')
             base_rate = vehicle_params.get('fuel_consumption_l_per_km_congested', 0.1)
-
-            # MOVES model adjustments
             speed_factor = 1.0 + self.MOVES_SPEED_CORRECTION_FACTOR * (avg_speed_kmh - 30.0) / 30.0
             stop_factor = 1.0 + 0.1 * stops_per_km
             grade_factor = 1.0 + 0.05 * road_grade
             temp_factor = 1.0 + 0.02 * (temperature_c - 25.0) / 25.0
-
-            # Congested fuel consumption
             total_fuel_consumption = base_rate * distance * speed_factor * stop_factor * grade_factor * temp_factor * count
-
-            # Free flow fuel consumption (simpler, using free flow base rate)
             free_flow_base = vehicle_params.get('fuel_consumption_l_per_km_free_flow', 0.07)
             free_flow_consumption = free_flow_base * distance * count
-
             return free_flow_consumption, total_fuel_consumption
         except Exception as e:
             logger.error(f"Error calculating MOVES fuel consumption for {vehicle_type}: {str(e)}", exc_info=True)
@@ -366,7 +305,7 @@ class TrafficAnalysisModel:
             gamma = self.BARTH_COEFFICIENTS['gamma']
             traffic_flow = self.BARTH_COEFFICIENTS['traffic_flow']
             acceleration_factor = self.BARTH_COEFFICIENTS['acceleration']
-            road_gradient = 0.0
+            road_gradient = self.BARTH_COEFFICIENTS['road_gradient']
             base_emissions = (
                 alpha * vehicle_params.get('engine_displacement_cc', 1500) +
                 beta * vehicle_params.get('weight_kg', 1000) +
@@ -377,9 +316,9 @@ class TrafficAnalysisModel:
             idle_emissions = 0
             if idle_time > 0:
                 if vehicle_params.get('fuel_type', 'petrol') == 'petrol':
-                    idle_emissions = self.BARTH_IDLE_FUEL_CONSUMPTION_PETROL * idle_time * 60
+                    idle_emissions = self.BARTH_IDLE_FUEL_CONSUMPTION_PETROL * idle_time * self.EMISSION_FACTOR_PETROL
                 else:
-                    idle_emissions = self.BARTH_IDLE_FUEL_CONSUMPTION_DIESEL * idle_time * 60
+                    idle_emissions = self.BARTH_IDLE_FUEL_CONSUMPTION_DIESEL * idle_time * self.EMISSION_FACTOR_DIESEL
             total_emissions = (base_emissions * distance + idle_emissions) * count
             return total_emissions
         except Exception as e:
@@ -414,10 +353,7 @@ class TrafficAnalysisModel:
                 logger.warning(f"No parameters for vehicle type: {vehicle_type}")
                 return 0.0
             fuel_consumption = vehicle_params.get('fuel_consumption_l_per_km_congested', 0.1) * distance
-            if vehicle_params.get('fuel_type', 'petrol') == 'petrol':
-                emission_factor = self.EMISSION_FACTOR_PETROL
-            else:
-                emission_factor = self.EMISSION_FACTOR_DIESEL
+            emission_factor = vehicle_params.get('emission_factor', 0.2)
             emissions = fuel_consumption * emission_factor * count
             return emissions
         except Exception as e:
@@ -425,7 +361,7 @@ class TrafficAnalysisModel:
             return 0.0
 
     def analyze_all_roads(self) -> Dict[str, Any]:
-        """Analyze traffic data for all roads."""
+        """Analyze traffic data for all roads using class-based data structure."""
         try:
             if self.data.empty or not self.road_data:
                 raise ValueError("No valid data available for analysis")
@@ -454,7 +390,7 @@ class TrafficAnalysisModel:
                 total_fuel_cost = 0
                 total_co2 = 0.0
                 for _, row in road_data.iterrows():
-                    vehicle_type = row['Vehicle Type']
+                    vehicle_class = row['Vehicle Type']
                     count = row['Real_Vehicle_Count']
                     distance = row['Distance_KM']
                     speed = row.get('Congested_Speed_KPH', 8.0)
@@ -464,24 +400,23 @@ class TrafficAnalysisModel:
                     road_grade = row.get('Road_Grade', 0.0)
                     temperature_c = row.get('Temperature_C', 25.0)
 
-                    # Select fuel consumption model based on emission_model
                     if self.emission_model == EmissionModelType.BARTH:
                         free_flow_fuel, congested_fuel = self.calculate_fuel_consumption_barth(
-                            avg_speed_kmh=speed, vehicle_type=vehicle_type, distance=distance, count=count
+                            avg_speed_kmh=speed, vehicle_type=vehicle_class, distance=distance, count=count
                         )
                     elif self.emission_model == EmissionModelType.MOVES:
                         free_flow_fuel, congested_fuel = self.calculate_fuel_consumption_moves(
                             avg_speed_kmh=speed, stops_per_km=stops_per_km, road_grade=road_grade,
-                            temperature_c=temperature_c, vehicle_type=vehicle_type, distance=distance, count=count
+                            temperature_c=temperature_c, vehicle_type=vehicle_class, distance=distance, count=count
                         )
                     else:  # BASIC model
-                        vehicle_params = self.vehicle_parameters.get(vehicle_type, {})
+                        vehicle_params = self.vehicle_parameters.get(vehicle_class, {})
                         free_flow_fuel = vehicle_params.get('fuel_consumption_l_per_km_free_flow', 0.07) * distance * count
                         congested_fuel = vehicle_params.get('fuel_consumption_l_per_km_congested', 0.1) * distance * count
 
                     excess_fuel = congested_fuel - free_flow_fuel
                     total_excess_fuel += excess_fuel
-                    vehicle_params = self.vehicle_parameters.get(vehicle_type, {})
+                    vehicle_params = self.vehicle_parameters.get(vehicle_class, {})
                     if not vehicle_params:
                         continue
                     if vehicle_params.get('fuel_type', 'petrol') == 'petrol':
@@ -490,17 +425,18 @@ class TrafficAnalysisModel:
                         fuel_cost = excess_fuel * self.FUEL_PRICE_DIESEL
                     total_fuel_cost += fuel_cost
 
-                    # Emission calculations based on selected model
                     if self.emission_model == EmissionModelType.BARTH:
                         total_co2 += self.calculate_barth_emissions(
-                            vehicle_type, count, distance, speed, acceleration, idle_time
+                            vehicle_type=vehicle_class, count=count, distance=distance, speed=speed,
+                            acceleration=acceleration, idle_time=idle_time
                         )
                     elif self.emission_model == EmissionModelType.MOVES:
                         total_co2 += self.calculate_moves_emissions(
-                            vehicle_type, count, distance, speed, acceleration
+                            vehicle_type=vehicle_class, count=count, distance=distance, speed=speed,
+                            acceleration=acceleration
                         )
                     else:
-                        total_co2 += self.calculate_basic_emissions(vehicle_type, count, distance)
+                        total_co2 += self.calculate_basic_emissions(vehicle_type=vehicle_class, count=count, distance=distance)
 
                 total_productivity_loss = total_people * (
                     road_data['Congested_Travel_Time_Minutes'].iloc[0] -
@@ -569,11 +505,10 @@ class TrafficAnalysisModel:
                 logger.warning("No road data available for chart generation")
                 return chart_images
 
-            colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2']
+            colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
             temp_dir = Path('temp_charts')
             temp_dir.mkdir(exist_ok=True)
 
-            # Pie charts for vehicle distribution
             for road_name in self.road_data.keys():
                 vehicle_dist = self.get_vehicle_distribution(road_name)
                 if not vehicle_dist:
@@ -591,11 +526,9 @@ class TrafficAnalysisModel:
                 chart_images[f"pie_{road_name.replace(' ', '_').lower()}"] = str(chart_path)
                 logger.info(f"Generated pie chart for {road_name} at {chart_path}")
 
-            # Bar charts for summary metrics
             results = self.analyze_all_roads()
             roads = list(self.road_data.keys())
 
-            # People Affected
             people_data = [results['road_results'][road]['total_people'] for road in roads]
             if any(x > 0 for x in people_data):
                 plt.figure(figsize=(10, 6))
@@ -615,7 +548,6 @@ class TrafficAnalysisModel:
                 chart_images["people"] = str(chart_path)
                 logger.info(f"Generated people bar chart at {chart_path}")
 
-            # Excess Fuel Consumption
             fuel_data = [results['road_results'][road]['total_excess_fuel_l'] for road in roads]
             if any(x > 0 for x in fuel_data):
                 plt.figure(figsize=(10, 6))
@@ -635,7 +567,6 @@ class TrafficAnalysisModel:
                 chart_images["fuel"] = str(chart_path)
                 logger.info(f"Generated fuel bar chart at {chart_path}")
 
-            # CO2 Emissions
             co2_data = [results['road_results'][road]['total_co2_kg'] for road in roads]
             if any(x > 0 for x in co2_data):
                 plt.figure(figsize=(10, 6))
@@ -655,7 +586,6 @@ class TrafficAnalysisModel:
                 chart_images["co2"] = str(chart_path)
                 logger.info(f"Generated CO2 bar chart at {chart_path}")
 
-            # Total Cost
             cost_data = [
                 results['road_results'][road]['total_fuel_cost_naira'] +
                 results['road_results'][road]['total_productivity_loss_naira']
@@ -689,29 +619,24 @@ class TrafficAnalysisModel:
                            homepage_data: Optional[Dict[str, Any]] = None) -> Optional[str]:
         """Generate a PDF report with homepage and analysis report using ReportLab."""
         try:
-            # Validate output_path
             if not output_path.endswith('.pdf'):
                 output_path = output_path + '.pdf'
             output_path = Path(output_path)
             os.makedirs(output_path.parent, exist_ok=True)
 
-            # Get analysis results
             results = self.analyze_all_roads()
             if not results['road_results']:
                 logger.error("No analysis results available for PDF generation")
                 return None
 
-            # Generate report DataFrame
             report_df = self.generate_report()
             if report_df.empty:
                 logger.error("No report data available for PDF generation")
                 return None
 
-            # Get vehicle distributions and chart images
             vehicle_distributions = {road: self.get_vehicle_distribution(road) for road in self.road_data}
             chart_images = self.generate_chart_images()
 
-            # Use provided homepage_data or default
             if homepage_data is None:
                 homepage_data = {
                     'title': "Abuja Traffic Analysis System",
@@ -782,11 +707,8 @@ class TrafficAnalysisModel:
                     logger.error(f"Provided homepage_data missing required keys: {required_keys}")
                     return None
 
-            # Initialize PDF document
             doc = SimpleDocTemplate(str(output_path), pagesize=A4, rightMargin=2 * cm, leftMargin=2 * cm,
                                     topMargin=2 * cm, bottomMargin=2 * cm)
-
-            # Get styles and avoid redefining 'Normal' style
             styles = getSampleStyleSheet()
 
             if not hasattr(styles, 'TitleStyle'):
@@ -808,10 +730,7 @@ class TrafficAnalysisModel:
                     ParagraphStyle(name='ModelBadge', fontSize=10, fontName='Helvetica-Bold', textColor=colors.white,
                                   backColor=colors.HexColor('#1f77b4'), spaceAfter=6, leading=12))
 
-            # Build PDF content
             elements = []
-
-            # Front Page
             elements.append(Paragraph(homepage_data['title'], styles['TitleStyle']))
             elements.append(Paragraph(homepage_data['subtitle'], styles['SubtitleStyle']))
             elements.append(Paragraph(
@@ -819,7 +738,6 @@ class TrafficAnalysisModel:
                 styles['Normal']))
             elements.append(Spacer(1, 0.5 * cm))
 
-            # Stats Section
             stats_data = [[stat['label'], stat['value']] for stat in homepage_data['stats']]
             stats_table = Table(stats_data, colWidths=[8 * cm, 8 * cm])
             stats_table.setStyle(TableStyle([
@@ -837,19 +755,16 @@ class TrafficAnalysisModel:
             elements.append(stats_table)
             elements.append(Spacer(1, 0.5 * cm))
 
-            # Features Section
             elements.append(Paragraph("Features", styles['SectionTitle']))
             for feature in homepage_data['features']:
                 elements.append(Paragraph(f"• {feature}", styles['Normal']))
             elements.append(Spacer(1, 0.5 * cm))
 
-            # How It Works Section
             elements.append(Paragraph("How It Works", styles['SectionTitle']))
             for step in homepage_data['how_it_works']:
                 elements.append(Paragraph(f"• {step}", styles['Normal']))
             elements.append(Spacer(1, 0.5 * cm))
 
-            # Header
             elements.append(PageBreak())
             elements.append(Paragraph("Abuja Traffic Congestion Analysis Report", styles['TitleStyle']))
             elements.append(
@@ -858,7 +773,6 @@ class TrafficAnalysisModel:
             elements.append(Paragraph("Analysis Period: Evening Rush Hour (18:00)", styles['Normal']))
             elements.append(Spacer(1, 0.5 * cm))
 
-            # Emission Model Information
             elements.append(Paragraph("Analysis Methodology", styles['SectionTitle']))
             model_description = {
                 EmissionModelType.BASIC: "Using simple fuel consumption-based emission calculations with fixed emission factors.",
@@ -869,7 +783,6 @@ class TrafficAnalysisModel:
                 Paragraph(f"<b>{self.emission_model.value.upper()}</b> {model_description}", styles['ModelBadge']))
             elements.append(Spacer(1, 0.3 * cm))
 
-            # Executive Summary
             elements.append(Paragraph("Executive Summary", styles['SectionTitle']))
             elements.append(Paragraph(
                 "This report provides a comprehensive analysis of traffic congestion impacts across major Abuja road corridors, quantifying economic and environmental consequences including fuel costs, productivity losses, and CO₂ emissions.",
@@ -893,7 +806,7 @@ class TrafficAnalysisModel:
                 ('ALIGN', (0, 0), (0, -1), 'LEFT'),
                 ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
                 ('TOPPADDING', (0, 0), (-1, -1), 4),
-                ('BOTTOMPadding', (0, 0), (-1, -1), 4),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
             ]))
             elements.append(summary_table)
             elements.append(Paragraph(
@@ -901,7 +814,6 @@ class TrafficAnalysisModel:
                 styles['Normal']))
             elements.append(Spacer(1, 0.5 * cm))
 
-            # Methodology
             elements.append(PageBreak())
             elements.append(Paragraph("Methodology", styles['SectionTitle']))
             elements.append(Paragraph(homepage_data['methodology']['description'], styles['Normal']))
@@ -909,7 +821,6 @@ class TrafficAnalysisModel:
                 elements.append(Paragraph(f"• {param}", styles['Normal']))
             elements.append(Spacer(1, 0.5 * cm))
 
-            # Grand Totals
             elements.append(PageBreak())
             elements.append(Paragraph("Grand Totals Across All Roads", styles['SectionTitle']))
             totals_data = [
@@ -945,7 +856,6 @@ class TrafficAnalysisModel:
             elements.append(totals_table)
             elements.append(Spacer(1, 0.5 * cm))
 
-            # Per-Road Analysis
             elements.append(PageBreak())
             elements.append(Paragraph("Per-Road Analysis", styles['SectionTitle']))
             for road, road_data in results['road_results'].items():
@@ -979,7 +889,6 @@ class TrafficAnalysisModel:
                 elements.append(road_table)
                 elements.append(Spacer(1, 0.3 * cm))
 
-            # Visualizations
             elements.append(PageBreak())
             elements.append(Paragraph("Visual Analysis", styles['SectionTitle']))
             for road in vehicle_distributions:
@@ -1001,7 +910,6 @@ class TrafficAnalysisModel:
                     elements.append(Image(chart_images[chart_key], width=16 * cm, height=12 * cm))
                     elements.append(Spacer(1, 0.3 * cm))
 
-            # Detailed Report
             elements.append(PageBreak())
             elements.append(Paragraph("Detailed Report", styles['SectionTitle']))
             table_data = [
@@ -1037,7 +945,6 @@ class TrafficAnalysisModel:
             elements.append(results_table)
             elements.append(Spacer(1, 0.5 * cm))
 
-            # Conclusions & Recommendations
             elements.append(PageBreak())
             elements.append(Paragraph("Conclusions & Recommendations", styles['SectionTitle']))
             elements.append(Paragraph("Key Findings", styles['SectionTitle']))
@@ -1049,17 +956,14 @@ class TrafficAnalysisModel:
                 elements.append(Paragraph(f"• {recommendation}", styles['Normal']))
             elements.append(Spacer(1, 0.5 * cm))
 
-            # Footer
             elements.append(Paragraph(
                 f"Generated on {self.analysis_date} at {self.analysis_time} by Abuja Traffic Analysis System<br/>&copy; {datetime.now().year} | Powered by Opygoal Technology Ltd | Developed by Oladotun Ajakaiye",
                 styles['Footer']
             ))
 
-            # Build the PDF
             doc.build(elements)
             logger.info(f"PDF report generated successfully at {output_path}")
 
-            # Clean up temporary chart files
             temp_dir = Path('temp_charts')
             if temp_dir.exists():
                 for chart_file in temp_dir.glob("*.png"):
@@ -1078,7 +982,6 @@ class TrafficAnalysisModel:
             return None
 
 if __name__ == "__main__":
-    # Example usage with different emission models
     for model_type in ['basic', 'barth', 'moves']:
         model = TrafficAnalysisModel(emission_model=EmissionModelType(model_type.upper()))
         pdf_path = model.generate_pdf_report(output_path=f"traffic_analysis_report_{model_type}.pdf")

@@ -474,6 +474,15 @@
     </div>
 
     <script>
+        // Vehicle classes dictionary for consistent display names
+        const VEHICLE_CLASSES = {
+            motorcycles: 'Motorcycles',
+            cars: 'Cars',
+            buses: 'Buses',
+            trucks: 'Trucks',
+            trailers: 'Trailers'
+        };
+
         // Initialize charts
         document.addEventListener('DOMContentLoaded', function() {
             // Nyanya Road Vehicle Distribution
@@ -481,12 +490,11 @@
             new Chart(nyanyaCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Motorcycles', 'Cars', 'SUVs', 'Sedans', 'Wagons', 'Short Buses', 'Minibusses', 'Long Buses', 'Truck', 'Tanker and Trailer'],
+                    labels: Object.values(VEHICLE_CLASSES),
                     datasets: [{
-                        data: [20, 80, 2, 2, 2, 10, 1, 1, 8, 8],
+                        data: [20, 86, 12, 8, 8],
                         backgroundColor: [
-                            '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6',
-                            '#1abc9c', '#d35400', '#34495e', '#7f8c8d', '#27ae60'
+                            '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6'
                         ]
                     }]
                 },
@@ -513,12 +521,11 @@
             new Chart(lugbeCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Motorcycles', 'Cars', 'SUVs', 'Sedans', 'Wagons', 'Short Buses', 'Minibusses', 'Long Buses', 'Truck', 'Tanker and Trailer'],
+                    labels: Object.values(VEHICLE_CLASSES),
                     datasets: [{
-                        data: [40, 1, 1, 25, 2, 8, 2, 2, 6, 6],
+                        data: [40, 29, 12, 6, 6],
                         backgroundColor: [
-                            '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6',
-                            '#1abc9c', '#d35400', '#34495e', '#7f8c8d', '#27ae60'
+                            '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6'
                         ]
                     }]
                 },
@@ -545,12 +552,11 @@
             new Chart(kubwaCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Motorcycles', 'Cars', 'SUVs', 'Sedans', 'Wagons', 'Short Buses', 'Minibusses', 'Long Buses', 'Truck', 'Tanker and Trailer'],
+                    labels: Object.values(VEHICLE_CLASSES),
                     datasets: [{
-                        data: [30, 72, 3, 3, 3, 10, 4, 4, 10, 15],
+                        data: [30, 81, 18, 10, 15],
                         backgroundColor: [
-                            '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6',
-                            '#1abc9c', '#d35400', '#34495e', '#7f8c8d', '#27ae60'
+                            '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6'
                         ]
                     }]
                 },

@@ -777,7 +777,7 @@
 </head>
 <body>
     <div class="navbar" role="navigation" aria-label="Main navigation">
-        <a href="{{ url_for('welcome') }}" aria-label="Home page"><i class="fas fa-home"></i> Home</a>
+        <a href="{{ url_for('welcome') }}" aria-label="Home page"><i class="fas fa-home"></i>ყ</a>
         <a href="{{ url_for('analysis') }}" aria-label="Analysis page"><i class="fas fa-chart-bar"></i> Analysis</a>
         <a href="{{ url_for('data_entry') }}" aria-label="Data entry page" class="active"><i class="fas fa-pen-to-square"></i> Data Entry</a>
         <a href="{{ url_for('download_report') }}" aria-label="Download CSV report"><i class="fas fa-file-csv"></i> CSV Report</a>
@@ -892,44 +892,37 @@
 
             <div class="form-section">
                 <h3><i class="fas fa-car"></i> Vehicle Counts by Road</h3>
-                <p>Enter the number of vehicles observed for each vehicle type on each road:</p>
+                <p>Enter the number of vehicles observed for each vehicle class on each road:</p>
 
                 {% for road in roads | default(['Nyanya Road', 'Lugbe Road', 'Kubwa Road']) %}
                     <h4>{{ road }}</h4>
-                    <table role="grid" aria-label="Vehicle counts for {{ road }}">
-                        <thead>
-                            <tr>
-                                <th>Vehicle Type</th>
-                                <th>Count</th>
-                                <th>Typical Occupancy</th>
-                                <th>Fuel Type</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for vehicle_type in vehicle_types | default(['Motorcycles', 'Cars', 'SUVs', 'Sedans', 'Wagons', 'Short Buses', 'Minibusses', 'Long Buses', 'Truck', 'Tanker and Trailer']) %}
-                                <tr>
-                                    <td>{{ vehicle_type }}</td>
-                                    <td>
-                                        <input type="number" name="{{ road.replace(' ', '_') }}_{{ vehicle_type.replace(' ', '_').replace('/', '_') }}"
-                                               min="0" value="{{ current_data.get((road, vehicle_type), 0) }}"
-                                               required aria-label="Vehicle count for {{ vehicle_type }} on {{ road }}">
-                                    </td>
-                                    <td>
-                                        {% if vehicle_type == 'Motorcycles' %}1.4
-                                        {% elif vehicle_type in ['Cars', 'SUVs', 'Sedans', 'Wagons'] %}5.2
-                                        {% elif vehicle_type in ['Short Buses', 'Minibusses', 'Long Buses'] %}21.3
-                                        {% elif vehicle_type == 'Truck' %}1.55
-                                        {% elif vehicle_type == 'Tanker and Trailer' %}1.45
-                                        {% else %}1.0{% endif %} persons
-                                    </td>
-                                    <td>
-                                        {% if vehicle_type == 'Truck' or vehicle_type == 'Tanker and Trailer' %}Diesel
-                                        {% else %}Petrol{% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="class1_volume_{{ road.replace(' ', '_') }}">Class 1 (Motorcycles) Volume:</label>
+                            <input type="number" id="class1_volume_{{ road.replace(' ', '_') }}" name="{{ road.replace(' ', '_') }}_Class_1_Motorcycles" min="0" value="{{ current_data.get((road, 'Class_1_Motorcycles'), 120) }}" required aria-label="Vehicle count for Class 1 (Motorcycles) on {{ road }}">
+                            <div id="class1_volume_{{ road.replace(' ', '_') }}-error" class="error-message"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="class2_volume_{{ road.replace(' ', '_') }}">Class 2 (Cars, SUVs, Sedans, Wagons, Short Buses) Volume:</label>
+                            <input type="number" id="class2_volume_{{ road.replace(' ', '_') }}" name="{{ road.replace(' ', '_') }}_Class_2_Cars_SUVs_Sedans_Wagons_Short_Buses" min="0" value="{{ current_data.get((road, 'Class_2_Cars_SUVs_Sedans_Wagons_Short_Buses'), 490) }}" required aria-label="Vehicle count for Class 2 (Cars, SUVs, Sedans, Wagons, Short Buses) on {{ road }}">
+                            <div id="class2_volume_{{ road.replace(' ', '_') }}-error" class="error-message"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="class3_volume_{{ road.replace(' ', '_') }}">Class 3 (Coasters, Mid & Long Buses) Volume:</label>
+                            <input type="number" id="class3_volume_{{ road.replace(' ', '_') }}" name="{{ road.replace(' ', '_') }}_Class_3_Coasters_Mid_Long_Buses" min="0" value="{{ current_data.get((road, 'Class_3_Coasters_Mid_Long_Buses'), 15) }}" required aria-label="Vehicle count for Class 3 (Coasters, Mid & Long Buses) on {{ road }}">
+                            <div id="class3_volume_{{ road.replace(' ', '_') }}-error" class="error-message"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="class4_volume_{{ road.replace(' ', '_') }}">Class 4 (Trucks) Volume:</label>
+                            <input type="number" id="class4_volume_{{ road.replace(' ', '_') }}" name="{{ road.replace(' ', '_') }}_Class_4_Trucks" min="0" value="{{ current_data.get((road, 'Class_4_Trucks'), 25) }}" required aria-label="Vehicle count for Class 4 (Trucks) on {{ road }}">
+                            <div id="class4_volume_{{ road.replace(' ', '_') }}-error" class="error-message"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="class5_volume_{{ road.replace(' ', '_') }}">Class 5 (Tankers & Trailers) Volume:</label>
+                            <input type="number" id="class5_volume_{{ road.replace(' ', '_') }}" name="{{ road.replace(' ', '_') }}_Class_5_Tankers_Trailers" min="0" value="{{ current_data.get((road, 'Class_5_Tankers_Trailers'), 8) }}" required aria-label="Vehicle count for Class 5 (Tankers & Trailers) on {{ road }}">
+                            <div id="class5_volume_{{ road.replace(' ', '_') }}-error" class="error-message"></div>
+                        </div>
+                    </div>
                 {% endfor %}
             </div>
 
