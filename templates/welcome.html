@@ -1,3 +1,9 @@
+<tr><td>Motorcycles</td></tr>
+<trTASK: I will replace the dynamic `VEHICLE_CLASSES` loop with this static content while maintaining compatibility with the Flask route, which passes `current_year` and `VEHICLE_CLASSES`. I'll also ensure the codebase is complete, clean, and free of errors, preserving the existing design and functionality.
+
+### Updated `welcome.html` Codebase
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -228,10 +234,6 @@
             font-weight: 600;
         }
 
-        .vehicle奢
-            color: var(--dark-color);
-        }
-
         .vehicle-table td {
             color: #444;
         }
@@ -266,14 +268,6 @@
             margin: 20px 0 15px;
             font-family: 'Poppins', sans-serif;
             font-size: 1.4em;
-        }
-
-        .feature pទ
-            color: var(--secondary-color);
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         .feature p {
@@ -540,7 +534,8 @@
 
         <div class="welcome-content">
             <h2>Welcome to the Abuja Traffic Analysis System</h2>
-            <p>This advanced system provides comprehensive analysis of traffic congestion on major Abuja roads, helping transportation planners, policymakers, and urban developers make data-driven decisions to improve traffic flow, reduce congestion,宝贝
+            <p>This advanced system provides comprehensive analysis of traffic congestion on major Abuja roads, helping transportation planners, policymakers, and urban developers make data-driven decisions to improve traffic flow, reduce congestion, and minimize environmental impact.</p>
+
             <div class="stats">
                 <div class="stat-item">
                     <h3>3</h3>
@@ -552,110 +547,112 @@
                 </div>
                 <div class="stat-item">
                     <h3>8</h3>
-                    <dnl environmental impact.</p>
-        </div>
-
-        <div class="vehicle-types-section">
-            <h3>Tracked Vehicle Types</h3>
- HDR     <table class="vehicle-table">
-                <thead>
-                    <tr>
-                        <th>Vehicle Type</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for key, name in VEHICLE_CLASSES.items() %}
-                    <tr>
-                        <td>{{ name }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <h2>System Features</h2>
-        <div class="features">
-            <div class="feature">
-                <i class="fas fa-pen-to-square"></i>
-                <h3>Intuitive Data Entry</h3>
-                <p>Easily input traffic data for different vehicle types across Abuja's major roads with our user-friendly form interface.</p>
+                    <p>Data Points Analyzed</p>
+                </div>
             </div>
-            <div class="feature">
-                <i class="fas fa-chart-line"></i>
-                <h3>Comprehensive Analysis</h3>
-                <p>Get detailed analysis of traffic congestion, including fuel costs, CO2 emissions, productivity losses, and economic impact using advanced models.</p>
+
+            <div class="vehicle-types-section">
+                <h3>Tracked Vehicle Types</h3>
+                <table class="vehicle-table">
+                    <thead>
+                        <tr>
+                            <th>Vehicle Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Motorcycles</td></tr>
+                        <tr><td>Cars, SUVs, Sedans, Wagons, Short Buses</td></tr>
+                        <tr><td>Coasters, Mid & Long Buses</td></tr>
+                        <tr><td>Trucks</td></tr>
+                        <tr><td>Tankers & Trailers</td></tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="feature">
-                <i class="fas fa-download"></i>
-                <h3>Professional Reporting</h3>
-                <p>Download detailed reports in CSV and PDF formats for further analysis, presentations, and official documentation.</p>
+
+            <h2>System Features</h2>
+            <div class="features">
+                <div class="feature">
+                    <i class="fas fa-pen-to-square"></i>
+                    <h3>Intuitive Data Entry</h3>
+                    <p>Easily input traffic data for different vehicle types across Abuja's major roads with our user-friendly form interface.</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Comprehensive Analysis</h3>
+                    <p>Get detailed analysis of traffic congestion, including fuel costs, CO2 emissions, productivity losses, and economic impact using advanced models.</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-download"></i>
+                    <h3>Professional Reporting</h3>
+                    <p>Download detailed reports in CSV and PDF formats for further analysis, presentations, and official documentation.</p>
+                </div>
+            </div>
+
+            <div class="methodology-highlights">
+                <h3>Advanced Analysis Methodology</h3>
+                <ul>
+                    <li><strong>Multiple Emission Models:</strong> Basic, Barth, and MOVES models for accurate calculations</li>
+                    <li><strong>Real-time Data Processing:</strong> Instant analysis with up-to-date fuel prices and parameters</li>
+                    <li><strong>Vehicle-specific Parameters:</strong> Different fuel consumption rates for each vehicle type</li>
+                    <li><strong>Economic Impact Assessment:</strong> Comprehensive cost analysis including fuel and productivity</li>
+                    <li><strong>Environmental Impact:</strong> CO2 emissions calculation with industry-standard factors</li>
+                    <li><strong>Customizable Parameters:</strong> Adjustable values for different scenarios and time periods</li>
+                </ul>
+            </div>
+
+            <h2>How It Works</h2>
+            <ol>
+                <li><strong>Data Collection:</strong> Navigate to the Data Entry page to input traffic data for different vehicle types across major Abuja corridors</li>
+                <li><strong>Analysis:</strong> View comprehensive analysis on the Analysis page with interactive visual charts and detailed metrics</li>
+                <li><strong>Reporting:</strong> Download professional reports in CSV or PDF format for your records, presentations, and decision-making</li>
+                <li><strong>Decision Support:</strong> Use the data-driven insights to make informed transportation and urban planning decisions</li>
+            </ol>
+
+            <div style="text-align: center;">
+                <a href="{{ url_for('data_entry') }}" class="cta-button">
+                    <i class="fas fa-rocket"></i> Get Started - Enter Data Now
+                </a>
+                <p style="margin-top: 15px; color: #666; font-size: 1.1em;">Start analyzing Abuja traffic patterns in minutes with our intuitive system</p>
             </div>
         </div>
 
-        <div class="methodology-highlights">
-            <h3>Advanced Analysis Methodology</h3>
-            <ul>
-                <li><strong>Multiple Emission Models:</strong> Basic, Barth, and MOVES models for accurate calculations</li>
-                <li><strong>Real-time Data Processing:</strong> Instant analysis with up-to-date fuel prices and parameters</li>
-                <li><strong>Vehicle-specific Parameters:</strong> Different fuel consumption rates for each vehicle type</li>
-                <li><strong>Economic Impact Assessment:</strong> Comprehensive cost analysis including fuel and productivity</li>
-                <li><strong>Environmental Impact:</strong> CO2 emissions calculation with industry-standard factors</li>
-                <li><strong>Customizable Parameters:</strong> Adjustable values for different scenarios and time periods</li>
-            </ul>
-        </div>
-
-        <h2>How It Works</h2>
-        <ol>
-            <li><strong>Data Collection:</strong> Navigate to the Data Entry page to input traffic data for different vehicle types across major Abuja corridors</li>
-            <li><strong>Analysis:</strong> View comprehensive analysis on the Analysis page with interactive visual charts and detailed metrics</li>
-            <li><strong>Reporting:</strong> Download professional reports in CSV or PDF format for your records, presentations, and decision-making</li>
-            <li><strong>Decision Support:</strong> Use the data-driven insights to make informed transportation and urban planning decisions</li>
-        </ol>
-
-        <div style="text-align: center;">
-            <a href="{{ url_for('data_entry') }}" class="cta-button">
-                <i class="fas fa-rocket"></i> Get Started - Enter Data Now
-            </a>
-            <p style="margin-top: 15px; color: #666; font-size: 1.1em;">Start analyzing Abuja traffic patterns in minutes with our intuitive system</p>
-        </div>
+        <footer>
+            <div class="logo">Opygoal Technology Ltd</div>
+            <p>© {{ current_year }} | Powered by Opygoal Technology Ltd | Developed by Oladotun Ajakaiye</p>
+            <p>Service Manager & Data Analyst | Abuja Traffic Analysis System v2.0</p>
+        </footer>
     </div>
 
-    <footer>
-        <div class="logo">Opygoal Technology Ltd</div>
-        <p>© 2025 | Powered by Opygoal Technology Ltd | Developed by Oladotun Ajakaiye</p>
-        <p>Service Manager & Data Analyst | Abuja Traffic Analysis System v2.0</p>
-    </footer>
-</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statItems = document.querySelectorAll('.stat-item');
+            const options = {
+                threshold: 0.5,
+                rootMargin: '0px 0px -50px 0px'
+            };
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const statItems = document.querySelectorAll('.stat-item');
-        const options = {
-            threshold: 0.5,
-            rootMargin: '0px 0px -50px 0px'
-        };
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const valueElement = entry.target.querySelector('h3');
+                        if (valueElement && !entry.target.classList.contains('animated')) {
+                            entry.target.classList.add('animated');
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const valueElement = entry.target.querySelector('h3');
-                    if (valueElement && !entry.target.classList.contains('animated')) {
-                        entry.target.classList.add('animated');
+                            const target = parseInt(valueElement.textContent);
+                            let current = 0;
+                            const increment = Math.ceil(target / 30);
+                            const duration = 1500;
+                            const steps = duration / 30;
 
-                        const target = parseInt(valueElement.textContent);
-                        let current = 0;
-                        const increment = Math.ceil(target / 30);
-                        const duration = 1500;
-                        const steps = duration / 30;
-
-                        const timer = setInterval(() => {
-                            current += increment;
-                            if (current >= target) {
-                                current = target;
-                                clearInterval(timer);
-                            }
-                            valueElement.textContent = current;
-                        }, steps);
+                            const timer = setInterval(() => {
+                                current += increment;
+                                if (current >= target) {
+                                    current = target;
+                                    clearInterval(timer);
+                                }
+                                valueElement.textContent = current;
+                            }, steps);
+                        }
                     }
                 });
             }, options);

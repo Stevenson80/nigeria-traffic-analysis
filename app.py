@@ -14,7 +14,7 @@ from datetime import datetime
 import tempfile
 import shutil
 from pathlib import Path
-from traffic_analysis_models import TrafficAnalysisModel, EmissionModelType
+from traffic_analysis_models import TrafficAnalysisModel, EmissionModelType, VEHICLE_CLASSES  # Updated import
 
 app = Flask(__name__, template_folder='templates')
 app.secret_key = os.environ.get('SECRET_KEY', 'abuja-traffic-analysis-secret-key')
@@ -353,11 +353,11 @@ def data_entry():
             return redirect(url_for('data_entry'))
 
     return render_template('data_entry.html',
-                           roads=roads,
-                           vehicle_types=vehicle_classes,
-                           current_data=current_data,
-                           emission_models=emission_models,
-                           current_year=datetime.now().year)
+                          roads=roads,
+                          vehicle_types=vehicle_classes,
+                          current_data=current_data,
+                          emission_models=emission_models,
+                          current_year=datetime.now().year)
 
 @app.route('/analysis')
 def analysis():
@@ -467,9 +467,7 @@ def analysis_data():
 
 @app.route('/dashboard')
 def dashboard():
-    """Render the dashboard page,
-
- relying on client-side JavaScript."""
+    """Render the dashboard page, relying on client-side JavaScript."""
     if not Path('templates/traffic_dashboard_pdf.html').exists():
         logger.error("traffic_dashboard_pdf.html template not found")
         flash("Dashboard template not found", "error")
@@ -517,7 +515,6 @@ def download_pdf():
         except ValueError:
             logger.warning(f"Invalid emission model: {emission_model_str}. Defaulting to BASIC.")
             emission_model = EmissionModelType.BASIC
-
         results, report_data, vehicle_distributions, chart_images, model_used, model = get_analysis_results(
             emission_model)
 
