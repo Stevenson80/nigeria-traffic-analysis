@@ -1,12 +1,9 @@
 services:
   - type: web
     name: nigeria-traffic-analysis
-    env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    docker:
+      dockerfile: Dockerfile
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.4
       - key: SECRET_KEY
         generateValue: true
