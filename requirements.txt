@@ -7,5 +7,6 @@ reportlab==4.0.4
 Jinja2==3.1.2
 Werkzeug==2.3.7
 gunicorn==21.2.0
-setuptools==65.5.0  # ADD THIS LINE
-wheel==0.38.4       # ADD THIS LINE
+seaborn==0.12.2  # ← ADD THIS LINE
+setuptools==65.5.0
+wheel==0.38.4
