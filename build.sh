@@ -12,12 +12,15 @@ apt-get install -y \
     libcairo2 \
     libgdk-pixbuf2.0-0 \
     libffi-dev \
-    shared-mime-info
+    shared-mime-info \
+    libxml2-dev \
+    libxslt-dev
 
 # Install fonts
 apt-get install -y \
     fonts-dejavu \
     fonts-liberation \
-    fonts-freefont-ttf
+    fonts-freefont-ttf \
+    fonts-roboto
 
 echo "System dependencies installed successfully!"
