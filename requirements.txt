@@ -7,6 +7,9 @@ reportlab==4.0.4
 Jinja2==3.1.2
 Werkzeug==2.3.7
 gunicorn==21.2.0
-seaborn==0.12.2  # ← ADD THIS LINE
+seaborn==0.12.2
 setuptools==65.5.0
 wheel==0.38.4
+cairocffi==1.6.0
+cairosvg==2.7.0
+Pillow==10.0.1
