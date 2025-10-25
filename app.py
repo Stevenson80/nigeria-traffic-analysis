@@ -2182,6 +2182,20 @@ def debug_charts():
         return jsonify({'charts': [], 'count': 0, 'error': 'temp_charts directory not found'})
 
 
+@app.route('/debug_deps')
+def debug_dependencies():
+    """Check what versions are actually installed"""
+    import weasyprint
+    import pydyf
+    import cairocffi
+
+    return jsonify({
+        'weasyprint_version': weasyprint.__version__,
+        'pydyf_version': getattr(pydyf, '__version__', 'unknown'),
+        'cairocffi_version': cairocffi.__version__
+    })
+
+
 # Production configuration
 if __name__ == "__main__":
     # Check if we're in production (Render sets PORT environment variable)
