@@ -1,23 +1,49 @@
-# PyCharm project files
-.idea/
-
-# Python cache and compiled files
+# Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.codes
+*.egg
 
-# Virtual environment
-venv/
+# PyCharm
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Environment
+.env
+.venv
 env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
-# System files
+# Logs
+*.log
+app.log
+
+# Temporary files
+temp_charts/
+*.pdf
+*.tmp
+
+# OS
 .DS_Store
 Thumbs.db
-
-# Logs and temporary files
-*.log
-*.pdf
-*.csv
-temp_charts/
-pdf_report_rendered.html

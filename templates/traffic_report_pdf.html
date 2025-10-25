@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Nigeria Traffic Analysis System - Summary Report</title>
+    <title>Nigeria Traffic Analysis System - Comprehensive Report</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -23,8 +23,8 @@
             --warning-color: #fff3cd;
             --border-radius: 10px;
             --box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            --advanced-bg: #f8f5ff;
             --transition: all 0.3s ease;
+            --advanced-bg: #f8f5ff;
         }
 
         * {
@@ -105,7 +105,7 @@
             background: var(--light-color);
             padding: 20px;
             border-radius: var(--border-radius);
-            margin: 20px 0;
+            margin: 25px 0;
             border-left: 4px solid var(--accent-color);
             break-inside: avoid;
         }
@@ -342,6 +342,23 @@
             color: var(--dark-color);
         }
 
+        .conclusions {
+            margin: 30px 0;
+            break-before: page;
+        }
+
+        .conclusions h3 {
+            color: var(--primary-color);
+            margin: 0 0 15px 0;
+            font-size: 1.4em;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .conclusions p {
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
         .confidential {
             background: var(--warning-color);
             color: #856404;
@@ -494,13 +511,13 @@
     </style>
 </head>
 <body>
-    <div class="cover-container" role="main" aria-label="Traffic analysis summary report">
+    <div class="cover-container" role="main" aria-label="Traffic analysis report">
         <div class="watermark">NIGERIA TRAFFIC ANALYSIS</div>
 
         <div class="content">
             <div class="header" role="banner">
                 <h1><i class="fas fa-traffic-light" aria-hidden="true"></i> Nigeria Traffic Analysis System</h1>
-                <h2>Summary Traffic Congestion Analysis Report</h2>
+                <h2>Comprehensive Traffic Congestion Analysis Report</h2>
             </div>
 
             <div class="report-info" role="region" aria-label="Report information">
@@ -549,11 +566,11 @@
                     <h3>Total Impact</h3>
                     <div class="value">
                         {% if metric == 'productivity_loss' %}
-                            {{ (summary.total_fuel_cost + summary.total_productivity_loss) | default(0) | format_currency }}
+                            {{ summary.total_productivity_loss_all_cities | default(0) | format_currency }}
                         {% elif metric == 'excess_fuel' %}
-                            {{ summary.total_excess_fuel | default(0) | round(1) }} L
+                            {{ summary.total_excess_fuel_all_cities | default(0) | round(1) }} L
                         {% else %}
-                            {{ summary.total_co2 | default(0) | round(0) }} kg CO₂
+                            {{ summary.total_co2_emissions_all_cities | default(0) | round(0) }} kg CO₂
                         {% endif %}
                     </div>
                 </div>
@@ -609,7 +626,6 @@
                         <caption id="vehicle-types-desc" class="visually-hidden">Table showing vehicle types, average counts, occupancy rates, and emission factors.</caption>
                         <thead>
                             <tr>
-                                <th scope="col">Class</th>
                                 <th scope="col">Vehicle Type</th>
                                 <th scope="col">Average Count</th>
                                 <th scope="col">Occupancy Rate</th>
@@ -619,7 +635,6 @@
                         <tbody>
                             {% for vehicle in vehicle_descriptions %}
                                 <tr>
-                                    <td>Class {{ loop.index }}</td>
                                     <td>{{ vehicle }}</td>
                                     <td>
                                         {% set total_count = 0 %}
@@ -682,7 +697,7 @@
                     <li>Productivity value: {{ report_data[0].get('Value_Per_Minute', 0) | format_currency }} per minute of delay</li>
                     <li>Fuel consumption rates based on vehicle type and traffic conditions</li>
                     <li>CO₂ emission factors: {{ report_data[0].get('Emission_Factor_Petrol', 2.31) | round(2) }} kg/L (petrol), {{ report_data[0].get('Emission_Factor_Diesel', 2.68) | round(2) }} kg/L (diesel)</li>
-                    <li>Advanced parameters: Acceleration {{ report_data[0].get('Avg_Acceleration', 0.5) | round(2) }} m/s², Idle time {{ (report_data[0].get('Idle_Time_Percentage', 0.3) * 100) | round(1) }}%</li>
+                    <li>Advanced parameters: Acceleration {{ report_data[0].get('Avg_Acceleration', 0.5) | round(2) }} m/s², Deceleration {{ report_data[0].get('Avg_Deceleration', 0.5) | round(2) }} m/s², Idle time {{ (report_data[0].get('Idle_Time_Percentage', 0.3) * 100) | round(1) }}%</li>
                     {% if current_emission_model == 'barth' %}
                         <li>Barth coefficients: Alpha {{ report_data[0].get('Barth_Alpha', 0.0003) | round(4) }}, Beta {{ report_data[0].get('Barth_Beta', 0.0025) | round(4) }}, Gamma {{ report_data[0].get('Barth_Gamma', 0.0018) | round(4) }}, Traffic Flow {{ report_data[0].get('Barth_Traffic_Flow', 0.001) | round(4) }}, Road Gradient {{ report_data[0].get('Barth_Road_Gradient', 0.0005) | round(4) }}, Acceleration {{ report_data[0].get('Barth_Acceleration', 0.002) | round(4) }}</li>
                     {% elif current_emission_model == 'moves' %}
@@ -691,11 +706,24 @@
                 </ul>
             </div>
 
+            <div class="conclusions" role="region" aria-label="Conclusions and recommendations">
+                <h3 class="section-title">Conclusions & Recommendations</h3>
+                <p><strong>Key Findings:</strong>
+                    {% if state_results and highest_state_name and summary.total_vehicles_all_cities %}
+                        {{ highest_state_name }} shows the highest congestion impact, accounting for approximately
+                        {{ (state_results[highest_state_name].total_vehicles / summary.total_vehicles_all_cities * 100) | round(1) if summary.total_vehicles_all_cities else 0 }}% of total vehicles.
+                    {% else %}
+                        Analysis shows significant traffic congestion impact across all analyzed areas.
+                    {% endif %}
+                </p>
+                <p><strong>Recommendations:</strong> Implement intelligent traffic management systems, enhance public transportation, prioritize road improvements based on vehicle distributions, and offset {{ summary.total_co2 | default(0) | round(0) }} kg CO₂ through urban greening initiatives.</p>
+            </div>
+
             <div class="footer" role="contentinfo">
                 <div class="footer-logo">Opygoal Technology Ltd</div>
                 <p>© {{ current_year }} | Powered by Opygoal Technology Ltd</p>
                 <p>Developed by Oladotun Ajakaiye | Service Manager & Data Analyst</p>
-                <p>Nigeria Traffic Analysis System | Summary Report</p>
+                <p>Nigeria Traffic Analysis System | Comprehensive Report</p>
             </div>
         </div>
     </div>

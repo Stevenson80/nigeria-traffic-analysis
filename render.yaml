@@ -1,10 +1,12 @@
 services:
   - type: web
-    name: abuja-traffic-analysis
+    name: nigeria-traffic-analysis
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: 3.11.4
+      - key: SECRET_KEY
+        generateValue: true

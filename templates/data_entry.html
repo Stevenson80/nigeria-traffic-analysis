@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Traffic Data Entry - Abuja Traffic Analysis System</title>
+    <title>Traffic Data Entry - Nigeria Traffic Analysis System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #1a2a6c;
@@ -115,15 +116,6 @@
             font-weight: 600;
         }
 
-        h4 {
-            color: var(--secondary-color);
-            margin: 25px 0 15px 0;
-            padding-left: 12px;
-            border-left: 4px solid var(--secondary-color);
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-        }
-
         .flash-message {
             margin-bottom: 25px;
             padding: 15px 20px;
@@ -144,12 +136,6 @@
             background-color: var(--error-color);
             color: #721c24;
             border-color: #f5c6cb;
-        }
-
-        .flash-message.warning {
-            background-color: var(--warning-color);
-            color: #856404;
-            border-color: #ffeaa7;
         }
 
         .form-section {
@@ -185,18 +171,6 @@
             margin-bottom: 20px;
         }
 
-        .form-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .form-row .form-group {
-            flex: 1;
-            min-width: 280px;
-        }
-
         .form-group {
             margin-bottom: 20px;
             position: relative;
@@ -213,8 +187,7 @@
         input[type="date"],
         input[type="time"],
         input[type="text"],
-        select,
-        textarea {
+        select {
             width: 100%;
             padding: 14px;
             border: 2px solid var(--border-color);
@@ -228,8 +201,7 @@
         input[type="date"]:focus,
         input[type="time"]:focus,
         input[type="text"]:focus,
-        select:focus,
-        textarea:focus {
+        select:focus {
             border-color: var(--secondary-color);
             outline: none;
             box-shadow: 0 0 0 3px rgba(178, 31, 31, 0.1);
@@ -239,8 +211,7 @@
         input[type="date"].error,
         input[type="time"].error,
         input[type="text"].error,
-        select.error,
-        textarea.error {
+        select.error {
             border-color: #dc3545;
         }
 
@@ -249,62 +220,60 @@
             font-size: 14px;
             margin-top: 6px;
             display: none;
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background-color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border-radius: var(--border-radius);
-            overflow: hidden;
+        @media (max-width: 768px) {
+            .error-message {
+                position: static;
+                width: 100%;
+                margin-bottom: 10px;
+            }
         }
 
-        th, td {
-            border: 1px solid var(--border-color);
-            padding: 14px;
-            text-align: left;
-        }
-
-        th {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            font-weight: 600;
-            position: sticky;
-            top: 0;
-        }
-
-        tr:nth-child(even) {
-            background-color: var(--light-color);
-        }
-
-        input[type="submit"] {
-            margin-top: 40px;
-            padding: 18px 50px;
+        input[type="submit"],
+        input[type="button"],
+        button.form-submit,
+        button.remove-city {
+            margin-top: 20px;
+            padding: 12px 24px;
             background: linear-gradient(135deg, var(--accent-color), #e65c00);
             color: white;
             border: none;
-            border-radius: 50px;
+            border-radius: var(--border-radius);
             cursor: pointer;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             transition: var(--transition);
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-            box-shadow: 0 6px 20px rgba(253, 187, 45, 0.4);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(253, 187, 45, 0.3);
             font-family: 'Poppins', sans-serif;
         }
 
-        input[type="submit"]:hover {
+        input[type="submit"]:hover,
+        input[type="button"]:hover,
+        button.form-submit:hover,
+        button.remove-city:hover {
             background: linear-gradient(135deg, #e65c00, var(--accent-color));
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(253, 187, 45, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(253, 187, 45, 0.4);
         }
 
-        input[type="submit"]:active {
-            transform: translateY(0);
+        button.remove-city {
+            background: var(--secondary-color);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            padding: 0;
+        }
+
+        button.remove-city:hover {
+            background: #9a1a1a;
         }
 
         footer {
@@ -328,13 +297,6 @@
             color: #6c757d;
             margin-top: 6px;
             font-style: italic;
-        }
-
-        small {
-            font-size: 12px;
-            color: #6c757d;
-            display: block;
-            margin-top: 6px;
         }
 
         .calculation-box {
@@ -408,120 +370,16 @@
             animation: fadeIn 0.5s ease;
         }
 
-        .barth-fields,
-        .moves-fields {
-            display: none;
-        }
-
-        .barth-fields.visible,
-        .moves-fields.visible {
-            display: block;
-        }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .sub-section {
-            margin: 25px 0;
-            padding: 20px;
-            background-color: white;
-            border-radius: var(--border-radius);
-            border-left: 3px solid #6f42c1;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .sub-section h4 {
-            color: #6f42c1;
-            border-left: 4px solid #6f42c1;
-        }
-
-        .model-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            background: var(--primary-color);
-            color: white;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-left: 10px;
-            vertical-align: middle;
-        }
-
-        .vehicle-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        .city-controls {
+            display: flex;
             gap: 15px;
-            margin: 20px 0;
-        }
-
-        @media (max-width: 1024px) {
-            .form-grid {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            }
-
-            .vehicle-grid {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            }
-        }
-
-        @media (max-width: 768px) {
-            .navbar {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .navbar a {
-                width: 100%;
-                max-width: 300px;
-                justify-content: center;
-                margin: 5px 0;
-            }
-
-            .form-container {
-                padding: 20px;
-            }
-
-            table {
-                font-size: 14px;
-            }
-
-            th, td {
-                padding: 10px;
-            }
-
-            .form-row {
-                flex-direction: column;
-            }
-
-            h1 {
-                font-size: 2em;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 15px;
-            }
-
-            .form-container {
-                padding: 15px;
-            }
-
-            .form-section {
-                padding: 20px 15px;
-            }
-
-            input[type="submit"] {
-                width: 100%;
-                padding: 16px;
-            }
-
-            .toggle-advanced {
-                width: 100%;
-                justify-content: center;
-            }
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .info-tooltip {
@@ -558,230 +416,128 @@
         .info-tooltip i {
             color: var(--secondary-color);
         }
+
+        .collapsible {
+            margin-bottom: 20px;
+        }
+
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--light-color);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--primary-color);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        .collapsible-header:hover {
+            background-color: #e6e9f0;
+        }
+
+        .collapsible-content {
+            display: none;
+            padding: 20px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-top: 10px;
+        }
+
+        .collapsible-content.active {
+            display: block;
+        }
+
+        .city-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .city-item {
+            background-color: var(--light-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .city-metrics {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #e8f4fc;
+            border-radius: 8px;
+            border-left: 4px solid #1a2a6c;
+        }
+
+        .city-metrics h4 {
+            margin-top: 0;
+            color: #1a2a6c;
+            border-bottom: 1px solid #b21f1f;
+            padding-bottom: 5px;
+        }
+
+        #results-container {
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .common-fields,
+        .barth-fields {
+            display: none;
+        }
+
+        .common-fields.visible,
+        .barth-fields.visible {
+            display: block;
+        }
+
+        .model-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .vehicle-class-group {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #e8f4fc;
+            border-radius: 8px;
+            border-left: 4px solid #1a2a6c;
+        }
+
+        .vehicle-class-group h5 {
+            margin-top: 0;
+            color: #1a2a6c;
+            border-bottom: 1px solid #b21f1f;
+            padding-bottom: 5px;
+        }
+
+        .distribution-section {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+
+        .distribution-section h3 {
+            color: #856404;
+        }
     </style>
-    <script>
-        function validateForm() {
-            // Clear previous errors
-            clearErrors();
-
-            let isValid = true;
-            const emissionModel = document.getElementById('emission_model').value;
-
-            // Validate travel times
-            const congestedTime = parseFloat(document.getElementById('congested_travel_time').value);
-            const freeFlowTime = parseFloat(document.getElementById('free_flow_time').value);
-            if (congestedTime <= freeFlowTime) {
-                showError('congested_travel_time', 'Congested Travel Time must be greater than Free Flow Time.');
-                isValid = false;
-            }
-
-            // Validate all numeric inputs
-            const numericInputs = document.querySelectorAll('input[type="number"]');
-            numericInputs.forEach(input => {
-                if (input.value && parseFloat(input.value) < 0) {
-                    showError(input.id, 'Value must be a positive number.');
-                    isValid = false;
-                }
-            });
-
-            // Validate MOVES-specific fields if MOVES model is selected
-            if (emissionModel === 'moves') {
-                const movesFields = [
-                    { id: 'congested_speed_kph', name: 'Average Speed', min: 0 },
-                    { id: 'stops_per_km', name: 'Stops per Kilometer', min: 0 },
-                    { id: 'road_grade', name: 'Road Grade', min: -10, max: 10 },
-                    { id: 'temperature_c', name: 'Temperature', min: -50, max: 50 }
-                ];
-                movesFields.forEach(field => {
-                    const input = document.getElementById(field.id);
-                    if (!input.value.trim()) {
-                        showError(field.id, `${field.name} is required for MOVES model.`);
-                        isValid = false;
-                    } else {
-                        const value = parseFloat(input.value);
-                        if (value < field.min || (field.max !== undefined && value > field.max)) {
-                            showError(field.id, `${field.name} must be between ${field.min} and ${field.max || 'infinity'}.`);
-                            isValid = false;
-                        }
-                    }
-                });
-            }
-
-            // Validate Barth-specific fields if Barth model is selected
-            if (emissionModel === 'barth') {
-                const barthFields = [
-                    { id: 'barth_alpha', name: 'Alpha Coefficient', min: 0 },
-                    { id: 'barth_beta', name: 'Beta Coefficient', min: 0 },
-                    { id: 'barth_gamma', name: 'Gamma Coefficient', min: 0 },
-                    { id: 'barth_traffic_flow', name: 'Traffic Flow Coefficient', min: 0 },
-                    { id: 'barth_road_gradient', name: 'Road Gradient Coefficient', min: 0 },
-                    { id: 'barth_acceleration', name: 'Acceleration Coefficient', min: 0 }
-                ];
-                barthFields.forEach(field => {
-                    const input = document.getElementById(field.id);
-                    if (!input.value.trim()) {
-                        showError(field.id, `${field.name} is required for Barth model.`);
-                        isValid = false;
-                    } else if (parseFloat(input.value) < field.min) {
-                        showError(field.id, `${field.name} must be a positive number.`);
-                        isValid = false;
-                    }
-                });
-            }
-
-            // Validate required fields
-            const requiredInputs = document.querySelectorAll('[required]');
-            requiredInputs.forEach(input => {
-                if (!input.value.trim()) {
-                    showError(input.id, 'This field is required.');
-                    isValid = false;
-                }
-            });
-
-            if (!isValid) {
-                // Scroll to first error
-                const firstError = document.querySelector('.error');
-                if (firstError) {
-                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
-
-            return isValid;
-        }
-
-        function showError(inputId, message) {
-            const input = document.getElementById(inputId);
-            const errorElement = document.getElementById(inputId + '-error');
-
-            if (input) {
-                input.classList.add('error');
-            }
-
-            if (errorElement) {
-                errorElement.textContent = message;
-                errorElement.style.display = 'block';
-            }
-        }
-
-        function clearErrors() {
-            const errorInputs = document.querySelectorAll('.error');
-            errorInputs.forEach(input => input.classList.remove('error'));
-
-            const errorMessages = document.querySelectorAll('.error-message');
-            errorMessages.forEach(msg => msg.style.display = 'none');
-        }
-
-        function showLoading() {
-            document.getElementById('loading').style.display = 'block';
-            document.querySelector('input[type="submit"]').disabled = true;
-        }
-
-        function hideLoading() {
-            document.getElementById('loading').style.display = 'none';
-            document.querySelector('input[type="submit"]').disabled = false;
-        }
-
-        function calculateDelay() {
-            const congestedTime = parseFloat(document.getElementById('congested_travel_time').value) || 0;
-            const freeFlowTime = parseFloat(document.getElementById('free_flow_time').value) || 0;
-            const delay = congestedTime - freeFlowTime;
-
-            if (delay > 0) {
-                document.getElementById('delay_time').textContent = delay.toFixed(1) + ' minutes';
-                document.getElementById('delay_minutes').value = delay.toFixed(1);
-            } else {
-                document.getElementById('delay_time').textContent = '0 minutes';
-                document.getElementById('delay_minutes').value = '0';
-            }
-        }
-
-        function toggleAdvancedFields() {
-            const advancedFields = document.getElementById('advancedFields');
-            const toggleButton = document.getElementById('toggleAdvanced');
-            const emissionModel = document.getElementById('emission_model').value;
-
-            if (advancedFields.classList.contains('visible')) {
-                advancedFields.classList.remove('visible');
-                toggleButton.innerHTML = '<i class="fas fa-cogs"></i> Show Advanced Fields';
-            } else {
-                advancedFields.classList.add('visible');
-                toggleButton.innerHTML = '<i class="fas fa-times"></i> Hide Advanced Fields';
-                // Show only relevant fields based on emission model
-                updateAdvancedFieldsVisibility();
-                // Scroll to advanced fields
-                setTimeout(() => {
-                    advancedFields.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 300);
-            }
-        }
-
-        function updateAdvancedFieldsVisibility() {
-            const emissionModel = document.getElementById('emission_model').value;
-            const barthFields = document.getElementById('barthFields');
-            const movesFields = document.getElementById('movesFields');
-
-            if (emissionModel === 'barth') {
-                barthFields.classList.add('visible');
-                movesFields.classList.remove('visible');
-            } else if (emissionModel === 'moves') {
-                barthFields.classList.remove('visible');
-                movesFields.classList.add('visible');
-            } else {
-                barthFields.classList.remove('visible');
-                movesFields.classList.remove('visible');
-            }
-        }
-
-        function setDefaultValues() {
-            // Set 2026 fuel prices and other defaults
-            document.getElementById('fuel_cost_per_liter_petrol').value = '1045.0';
-            document.getElementById('fuel_cost_per_liter_diesel').value = '1210.0';
-            document.getElementById('value_per_minute').value = '8.8';
-            document.getElementById('emission_factor_petrol').value = '2.31';
-            document.getElementById('emission_factor_diesel').value = '2.68';
-            document.getElementById('distance_km').value = '6.0';
-            document.getElementById('congested_travel_time').value = '45.0';
-            document.getElementById('free_flow_time').value = '4.0';
-
-            // Set default values for advanced fields
-            document.getElementById('congested_speed_kph').value = '8.0';
-            document.getElementById('stops_per_km').value = '2.0';
-            document.getElementById('road_grade').value = '0.0';
-            document.getElementById('temperature_c').value = '25.0';
-            document.getElementById('barth_alpha').value = '0.0003';
-            document.getElementById('barth_beta').value = '0.0025';
-            document.getElementById('barth_gamma').value = '0.0018';
-            document.getElementById('barth_traffic_flow').value = '0.15';
-            document.getElementById('barth_road_gradient').value = '0.10';
-            document.getElementById('barth_acceleration').value = '0.04';
-
-            // Set default emission model
-            const emissionModelSelect = document.getElementById('emission_model');
-            if (emissionModelSelect && !emissionModelSelect.value) {
-                emissionModelSelect.value = 'basic';
-            }
-
-            // Update advanced fields visibility
-            updateAdvancedFieldsVisibility();
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('congested_travel_time').addEventListener('input', calculateDelay);
-            document.getElementById('free_flow_time').addEventListener('input', calculateDelay);
-            document.getElementById('toggleAdvanced').addEventListener('click', toggleAdvancedFields);
-            document.getElementById('emission_model').addEventListener('change', updateAdvancedFieldsVisibility);
-            setDefaultValues();
-            calculateDelay();
-        });
-    </script>
 </head>
 <body>
     <div class="navbar" role="navigation" aria-label="Main navigation">
-        <a href="{{ url_for('welcome') }}" aria-label="Home page"><i class="fas fa-home"></i>ყ</a>
-        <a href="{{ url_for('analysis') }}" aria-label="Analysis page"><i class="fas fa-chart-bar"></i> Analysis</a>
+        <a href="{{ url_for('welcome') }}" aria-label="Home page"><i class="fas fa-home"></i> Home</a>
+        <a href="{{ url_for('dashboard') }}" aria-label="Dashboard page"><i class="fas fa-chart-bar"></i> Dashboard</a>
         <a href="{{ url_for('data_entry') }}" aria-label="Data entry page" class="active"><i class="fas fa-pen-to-square"></i> Data Entry</a>
-        <a href="{{ url_for('download_report') }}" aria-label="Download CSV report"><i class="fas fa-file-csv"></i> CSV Report</a>
-        <a href="{{ url_for('download_pdf') }}" aria-label="Download PDF report"><i class="fas fa-file-pdf"></i> PDF Report</a>
+        <a href="{{ url_for('clear_data') }}" onclick="return confirm('Are you sure you want to clear all data?');" aria-label="Clear data"><i class="fas fa-trash-alt"></i> Clear Data</a>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -798,89 +554,220 @@
     {% endwith %}
 
     <div class="form-container">
-        <h1><i class="fas fa-traffic-light"></i> Traffic Data Entry</h1>
-        <p class="subtitle">Enter traffic data for comprehensive congestion analysis across major Abuja roads</p>
+        <h1><i class="fas fa-traffic-light"></i> Traffic Data Entry for {{ state | default('Selected State') }}</h1>
+        <p class="subtitle">Enter traffic data for selected cities</p>
 
-        <form method="post" action="{{ url_for('data_entry') }}" onsubmit="showLoading(); return validateForm();">
-
-            <!-- Hidden field for delay time -->
-            <input type="hidden" id="delay_minutes" name="delay_minutes" value="0">
+        <form method="post" action="{{ url_for('dashboard') }}" onsubmit="return validateAndSubmit();" id="data-entry-form">
+            <!-- NEW: Hidden currency field -->
+            <input type="hidden" name="currency" value="NGN">
 
             <div class="form-section">
-                <h3><i class="fas fa-info-circle"></i> General Parameters</h3>
-
+                <h3><i class="fas fa-list"></i> Analysis Parameters</h3>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="entry_date" class="required">Date:</label>
-                        <input type="date" id="entry_date" name="entry_date" value="{{ current_data.get('entry_date', '') }}" required aria-label="Data entry date">
-                        <div id="entry_date-error" class="error-message"></div>
+                        <label for="metric" class="required">Metric
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Select the metric to analyze</span>
+                            </span>
+                        </label>
+                        <select name="metric" id="metric" required aria-label="Metric" aria-describedby="metric-error">
+                            <option value="" disabled {% if not metric %}selected{% endif %}>Select a metric</option>
+                            <option value="productivity_loss" {% if metric == 'productivity_loss' %}selected{% endif %}>Productivity Loss</option>
+                            <option value="excess_fuel" {% if metric == 'excess_fuel' %}selected{% endif %}>Excess Fuel Used</option>
+                            <option value="co2_emissions" {% if metric == 'co2_emissions' %}selected{% endif %}>CO₂ Emissions</option>
+                        </select>
+                        <div id="metric-error" class="error-message"></div>
                     </div>
-
                     <div class="form-group">
-                        <label for="entry_time" class="required">Time:</label>
-                        <input type="time" id="entry_time" name="entry_time" value="{{ current_data.get('entry_time', '') }}" required aria-label="Data entry time">
-                        <div id="entry_time-error" class="error-message"></div>
+                        <label for="state" class="required">State
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Select the state for analysis</span>
+                            </span>
+                        </label>
+                        <select name="state" id="state" required aria-label="State" aria-describedby="state-error">
+                            <option value="" disabled {% if not state %}selected{% endif %}>Select a state</option>
+                            <option value="Abia" {% if state == 'Abia' %}selected{% endif %}>Abia</option>
+                            <option value="Adamawa" {% if state == 'Adamawa' %}selected{% endif %}>Adamawa</option>
+                            <option value="Akwa Ibom" {% if state == 'Akwa Ibom' %}selected{% endif %}>Akwa Ibom</option>
+                            <option value="Anambra" {% if state == 'Anambra' %}selected{% endif %}>Anambra</option>
+                            <option value="Bauchi" {% if state == 'Bauchi' %}selected{% endif %}>Bauchi</option>
+                            <option value="Bayelsa" {% if state == 'Bayelsa' %}selected{% endif %}>Bayelsa</option>
+                            <option value="Benue" {% if state == 'Benue' %}selected{% endif %}>Benue</option>
+                            <option value="Borno" {% if state == 'Borno' %}selected{% endif %}>Borno</option>
+                            <option value="Cross River" {% if state == 'Cross River' %}selected{% endif %}>Cross River</option>
+                            <option value="Delta" {% if state == 'Delta' %}selected{% endif %}>Delta</option>
+                            <option value="Ebonyi" {% if state == 'Ebonyi' %}selected{% endif %}>Ebonyi</option>
+                            <option value="Edo" {% if state == 'Edo' %}selected{% endif %}>Edo</option>
+                            <option value="Ekiti" {% if state == 'Ekiti' %}selected{% endif %}>Ekiti</option>
+                            <option value="Enugu" {% if state == 'Enugu' %}selected{% endif %}>Enugu</option>
+                            <option value="FCT" {% if state == 'FCT' %}selected{% endif %}>Federal Capital Territory</option>
+                            <option value="Gombe" {% if state == 'Gombe' %}selected{% endif %}>Gombe</option>
+                            <option value="Imo" {% if state == 'Imo' %}selected{% endif %}>Imo</option>
+                            <option value="Jigawa" {% if state == 'Jigawa' %}selected{% endif %}>Jigawa</option>
+                            <option value="Kaduna" {% if state == 'Kaduna' %}selected{% endif %}>Kaduna</option>
+                            <option value="Kano" {% if state == 'Kano' %}selected{% endif %}>Kano</option>
+                            <option value="Katsina" {% if state == 'Katsina' %}selected{% endif %}>Katsina</option>
+                            <option value="Kebbi" {% if state == 'Kebbi' %}selected{% endif %}>Kebbi</option>
+                            <option value="Kogi" {% if state == 'Kogi' %}selected{% endif %}>Kogi</option>
+                            <option value="Kwara" {% if state == 'Kwara' %}selected{% endif %}>Kwara</option>
+                            <option value="Lagos" {% if state == 'Lagos' %}selected{% endif %}>Lagos</option>
+                            <option value="Nasarawa" {% if state == 'Nasarawa' %}selected{% endif %}>Nasarawa</option>
+                            <option value="Niger" {% if state == 'Niger' %}selected{% endif %}>Niger</option>
+                            <option value="Ogun" {% if state == 'Ogun' %}selected{% endif %}>Ogun</option>
+                            <option value="Ondo" {% if state == 'Ondo' %}selected{% endif %}>Ondo</option>
+                            <option value="Osun" {% if state == 'Osun' %}selected{% endif %}>Osun</option>
+                            <option value="Oyo" {% if state == 'Oyo' %}selected{% endif %}>Oyo</option>
+                            <option value="Plateau" {% if state == 'Plateau' %}selected{% endif %}>Plateau</option>
+                            <option value="Rivers" {% if state == 'Rivers' %}selected{% endif %}>Rivers</option>
+                            <option value="Sokoto" {% if state == 'Sokoto' %}selected{% endif %}>Sokoto</option>
+                            <option value="Taraba" {% if state == 'Taraba' %}selected{% endif %}>Taraba</option>
+                            <option value="Yobe" {% if state == 'Yobe' %}selected{% endif %}>Yobe</option>
+                            <option value="Zamfara" {% if state == 'Zamfara' %}selected{% endif %}>Zamfara</option>
+                        </select>
+                        <div id="state-error" class="error-message"></div>
                     </div>
-
                     <div class="form-group">
-                        <label for="emission_model" class="required">Emission Model:</label>
-                        <select id="emission_model" name="emission_model" required aria-label="Emission model selection">
-                            <option value="basic" {% if current_data.get('emission_model', 'basic') == 'basic' %}selected{% endif %}>Basic Model</option>
-                            <option value="barth" {% if current_data.get('emission_model', 'basic') == 'barth' %}selected{% endif %}>Barth Model</option>
-                            <option value="moves" {% if current_data.get('emission_model', 'basic') == 'moves' %}selected{% endif %}>MOVES Model</option>
+                        <label for="region" class="required">Region
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Enter the region or district within the state</span>
+                            </span>
+                        </label>
+                        <input type="text" name="region" id="region" value="{{ region | default('') }}" placeholder="e.g., Central District, Main Area" required aria-label="Region" aria-describedby="region-error">
+                        <div id="region-error" class="error-message"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="emission_model" class="required">Emission Model
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Select the calculation model for CO₂ emissions, productivity loss, and excess fuel used</span>
+                            </span>
+                        </label>
+                        <select name="emission_model" id="emission_model" required aria-label="Emission model" aria-describedby="emission_model-help emission_model-error">
+                            <option value="" disabled {% if not emission_model %}selected{% endif %}>Select an emission model</option>
+                            <option value="basic" {% if emission_model == 'basic' %}selected{% endif %}>Basic Model</option>
+                            <option value="barth" {% if emission_model == 'barth' %}selected{% endif %}>Barth's Formula</option>
+                            <option value="moves" {% if emission_model == 'moves' %}selected{% endif %}>MOVES Formula</option>
                         </select>
                         <div id="emission_model-error" class="error-message"></div>
+                        <div id="emission_model-help" class="help-text">Choose the model for calculations</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-city"></i> City Data</h3>
+                <div class="city-controls">
+                    <div class="form-group">
+                        <label for="city-input" class="required">Add City
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Enter a city name to add to the analysis</span>
+                            </span>
+                        </label>
+                        <input type="text" id="city-input" placeholder="Enter city name" aria-label="Add city" aria-describedby="city-input-error">
+                        <div id="city-input-error" class="error-message"></div>
+                    </div>
+                    <button type="button" class="form-submit" onclick="addCity()" aria-label="Add city to list"><i class="fas fa-plus"></i> Add City</button>
+                </div>
+                <div class="collapsible">
+                    <div class="collapsible-header" onclick="toggleCollapse(this)">
+                        <span>City Data <i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="collapsible-content active" id="city-content">
+                        <div class="city-grid" id="city-grid">
+                            <!-- Cities will be added dynamically via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-clock"></i> Travel Time Parameters</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="entry_date" class="required">Entry Date
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Date of data collection</span>
+                            </span>
+                        </label>
+                        <input type="date" name="entry_date" id="entry_date" value="{{ current_data.entry_date | default('') }}" required aria-label="Entry date" aria-describedby="entry_date-help entry_date-error">
+                        <div id="entry_date-error" class="error-message"></div>
+                        <div id="entry_date-help" class="help-text">Date of data collection</div>
                     </div>
 
                     <div class="form-group">
-                        <label for="congested_travel_time" class="required">Congested Travel Time (minutes):</label>
-                        <input type="number" id="congested_travel_time" name="congested_travel_time" step="0.1" min="0" value="{{ current_data.get('congested_travel_time', 45.0) }}" required aria-label="Congested travel time in minutes">
+                        <label for="entry_time" class="required">Entry Time
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Time of data collection</span>
+                            </span>
+                        </label>
+                        <input type="time" name="entry_time" id="entry_time" value="{{ current_data.entry_time | default('') }}" required aria-label="Entry time" aria-describedby="entry_time-help entry_time-error">
+                        <div id="entry_time-error" class="error-message"></div>
+                        <div id="entry_time-help" class="help-text">Time of data collection</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="road" class="required">Road Name
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Name of the road or corridor being analyzed</span>
+                            </span>
+                        </label>
+                        <input type="text" name="road" id="road" value="{{ current_data.road | default('') }}" placeholder="e.g., Main Road, Expressway" required aria-label="Road name" aria-describedby="road-error">
+                        <div id="road-error" class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="congested_travel_time" class="required">Congested Travel Time (minutes)
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Time to travel corridor during congestion</span>
+                            </span>
+                        </label>
+                        <input type="number" name="congested_travel_time" id="congested_travel_time" min="0" step="0.1" placeholder="e.g., 45.0" required aria-label="Congested travel time" aria-describedby="congested_travel_time-help congested_travel_time-error">
                         <div id="congested_travel_time-error" class="error-message"></div>
+                        <div id="congested_travel_time-help" class="help-text">Time to travel corridor during congestion</div>
                     </div>
 
                     <div class="form-group">
-                        <label for="free_flow_time" class="required">Free Flow Time (minutes):</label>
-                        <input type="number" id="free_flow_time" name="free_flow_time" step="0.1" min="0" value="{{ current_data.get('free_flow_time', 4.0) }}" required aria-label="Free flow time in minutes">
+                        <label for="free_flow_time" class="required">Free Flow Time (minutes)
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Time to travel corridor without congestion</span>
+                            </span>
+                        </label>
+                        <input type="number" name="free_flow_time" id="free_flow_time" min="0" step="0.1" placeholder="e.g., 4.0" required aria-label="Free flow time" aria-describedby="free_flow_time-help free_flow_time-error">
                         <div id="free_flow_time-error" class="error-message"></div>
+                        <div id="free_flow_time-help" class="help-text">Time to travel corridor without congestion</div>
                     </div>
 
                     <div class="form-group">
-                        <label for="distance_km" class="required">Distance (km):</label>
-                        <input type="number" id="distance_km" name="distance_km" step="0.1" min="0" value="{{ current_data.get('distance_km', 6.0) }}" required aria-label="Distance in kilometers">
+                        <label for="distance_km" class="required">Distance (km)
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Distance of the corridor in kilometers</span>
+                            </span>
+                        </label>
+                        <input type="number" name="distance_km" id="distance_km" min="0" step="0.1" placeholder="e.g., 6.0" required aria-label="Distance" aria-describedby="distance_km-help distance_km-error">
                         <div id="distance_km-error" class="error-message"></div>
+                        <div id="distance_km-help" class="help-text">Distance of the corridor in kilometers</div>
                     </div>
 
                     <div class="form-group">
-                        <label for="value_per_minute" class="required">Value per Minute (₦):</label>
-                        <input type="number" id="value_per_minute" name="value_per_minute" step="0.01" min="0" value="{{ current_data.get('value_per_minute', 8.8) }}" required aria-label="Value per minute in Naira">
-                        <div id="value_per_minute-error" class="error-message"></div>
-                        <div class="help-text">Based on 2026 economic parameters</div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="fuel_cost_per_liter_petrol" class="required">Fuel Cost - Petrol (₦/L):</label>
-                        <input type="number" id="fuel_cost_per_liter_petrol" name="fuel_cost_per_liter_petrol" step="0.01" min="0" value="{{ current_data.get('fuel_cost_per_liter_petrol', 1045.0) }}" required aria-label="Petrol fuel cost per liter in Naira">
-                        <div id="fuel_cost_per_liter_petrol-error" class="error-message"></div>
-                        <div class="help-text">2026 pricing with 10% inflation adjustment</div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="fuel_cost_per_liter_diesel" class="required">Fuel Cost - Diesel (₦/L):</label>
-                        <input type="number" id="fuel_cost_per_liter_diesel" name="fuel_cost_per_liter_diesel" step="0.01" min="0" value="{{ current_data.get('fuel_cost_per_liter_diesel', 1210.0) }}" required aria-label="Diesel fuel cost per liter in Naira">
-                        <div id="fuel_cost_per_liter_diesel-error" class="error-message"></div>
-                        <div class="help-text">2026 pricing with 10% inflation adjustment</div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="emission_factor_petrol" class="required">Emission Factor - Petrol (kg CO₂/L):</label>
-                        <input type="number" id="emission_factor_petrol" name="emission_factor_petrol" step="0.01" min="0" value="{{ current_data.get('emission_factor_petrol', 2.31) }}" required aria-label="Petrol emission factor in kg CO2 per liter">
-                        <div id="emission_factor_petrol-error" class="error-message"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="emission_factor_diesel" class="required">Emission Factor - Diesel (kg CO₂/L):</label>
-                        <input type="number" id="emission_factor_diesel" name="emission_factor_diesel" step="0.01" min="0" value="{{ current_data.get('emission_factor_diesel', 2.68) }}" required aria-label="Diesel emission factor in kg CO2 per liter">
-                        <div id="emission_factor_diesel-error" class="error-message"></div>
+                        <label for="productivity_value">Productivity Value (₦/minute)
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Economic value of one minute for productivity loss</span>
+                            </span>
+                        </label>
+                        <input type="number" name="productivity_value" id="productivity_value" min="0" step="0.01" placeholder="e.g., 8.8" aria-label="Productivity value" aria-describedby="productivity_value-help productivity_value-error">
+                        <div id="productivity_value-error" class="error-message"></div>
+                        <div id="productivity_value-help" class="help-text">Economic value of one minute for productivity loss</div>
                     </div>
                 </div>
 
@@ -890,138 +777,267 @@
                 </div>
             </div>
 
+            <!-- Traffic Flow Parameters Section -->
             <div class="form-section">
-                <h3><i class="fas fa-car"></i> Vehicle Counts by Road</h3>
-                <p>Enter the number of vehicles observed for each vehicle class on each road:</p>
-
-                {% for road in roads | default(['Nyanya Road', 'Lugbe Road', 'Kubwa Road']) %}
-                    <h4>{{ road }}</h4>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="class1_volume_{{ road.replace(' ', '_') }}">Class 1 (Motorcycles) Volume:</label>
-                            <input type="number" id="class1_volume_{{ road.replace(' ', '_') }}" name="{{ road.replace(' ', '_') }}_Class_1_Motorcycles" min="0" value="{{ current_data.get((road, 'Class_1_Motorcycles'), 120) }}" required aria-label="Vehicle count for Class 1 (Motorcycles) on {{ road }}">
-                            <div id="class1_volume_{{ road.replace(' ', '_') }}-error" class="error-message"></div>
-                        </div>
-                        <div class="form-group">
-                            <label for="class2_volume_{{ road.replace(' ', '_') }}">Class 2 (Cars, SUVs, Sedans, Wagons, Short Buses) Volume:</label>
-                            <input type="number" id="class2_volume_{{ road.replace(' ', '_') }}" name="{{ road.replace(' ', '_') }}_Class_2_Cars_SUVs_Sedans_Wagons_Short_Buses" min="0" value="{{ current_data.get((road, 'Class_2_Cars_SUVs_Sedans_Wagons_Short_Buses'), 490) }}" required aria-label="Vehicle count for Class 2 (Cars, SUVs, Sedans, Wagons, Short Buses) on {{ road }}">
-                            <div id="class2_volume_{{ road.replace(' ', '_') }}-error" class="error-message"></div>
-                        </div>
-                        <div class="form-group">
-                            <label for="class3_volume_{{ road.replace(' ', '_') }}">Class 3 (Coasters, Mid & Long Buses) Volume:</label>
-                            <input type="number" id="class3_volume_{{ road.replace(' ', '_') }}" name="{{ road.replace(' ', '_') }}_Class_3_Coasters_Mid_Long_Buses" min="0" value="{{ current_data.get((road, 'Class_3_Coasters_Mid_Long_Buses'), 15) }}" required aria-label="Vehicle count for Class 3 (Coasters, Mid & Long Buses) on {{ road }}">
-                            <div id="class3_volume_{{ road.replace(' ', '_') }}-error" class="error-message"></div>
-                        </div>
-                        <div class="form-group">
-                            <label for="class4_volume_{{ road.replace(' ', '_') }}">Class 4 (Trucks) Volume:</label>
-                            <input type="number" id="class4_volume_{{ road.replace(' ', '_') }}" name="{{ road.replace(' ', '_') }}_Class_4_Trucks" min="0" value="{{ current_data.get((road, 'Class_4_Trucks'), 25) }}" required aria-label="Vehicle count for Class 4 (Trucks) on {{ road }}">
-                            <div id="class4_volume_{{ road.replace(' ', '_') }}-error" class="error-message"></div>
-                        </div>
-                        <div class="form-group">
-                            <label for="class5_volume_{{ road.replace(' ', '_') }}">Class 5 (Tankers & Trailers) Volume:</label>
-                            <input type="number" id="class5_volume_{{ road.replace(' ', '_') }}" name="{{ road.replace(' ', '_') }}_Class_5_Tankers_Trailers" min="0" value="{{ current_data.get((road, 'Class_5_Tankers_Trailers'), 8) }}" required aria-label="Vehicle count for Class 5 (Tankers & Trailers) on {{ road }}">
-                            <div id="class5_volume_{{ road.replace(' ', '_') }}-error" class="error-message"></div>
-                        </div>
+                <h3><i class="fas fa-traffic-light"></i> Traffic Flow Parameters</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="flow_rate" class="required">Vehicle Flow Rate (veh/hr)
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Total vehicles per hour passing through the corridor</span>
+                            </span>
+                        </label>
+                        <input type="number" name="flow_rate" id="flow_rate" min="1" step="1" placeholder="e.g., 1200" required aria-label="Vehicle flow rate" aria-describedby="flow_rate-help flow_rate-error">
+                        <div id="flow_rate-error" class="error-message"></div>
+                        <div id="flow_rate-help" class="help-text">Total vehicles per hour passing through the corridor</div>
                     </div>
-                {% endfor %}
+
+                    <div class="form-group">
+                        <label for="analysis_period" class="required">Analysis Period (hours)
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Duration of analysis period</span>
+                            </span>
+                        </label>
+                        <input type="number" name="analysis_period" id="analysis_period" min="0.1" step="0.1" placeholder="e.g., 1.0" required aria-label="Analysis period" aria-describedby="analysis_period-help analysis_period-error">
+                        <div id="analysis_period-error" class="error-message"></div>
+                        <div id="analysis_period-help" class="help-text">Duration of analysis period</div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Advanced Fields Toggle -->
+            <!-- Vehicle Class Distribution Section - REMOVED CONFLICTING LOGIC -->
+            <div class="form-section distribution-section">
+                <h3><i class="fas fa-info-circle"></i> Vehicle Distribution Information</h3>
+                <p class="help-text"><strong>Note:</strong> Vehicle distribution percentages are now automatically calculated from your manual vehicle counts. The system uses the actual counts you enter below for each city and vehicle type.</p>
+                <div class="calculation-box">
+                    <p><strong>How it works:</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Enter vehicle counts for each city and vehicle type below</li>
+                        <li>The system automatically calculates distribution percentages</li>
+                        <li>No need to manually enter distribution percentages</li>
+                        <li>All calculations use your actual vehicle counts</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-gas-pump"></i> Fuel Cost Parameters</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="fuel_cost_petrol" class="required">Fuel Cost - Petrol (₦/L)
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Cost per liter of petrol fuel</span>
+                            </span>
+                        </label>
+                        <input type="number" name="fuel_cost_petrol" id="fuel_cost_petrol" min="0" step="0.01" placeholder="e.g., 650.0" required aria-label="Fuel cost petrol" aria-describedby="fuel_cost_petrol-help fuel_cost_petrol-error">
+                        <div id="fuel_cost_petrol-error" class="error-message"></div>
+                        <div id="fuel_cost_petrol-help" class="help-text">Cost per liter of petrol fuel</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fuel_cost_diesel" class="required">Fuel Cost - Diesel (₦/L)
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Cost per liter of diesel fuel</span>
+                            </span>
+                        </label>
+                        <input type="number" name="fuel_cost_diesel" id="fuel_cost_diesel" min="0" step="0.01" placeholder="e.g., 850.0" required aria-label="Fuel cost diesel" aria-describedby="fuel_cost_diesel-help fuel_cost_diesel-error">
+                        <div id="fuel_cost_diesel-error" class="error-message"></div>
+                        <div id="fuel_cost_diesel-help" class="help-text">Cost per liter of diesel fuel</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-industry"></i> Emission Factors</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="emission_factor_petrol" class="required">Emission Factor - Petrol (kg CO₂/L)
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">CO₂ emissions per liter of petrol consumed</span>
+                            </span>
+                        </label>
+                        <input type="number" name="emission_factor_petrol" id="emission_factor_petrol" min="0" step="0.01" value="2.31" required aria-label="Emission factor petrol" aria-describedby="emission_factor_petrol-help emission_factor_petrol-error">
+                        <div id="emission_factor_petrol-error" class="error-message"></div>
+                        <div id="emission_factor_petrol-help" class="help-text">CO₂ emissions per liter of petrol consumed</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emission_factor_diesel" class="required">Emission Factor - Diesel (kg CO₂/L)
+                            <span class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">CO₂ emissions per liter of diesel consumed</span>
+                            </span>
+                        </label>
+                        <input type="number" name="emission_factor_diesel" id="emission_factor_diesel" min="0" step="0.01" value="2.68" required aria-label="Emission factor diesel" aria-describedby="emission_factor_diesel-help emission_factor_diesel-error">
+                        <div id="emission_factor_diesel-error" class="error-message"></div>
+                        <div id="emission_factor_diesel-help" class="help-text">CO₂ emissions per liter of diesel consumed</div>
+                    </div>
+                </div>
+            </div>
+
             <button type="button" id="toggleAdvanced" class="toggle-advanced">
                 <i class="fas fa-cogs"></i> Show Advanced Fields
             </button>
 
-            <!-- Advanced Fields Section -->
             <div id="advancedFields" class="advanced-fields">
-                <!-- Barth Model Parameters Section -->
-                <div id="barthFields" class="barth-fields">
+                <div id="commonFields" class="common-fields">
                     <div class="form-section advanced-section">
-                        <h3><i class="fas fa-calculator"></i> Barth Model Parameters <span class="model-badge">ADVANCED</span></h3>
-                        <p class="help-text">Optional: Provide coefficients for Barth model fuel consumption calculations</p>
-
-                        <div class="sub-section">
-                            <h4>Fuel Consumption Coefficients</h4>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="barth_alpha">Alpha Coefficient:</label>
-                                    <input type="number" id="barth_alpha" name="barth_alpha" step="0.0001" min="0" value="{{ current_data.get('barth_alpha', 0.0003) }}" aria-label="Barth alpha coefficient">
-                                    <div class="help-text">Coefficient for engine displacement effect</div>
-                                    <div id="barth_alpha-error" class="error-message"></div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="barth_beta">Beta Coefficient:</label>
-                                    <input type="number" id="barth_beta" name="barth_beta" step="0.0001" min="0" value="{{ current_data.get('barth_beta', 0.0025) }}" aria-label="Barth beta coefficient">
-                                    <div class="help-text">Coefficient for vehicle weight effect</div>
-                                    <div id="barth_beta-error" class="error-message"></div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="barth_gamma">Gamma Coefficient:</label>
-                                    <input type="number" id="barth_gamma" name="barth_gamma" step="0.0001" min="0" value="{{ current_data.get('barth_gamma', 0.0018) }}" aria-label="Barth gamma coefficient">
-                                    <div class="help-text">Coefficient for road gradient effect</div>
-                                    <div id="barth_gamma-error" class="error-message"></div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="barth_traffic_flow">Traffic Flow Coefficient:</label>
-                                    <input type="number" id="barth_traffic_flow" name="barth_traffic_flow" step="0.01" min="0" value="{{ current_data.get('barth_traffic_flow', 0.15) }}" aria-label="Barth traffic flow coefficient">
-                                    <div class="help-text">Coefficient for traffic congestion effect</div>
-                                    <div id="barth_traffic_flow-error" class="error-message"></div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="barth_road_gradient">Road Gradient Coefficient:</label>
-                                    <input type="number" id="barth_road_gradient" name="barth_road_gradient" step="0.01" min="0" value="{{ current_data.get('barth_road_gradient', 0.10) }}" aria-label="Barth road gradient coefficient">
-                                    <div class="help-text">Coefficient for road incline effect</div>
-                                    <div id="barth_road_gradient-error" class="error-message"></div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="barth_acceleration">Acceleration Coefficient:</label>
-                                    <input type="number" id="barth_acceleration" name="barth_acceleration" step="0.01" min="0" value="{{ current_data.get('barth_acceleration', 0.04) }}" aria-label="Barth acceleration coefficient">
-                                    <div class="help-text">Coefficient for acceleration events</div>
-                                    <div id="barth_acceleration-error" class="error-message"></div>
-                                </div>
+                        <h3><i class="fas fa-tachometer-alt"></i> Advanced Vehicle Parameters <span class="model-badge">ADVANCED</span></h3>
+                        <p class="help-text">Provide additional vehicle activity data for advanced models. Default values are provided but can be modified.</p>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="free_flow_speed">Free Flow Speed (km/h):
+                                    <span class="info-tooltip">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span class="tooltip-text">Speed under uncongested conditions (typical: 50-70 km/h)</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="free_flow_speed" name="free_flow_speed" step="0.1" min="0" value="60.0" placeholder="e.g., 60.0" aria-label="Free flow speed">
+                                <div id="free_flow_speed-error" class="error-message"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="congested_speed">Congested Speed (km/h):
+                                    <span class="info-tooltip">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span class="tooltip-text">Average speed during congestion (typical: 5-15 km/h)</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="congested_speed" name="congested_speed" step="0.1" min="0" value="8.0" placeholder="e.g., 8.0" aria-label="Congested speed">
+                                <div id="congested_speed-error" class="error-message"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="avg_acceleration">Average Acceleration (m/s²):
+                                    <span class="info-tooltip">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span class="tooltip-text">Average acceleration rate (typical: 0.3-0.8 m/s²)</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="avg_acceleration" name="avg_acceleration" step="0.01" min="0" value="0.5" placeholder="e.g., 0.5" aria-label="Average acceleration">
+                                <div id="avg_acceleration-error" class="error-message"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="avg_deceleration">Average Deceleration (m/s²):
+                                    <span class="info-tooltip">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span class="tooltip-text">Average deceleration rate (typical: 0.3-0.8 m/s²)</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="avg_deceleration" name="avg_deceleration" step="0.01" min="0" value="0.5" placeholder="e.g., 0.5" aria-label="Average deceleration">
+                                <div id="avg_deceleration-error" class="error-message"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="idle_time_percentage">Idle Time Percentage (%):
+                                    <span class="info-tooltip">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span class="tooltip-text">Percentage of time vehicles are idling (typical: 15-30%)</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="idle_time_percentage" name="idle_time_percentage" step="0.1" min="0" max="100" value="20.0" placeholder="e.g., 20.0" aria-label="Idle time percentage">
+                                <div id="idle_time_percentage-error" class="error-message"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="stops_per_km">Stops per Kilometer:
+                                    <span class="info-tooltip">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span class="tooltip-text">Average number of stops per kilometer (typical: 1-4 stops/km)</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="stops_per_km" name="stops_per_km" step="0.01" min="0" value="2.0" placeholder="e.g., 2.0" aria-label="Stops per kilometer">
+                                <div id="stops_per_km-error" class="error-message"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="road_grade">Road Grade (%):
+                                    <span class="info-tooltip">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span class="tooltip-text">Road grade percentage (positive for uphill, negative for downhill)</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="road_grade" name="road_grade" step="0.1" min="-10" max="10" value="0.0" placeholder="e.g., 0.0" aria-label="Road grade">
+                                <div id="road_grade-error" class="error-message"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="temperature_c">Temperature (°C):
+                                    <span class="info-tooltip">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span class="tooltip-text">Ambient temperature (affects engine efficiency)</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="temperature_c" name="temperature_c" step="0.1" min="-50" max="50" value="25.0" placeholder="e.g., 25.0" aria-label="Temperature">
+                                <div id="temperature_c-error" class="error-message"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- MOVES Model Parameters Section -->
-                <div id="movesFields" class="moves-fields">
+                <div id="barthFields" class="barth-fields">
                     <div class="form-section advanced-section">
-                        <h3><i class="fas fa-wind"></i> MOVES Model Parameters <span class="model-badge">ADVANCED</span></h3>
-                        <p class="help-text">Required for MOVES model: Provide additional data for EPA MOVES model integration</p>
-
-                        <div class="sub-section">
-                            <h4>Vehicle Activity Data</h4>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="congested_speed_kph">Average Speed (km/h):</label>
-                                    <input type="number" id="congested_speed_kph" name="congested_speed_kph" step="0.1" min="0" value="{{ current_data.get('congested_speed_kph', 8.0) }}" aria-label="Average speed in km/h">
-                                    <div class="help-text">Average vehicle speed during observation period</div>
-                                    <div id="congested_speed_kph-error" class="error-message"></div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="stops_per_km">Stops per Kilometer:</label>
-                                    <input type="number" id="stops_per_km" name="stops_per_km" step="0.01" min="0" value="{{ current_data.get('stops_per_km', 2.0) }}" aria-label="Stops per kilometer">
-                                    <div class="help-text">Average number of stops per kilometer</div>
-                                    <div id="stops_per_km-error" class="error-message"></div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="road_grade">Road Grade (%):</label>
-                                    <input type="number" id="road_grade" name="road_grade" step="0.1" min="-10" max="10" value="{{ current_data.get('road_grade', 0.0) }}" aria-label="Road grade percentage">
-                                    <div class="help-text">Positive for uphill, negative for downhill</div>
-                                    <div id="road_grade-error" class="error-message"></div>
-                                </div>
+                        <h3><i class="fas fa-calculator"></i> Barth Model Parameters <span class="model-badge">ADVANCED</span></h3>
+                        <p class="help-text">Provide coefficients for Barth model calculations. Default values are calibrated for Nigerian traffic conditions.</p>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="barth_alpha">Alpha Coefficient:
+                                    <span class="info-tooltip">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span class="tooltip-text">Engine displacement coefficient (typically 0.0001-0.0002)</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="barth_alpha" name="barth_alpha" step="0.00001" min="0" value="0.00015" placeholder="e.g., 0.00015" aria-label="Barth alpha">
+                                <div id="barth_alpha-error" class="error-message"></div>
                             </div>
-                        </div>
-
-                        <div class="sub-section">
-                            <h4>Environmental Conditions</h4>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="temperature_c">Temperature (°C):</label>
-                                    <input type="number" id="temperature_c" name="temperature_c" step="0.1" min="-50" max="50" value="{{ current_data.get('temperature_c', 25.0) }}" aria-label="Temperature in Celsius">
-                                    <div class="help-text">Ambient temperature during observation</div>
-                                    <div id="temperature_c-error" class="error-message"></div>
-                                </div>
+                            <div class="form-group">
+                                <label for="barth_beta">Beta Coefficient:
+                                    <span class="info-tooltip">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span class="tooltip-text">Weight coefficient (typically 0.0005-0.001)</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="barth_beta" name="barth_beta" step="0.00001" min="0" value="0.0008" placeholder="e.g., 0.0008" aria-label="Barth beta">
+                                <div id="barth_beta-error" class="error-message"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="barth_gamma">Gamma Coefficient:
+                                    <span class="info-tooltip">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span class="tooltip-text">Road grade coefficient (typically 0.0003-0.0007)</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="barth_gamma" name="barth_gamma" step="0.00001" min="0" value="0.0005" placeholder="e.g., 0.0005" aria-label="Barth gamma">
+                                <div id="barth_gamma-error" class="error-message"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="barth_traffic_flow">Traffic Flow Coefficient:
+                                    <span class="info-tooltip">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span class="tooltip-text">Speed effect coefficient (typically 0.0005-0.002)</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="barth_traffic_flow" name="barth_traffic_flow" step="0.001" min="0" value="0.001" placeholder="e.g., 0.001" aria-label="Barth traffic flow">
+                                <div id="barth_traffic_flow-error" class="error-message"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="barth_road_gradient">Road Gradient Coefficient:
+                                    <span class="info-tooltip">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span class="tooltip-text">Road grade effect (typically 0.0003-0.0008)</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="barth_road_gradient" name="barth_road_gradient" step="0.0001" min="0" value="0.0005" placeholder="e.g., 0.0005" aria-label="Barth road gradient">
+                                <div id="barth_road_gradient-error" class="error-message"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="barth_acceleration">Acceleration Coefficient:
+                                    <span class="info-tooltip">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span class="tooltip-text">Acceleration effect (typically 0.0002-0.0005)</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="barth_acceleration" name="barth_acceleration" step="0.0001" min="0" value="0.0003" placeholder="e.g., 0.0003" aria-label="Barth acceleration">
+                                <div id="barth_acceleration-error" class="error-message"></div>
                             </div>
                         </div>
                     </div>
@@ -1030,16 +1046,878 @@
 
             <div class="loading" id="loading">
                 <div class="loading-spinner"></div>
-                <p>Submitting data for analysis...</p>
+                <p>Processing your data...</p>
             </div>
 
-            <input type="submit" value="Submit Traffic Data" aria-label="Submit traffic data">
+            <div style="text-align: center; margin-top: 30px;">
+                <button type="button" class="form-submit" onclick="calculateAllMetrics()"><i class="fas fa-calculator"></i> Calculate Metrics</button>
+                <input type="submit" value="Submit Data" aria-label="Submit data">
+                <input type="button" id="reset_form" value="Reset Form" aria-label="Reset form">
+            </div>
         </form>
     </div>
 
     <footer>
-        <p>© 2025 | Powered by Opygoal Technology Ltd | Developed by Oladotun Ajakaiye | Service Manager & Data Analyst</p>
-        <p>Abuja Traffic Analysis System v2.1 | Data Entry Module</p>
+        <p>&copy; {{ current_year | default('2025') }} Nigeria Traffic Analysis System. All rights reserved.</p>
+        <p>This tool helps analyze traffic congestion impacts on productivity, fuel consumption, and emissions in Nigerian cities.</p>
     </footer>
+
+    <script>
+        // FIXED JavaScript variables
+        let cityCount = 0;
+        const maxCities = 5;
+
+        // Get vehicle classes from template or use default
+        const vehicleClasses = {{ vehicle_classes | tojson | safe }};
+
+        // Vehicle type parameters (mirroring Python code)
+        const vehicleParameters = {
+            'Motorcycles': {
+                'fuel_type': 'petrol',
+                'fuel_efficiency_free_flow': 0.08,
+                'fuel_efficiency_congested': 0.12,
+                'occupancy_avg': 1.2,
+                'emission_factor': 0.1,
+                'weight_kg': 150,
+                'engine_displacement_cc': 125
+            },
+            'Cars/SUVs': {
+                'fuel_type': 'petrol',
+                'fuel_efficiency_free_flow': 0.10,
+                'fuel_efficiency_congested': 0.15,
+                'occupancy_avg': 2.5,
+                'emission_factor': 0.2,
+                'weight_kg': 1500,
+                'engine_displacement_cc': 2000
+            },
+            'Coasters/Buses': {
+                'fuel_type': 'diesel',
+                'fuel_efficiency_free_flow': 0.30,
+                'fuel_efficiency_congested': 0.45,
+                'occupancy_avg': 15.0,
+                'emission_factor': 0.4,
+                'weight_kg': 6000,
+                'engine_displacement_cc': 5000
+            },
+            'Trucks': {
+                'fuel_type': 'diesel',
+                'fuel_efficiency_free_flow': 0.35,
+                'fuel_efficiency_congested': 0.50,
+                'occupancy_avg': 2.0,
+                'emission_factor': 0.5,
+                'weight_kg': 8000,
+                'engine_displacement_cc': 6000
+            },
+            'Tankers/Trailers': {
+                'fuel_type': 'diesel',
+                'fuel_efficiency_free_flow': 0.40,
+                'fuel_efficiency_congested': 0.60,
+                'occupancy_avg': 1.5,
+                'emission_factor': 0.7,
+                'weight_kg': 12000,
+                'engine_displacement_cc': 8000
+            }
+        };
+
+        // NEW: Initialize form with URL parameters
+        function initializeFormFromURL() {
+            // The backend should have pre-populated the form via template variables
+            // But we'll also ensure the advanced fields visibility is correct
+            updateAdvancedFieldsVisibility();
+
+            // If we have values from URL, show a confirmation
+            const state = document.getElementById('state').value;
+            const metric = document.getElementById('metric').value;
+            const emissionModel = document.getElementById('emission_model').value;
+            const region = document.getElementById('region').value;
+
+            if (state && metric && emissionModel) {
+                console.log('Form initialized with:', { state, metric, emissionModel, region });
+            }
+        }
+
+        // NEW: Distribution calculation function - REMOVED CONFLICTING LOGIC
+        function calculateDistributionTotal() {
+            // This function is now informational only - no validation
+            try {
+                const motorcycles = parseFloat(document.getElementById('class_distribution_motorcycles').value) || 0;
+                const cars = parseFloat(document.getElementById('class_distribution_cars').value) || 0;
+                const buses = parseFloat(document.getElementById('class_distribution_buses').value) || 0;
+                const trucks = parseFloat(document.getElementById('class_distribution_trucks').value) || 0;
+                const tankers = parseFloat(document.getElementById('class_distribution_tankers').value) || 0;
+
+                const total = motorcycles + cars + buses + trucks + tankers;
+                document.getElementById('distribution_total').value = total.toFixed(2);
+
+                const validationElement = document.getElementById('distribution_validation');
+                if (validationElement) {
+                    if (total === 0) {
+                        validationElement.innerHTML = 'Distribution percentages are calculated automatically from vehicle counts';
+                        validationElement.style.color = '#6c757d';
+                    } else if (Math.abs(total - 100) < 0.01) {
+                        validationElement.innerHTML = '✓ Distribution valid (informational only)';
+                        validationElement.style.color = 'green';
+                    } else {
+                        validationElement.innerHTML = `Note: Distribution is ${total.toFixed(2)}% (calculated from your vehicle counts)`;
+                        validationElement.style.color = 'orange';
+                    }
+                }
+
+                return total;
+            } catch (error) {
+                console.error('Error calculating distribution total:', error);
+                return 0;
+            }
+        }
+
+        // NEW: Calculate actual distribution from manual vehicle counts
+        function calculateActualDistributionFromCounts() {
+            const cityItems = document.querySelectorAll('.city-item');
+            const totalCounts = {
+                'Motorcycles': 0,
+                'Cars/SUVs': 0,
+                'Coasters/Buses': 0,
+                'Trucks': 0,
+                'Tankers/Trailers': 0
+            };
+
+            // Sum all vehicle counts across all cities
+            cityItems.forEach(city => {
+                const vClasses = vehicleClasses || [
+                    {name: "Motorcycles", key: "Class_1_Motorcycles"},
+                    {name: "Cars/SUVs", key: "Class_2_Cars_SUVs"},
+                    {name: "Coasters/Buses", key: "Class_3_Coasters_Buses"},
+                    {name: "Trucks", key: "Class_4_Trucks"},
+                    {name: "Tankers/Trailers", key: "Class_5_Tankers_Trailers"}
+                ];
+
+                vClasses.forEach(vc => {
+                    const countInput = city.querySelector(`#Real_Vehicle_Count_${city.dataset.city}_${vc.key}`);
+                    if (countInput) {
+                        const count = parseInt(countInput.value) || 0;
+                        totalCounts[vc.name] += count;
+                    }
+                });
+            });
+
+            // Calculate percentages
+            const totalVehicles = Object.values(totalCounts).reduce((sum, count) => sum + count, 0);
+
+            if (totalVehicles === 0) {
+                return { Motorcycles: 0, 'Cars/SUVs': 0, 'Coasters/Buses': 0, Trucks: 0, 'Tankers/Trailers': 0 };
+            }
+
+            const distribution = {};
+            for (const [vehicleType, count] of Object.entries(totalCounts)) {
+                distribution[vehicleType] = Math.round((count / totalVehicles) * 100);
+            }
+
+            // Update the distribution display (informational only)
+            document.getElementById('class_distribution_motorcycles').value = distribution['Motorcycles'] || 0;
+            document.getElementById('class_distribution_cars').value = distribution['Cars/SUVs'] || 0;
+            document.getElementById('class_distribution_buses').value = distribution['Coasters/Buses'] || 0;
+            document.getElementById('class_distribution_trucks').value = distribution['Trucks'] || 0;
+            document.getElementById('class_distribution_tankers').value = distribution['Tankers/Trailers'] || 0;
+
+            calculateDistributionTotal(); // Update the total display
+
+            return distribution;
+        }
+
+        // NEW: Helper function to clear distribution errors
+        function clearDistributionErrors() {
+            const distributionFields = [
+                'class_distribution_motorcycles',
+                'class_distribution_cars',
+                'class_distribution_buses',
+                'class_distribution_trucks',
+                'class_distribution_tankers'
+            ];
+
+            distributionFields.forEach(field => {
+                const errorElement = document.getElementById(`${field}-error`);
+                if (errorElement) {
+                    errorElement.style.display = 'none';
+                    errorElement.textContent = '';
+                }
+                const input = document.getElementById(field);
+                if (input) input.classList.remove('error');
+            });
+        }
+
+        // Add event listeners for distribution fields
+        function attachDistributionListeners() {
+            const distributionFields = [
+                'class_distribution_motorcycles',
+                'class_distribution_cars',
+                'class_distribution_buses',
+                'class_distribution_trucks',
+                'class_distribution_tankers'
+            ];
+
+            distributionFields.forEach(field => {
+                const element = document.getElementById(field);
+                if (element) {
+                    element.addEventListener('input', calculateDistributionTotal);
+                }
+            });
+        }
+
+        // NEW: Add event listeners to vehicle count inputs to update distribution
+        function attachVehicleCountListeners() {
+            // This will be called whenever a new city is added
+            document.addEventListener('input', function(e) {
+                if (e.target && e.target.id && e.target.id.startsWith('Real_Vehicle_Count_')) {
+                    // Update distribution when vehicle counts change
+                    setTimeout(calculateActualDistributionFromCounts, 100);
+                }
+            });
+        }
+
+        // NEW: Updated validateForm function - REMOVED DISTRIBUTION VALIDATION
+        function validateForm() {
+            let isValid = true;
+            clearErrors(); // Clear all errors first
+
+            // Basic validation - REQUIRED FIELDS
+            const requiredBasic = [
+                'metric',
+                'state',
+                'region',
+                'entry_date',
+                'entry_time',
+                'road',
+                'congested_travel_time',
+                'free_flow_time',
+                'distance_km',
+                'fuel_cost_petrol',
+                'fuel_cost_diesel',
+                'emission_factor_petrol',
+                'emission_factor_diesel',
+                'emission_model',
+                'flow_rate',
+                'analysis_period'
+            ];
+
+            requiredBasic.forEach(field => {
+                const input = document.getElementById(field);
+                if (!input.value.trim()) {
+                    showError(field, 'This field is required');
+                    isValid = false;
+                } else if (['congested_travel_time', 'free_flow_time', 'distance_km', 'fuel_cost_petrol', 'fuel_cost_diesel', 'emission_factor_petrol', 'emission_factor_diesel', 'flow_rate', 'analysis_period'].includes(field)) {
+                    const value = parseFloat(input.value);
+                    if (value <= 0 || isNaN(value)) {
+                        showError(field, 'Value must be greater than 0');
+                        isValid = false;
+                    }
+                }
+            });
+
+            // Validate city data
+            const cityItems = document.querySelectorAll('.city-item');
+            if (cityItems.length === 0) {
+                showError('city-input', 'At least one city must be added');
+                isValid = false;
+            }
+
+            // Validate at least one vehicle has non-zero count
+            let hasVehicles = false;
+            cityItems.forEach(city => {
+                const vClasses = vehicleClasses || [
+                    {name: "Motorcycles", key: "Class_1_Motorcycles"},
+                    {name: "Cars/SUVs", key: "Class_2_Cars_SUVs"},
+                    {name: "Coasters/Buses", key: "Class_3_Coasters_Buses"},
+                    {name: "Trucks", key: "Class_4_Trucks"},
+                    {name: "Tankers/Trailers", key: "Class_5_Tankers_Trailers"}
+                ];
+
+                vClasses.forEach(vc => {
+                    const countInput = city.querySelector(`#Real_Vehicle_Count_${city.dataset.city}_${vc.key}`);
+                    const vorInput = city.querySelector(`#Real_VOR_${city.dataset.city}_${vc.key}`);
+
+                    if (countInput) {
+                        const vehicleCount = parseInt(countInput.value) || 0;
+                        if (vehicleCount > 0) {
+                            hasVehicles = true;
+                        }
+
+                        // Validate vehicle counts are non-negative integers
+                        if (vehicleCount < 0) {
+                            showError(`Real_Vehicle_Count_${city.dataset.city}_${vc.key}`, 'Vehicle count cannot be negative');
+                            isValid = false;
+                        }
+                    }
+
+                    // Validate occupancy rates
+                    if (vorInput) {
+                        const occupancy = parseFloat(vorInput.value) || 0;
+                        if (occupancy <= 0) {
+                            showError(`Real_VOR_${city.dataset.city}_${vc.key}`, 'Occupancy rate must be greater than 0');
+                            isValid = false;
+                        }
+                    }
+                });
+            });
+
+            if (!hasVehicles) {
+                alert('Please enter vehicle counts for at least one vehicle type in one city');
+                isValid = false;
+            }
+
+            // REMOVED: Distribution validation - no longer required
+            // The backend now calculates distribution from manual counts
+
+            // Validate flow rate and analysis period
+            const flowRate = parseFloat(document.getElementById('flow_rate').value);
+            const analysisPeriod = parseFloat(document.getElementById('analysis_period').value);
+
+            if (flowRate <= 0 || isNaN(flowRate)) {
+                showError('flow_rate', 'Flow rate must be greater than 0');
+                isValid = false;
+            }
+
+            if (analysisPeriod <= 0 || isNaN(analysisPeriod)) {
+                showError('analysis_period', 'Analysis period must be greater than 0');
+                isValid = false;
+            }
+
+            // Validate advanced fields if visible
+            const emissionModel = document.getElementById('emission_model').value;
+            if (emissionModel !== 'basic') {
+                const advancedFields = [
+                    'free_flow_speed',
+                    'congested_speed',
+                    'avg_acceleration',
+                    'avg_deceleration',
+                    'idle_time_percentage',
+                    'stops_per_km',
+                    'road_grade',
+                    'temperature_c'
+                ];
+                advancedFields.forEach(field => {
+                    const input = document.getElementById(field);
+                    const value = parseFloat(input.value);
+                    if (input.value && isNaN(value)) {
+                        showError(field, 'Please enter a valid number');
+                        isValid = false;
+                    } else if (input.value && value < parseFloat(input.min)) {
+                        showError(field, `Value must be at least ${input.min}`);
+                        isValid = false;
+                    }
+                    if (field === 'idle_time_percentage' && input.value && value > 100) {
+                        showError(field, 'Value must not exceed 100');
+                        isValid = false;
+                    }
+                });
+
+                if (emissionModel === 'barth') {
+                    const barthFields = [
+                        'barth_alpha',
+                        'barth_beta',
+                        'barth_gamma',
+                        'barth_traffic_flow',
+                        'barth_road_gradient',
+                        'barth_acceleration'
+                    ];
+                    barthFields.forEach(field => {
+                        const input = document.getElementById(field);
+                        const value = parseFloat(input.value);
+                        if (input.value && (isNaN(value) || value <= 0)) {
+                            showError(field, 'Value must be greater than 0');
+                            isValid = false;
+                        }
+                    });
+                }
+            }
+
+            return isValid;
+        }
+
+        // NEW: validateAndSubmit function
+        function validateAndSubmit() {
+            // NEW: Calculate actual distribution before submission
+            calculateActualDistributionFromCounts();
+
+            // NEW: Log form data for debugging
+            logFormData();
+
+            if (validateForm()) {
+                showLoading();
+                return true; // Allow form submission
+            } else {
+                // Scroll to first error
+                const firstError = document.querySelector('.error-message[style*="display: block"]');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return false; // Prevent form submission
+            }
+        }
+
+        // NEW: Debug function to log form data
+        function logFormData() {
+            console.log('=== FORM DATA BEING SUBMITTED ===');
+            const formData = new FormData(document.getElementById('data-entry-form'));
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}: ${value}`);
+            }
+            console.log('=== END FORM DATA ===');
+        }
+
+        function addCity() {
+            const cityInput = document.getElementById('city-input');
+            let cityName = cityInput.value.trim();
+
+            if (!cityName) {
+                showError('city-input', 'Please enter a city name');
+                return;
+            }
+
+            if (cityCount >= maxCities) {
+                showError('city-input', `Cannot add more than ${maxCities} cities`);
+                return;
+            }
+
+            // Normalize city name (title case)
+            cityName = cityName.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+            const normalizedCity = cityName.toLowerCase().replace(/\s+/g, '_');
+
+            const existingCities = Array.from(document.querySelectorAll('.city-item h4')).map(h4 => h4.textContent.toLowerCase());
+
+            if (existingCities.includes(cityName.toLowerCase())) {
+                showError('city-input', 'City already added');
+                return;
+            }
+
+            const cityGrid = document.getElementById('city-grid');
+            const cityItem = document.createElement('div');
+            cityItem.className = 'city-item';
+            cityItem.dataset.city = normalizedCity;
+
+            let cityHtml = `
+                <h4>${cityName}</h4>
+                <input type="hidden" name="cities[]" value="${cityName}">
+                <button type="button" class="remove-city" onclick="removeCity(this)" aria-label="Remove city">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+
+            // Use vehicleClasses from template or fallback
+            const vClasses = vehicleClasses || [
+                {name: "Motorcycles", key: "Class_1_Motorcycles"},
+                {name: "Cars/SUVs", key: "Class_2_Cars_SUVs"},
+                {name: "Coasters/Buses", key: "Class_3_Coasters_Buses"},
+                {name: "Trucks", key: "Class_4_Trucks"},
+                {name: "Tankers/Trailers", key: "Class_5_Tankers_Trailers"}
+            ];
+
+            vClasses.forEach(vc => {
+                cityHtml += `
+                    <div class="vehicle-class-group">
+                        <h5>${vc.name}</h5>
+                        <div class="form-group">
+                            <label for="Real_Vehicle_Count_${normalizedCity}_${vc.key}">
+                                Vehicle Count
+                            </label>
+                            <input type="number" name="Real_Vehicle_Count_${normalizedCity}_${vc.key}"
+                                   id="Real_Vehicle_Count_${normalizedCity}_${vc.key}"
+                                   value="0" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="Real_VOR_${normalizedCity}_${vc.key}">
+                                Occupancy Rate
+                            </label>
+                            <input type="number" name="Real_VOR_${normalizedCity}_${vc.key}"
+                                   id="Real_VOR_${normalizedCity}_${vc.key}"
+                                   value="${vehicleParameters[vc.name]?.occupancy_avg || 1.0}"
+                                   step="0.1" min="0.1" required>
+                        </div>
+                    </div>
+                `;
+            });
+
+            cityItem.innerHTML = cityHtml;
+            cityGrid.appendChild(cityItem);
+            cityCount++;
+            cityInput.value = '';
+            clearErrors();
+
+            // NEW: Attach listeners to new vehicle count inputs
+            attachVehicleCountListeners();
+        }
+
+        function removeCity(button) {
+            button.closest('.city-item').remove();
+            cityCount--;
+            calculateAllMetrics();
+            // NEW: Update distribution when city is removed
+            calculateActualDistributionFromCounts();
+        }
+
+        function calculateProductivityLoss(vehicleCount, occupancy, delayMinutes, valuePerMinute) {
+            if (valuePerMinute <= 0) return 0.0;
+            return vehicleCount * occupancy * delayMinutes * valuePerMinute;
+        }
+
+        // FIXED: Updated Barth formula calculation to match Python model
+        function calculateBarthFuelConsumption(speed, vehicleType, distance, count, roadGrade, isCongested, stopsPerKm = 0, idleTime = 0) {
+            const vehicleParams = vehicleParameters[vehicleType];
+            if (!vehicleParams) return 0.0;
+
+            // REALISTIC Barth coefficients (much smaller) - matching Python model
+            const alpha = 0.00015;    // Engine displacement coefficient
+            const beta = 0.0008;      // Weight coefficient
+            const gamma = 0.0005;     // Road grade coefficient
+
+            // Vehicle parameters
+            const engineDisplacement = vehicleParams.engine_displacement_cc || 1500;
+            const weight = vehicleParams.weight_kg || 1000;
+
+            // 1. Base consumption (liters/km) - much smaller values
+            const baseConsumption = (
+                alpha * engineDisplacement +
+                beta * (weight / 1000) +
+                gamma * Math.abs(roadGrade)
+            );
+
+            // 2. Speed effect - PROPERLY CALIBRATED
+            // Optimal speed for fuel efficiency is typically 50-80 km/h
+            const optimalSpeed = 60.0;
+            let speedEffect = 0.0;
+            if (speed < optimalSpeed) {
+                // Below optimal: fuel efficiency decreases
+                speedEffect = (optimalSpeed - Math.max(5.0, speed)) * 0.001;
+            } else {
+                // Above optimal: aerodynamic drag increases consumption
+                speedEffect = (speed - optimalSpeed) * 0.0005;
+            }
+
+            // 3. Congestion effects
+            let congestionEffect = 0.0;
+            let idleConsumption = 0.0;
+
+            if (isCongested) {
+                // Stop-and-go penalty
+                congestionEffect = stopsPerKm * 0.02;
+                // Idling penalty (liters per hour of idling)
+                idleConsumption = (idleTime / 60.0) * 0.8; // 0.8 L/hour idle consumption
+            }
+
+            // 4. Total consumption per km
+            const consumptionPerKm = Math.max(0.05, baseConsumption + speedEffect + congestionEffect);
+
+            // 5. Total fuel for distance
+            let totalFuel = consumptionPerKm * distance * count;
+
+            // Add idle consumption if applicable
+            if (isCongested && idleTime > 0) {
+                const idleFuel = (idleTime / 60.0) * 0.8 * count; // 0.8 L/hour per vehicle
+                totalFuel += idleFuel;
+            }
+
+            return totalFuel;
+        }
+
+        function calculateMovesFuelConsumption(speed, stopsPerKm, vehicleType, distance, count, roadGrade, temperatureC, isFreeFlow = false) {
+            const vehicleParams = vehicleParameters[vehicleType];
+            if (!vehicleParams) return 0.0;
+
+            const baseRate = isFreeFlow ?
+                vehicleParams.fuel_efficiency_free_flow :
+                vehicleParams.fuel_efficiency_congested;
+
+            const speedFactor = Math.max(0.7, 1.0 + 0.08 * (Math.max(5.0, speed) - 30.0) / 30.0);
+            const stopFactor = Math.max(0.8, 1.0 + 0.1 * stopsPerKm);
+            const gradeFactor = Math.max(0.9, 1.0 + 0.05 * roadGrade);
+            const tempFactor = Math.max(0.8, 1.0 + 0.02 * (Math.max(-10.0, temperatureC) - 25.0) / 25.0);
+
+            const totalConsumption = baseRate * distance * speedFactor * stopFactor * gradeFactor * tempFactor * count;
+            return Math.max(0.0, totalConsumption);
+        }
+
+        function calculateCityMetrics(cityElement) {
+            const cityName = cityElement.dataset.city;
+            const results = {
+                productivityLoss: 0,
+                excessFuel: 0,
+                co2Emissions: 0,
+                vehicleCounts: {}
+            };
+
+            // Get global parameters
+            const model = document.getElementById('emission_model').value;
+            const congestedTime = parseFloat(document.getElementById('congested_travel_time').value) || 0;
+            const freeFlowTime = parseFloat(document.getElementById('free_flow_time').value) || 0;
+            const delayMinutes = congestedTime - freeFlowTime;
+            const productivityValue = parseFloat(document.getElementById('productivity_value').value) || 0;
+            const distanceKm = parseFloat(document.getElementById('distance_km').value) || 0;
+            const fuelCostPetrol = parseFloat(document.getElementById('fuel_cost_petrol').value) || 0;
+            const fuelCostDiesel = parseFloat(document.getElementById('fuel_cost_diesel').value) || 0;
+            const emissionFactorPetrol = parseFloat(document.getElementById('emission_factor_petrol').value) || 0;
+            const emissionFactorDiesel = parseFloat(document.getElementById('emission_factor_diesel').value) || 0;
+
+            // Advanced parameters
+            const freeFlowSpeed = parseFloat(document.getElementById('free_flow_speed').value) || 60.0;
+            const congestedSpeed = parseFloat(document.getElementById('congested_speed').value) || 8.0;
+            const idlePercent = parseFloat(document.getElementById('idle_time_percentage').value) || 20.0;
+            const stopsPerKm = parseFloat(document.getElementById('stops_per_km').value) || 2.0;
+            const roadGrade = parseFloat(document.getElementById('road_grade').value) || 0.0;
+            const tempC = parseFloat(document.getElementById('temperature_c').value) || 25.0;
+
+            // Calculate idle time in minutes
+            const idleTimeMinutes = idlePercent / 100.0 * congestedTime;
+
+            // Calculate for each vehicle type
+            const vClasses = vehicleClasses || [
+                {name: "Motorcycles", key: "Class_1_Motorcycles"},
+                {name: "Cars/SUVs", key: "Class_2_Cars_SUVs"},
+                {name: "Coasters/Buses", key: "Class_3_Coasters_Buses"},
+                {name: "Trucks", key: "Class_4_Trucks"},
+                {name: "Tankers/Trailers", key: "Class_5_Tankers_Trailers"}
+            ];
+
+            vClasses.forEach(vc => {
+                const countInput = cityElement.querySelector(`#Real_Vehicle_Count_${cityName}_${vc.key}`);
+                const vorInput = cityElement.querySelector(`#Real_VOR_${cityName}_${vc.key}`);
+
+                if (countInput && vorInput) {
+                    const vehicleCount = parseFloat(countInput.value) || 0;
+                    const occupancy = parseFloat(vorInput.value) || vehicleParameters[vc.name]?.occupancy_avg || 1.0;
+
+                    if (vehicleCount > 0) {
+                        results.vehicleCounts[vc.name] = vehicleCount;
+
+                        // Get fuel parameters
+                        const fuelType = vehicleParameters[vc.name]?.fuel_type || 'petrol';
+                        const fuelCost = fuelType === 'petrol' ? fuelCostPetrol : fuelCostDiesel;
+                        const emissionFactorValue = fuelType === 'petrol' ? emissionFactorPetrol : emissionFactorDiesel;
+
+                        // Productivity Loss (same for all models)
+                        results.productivityLoss += calculateProductivityLoss(vehicleCount, occupancy, delayMinutes, productivityValue);
+
+                        // Fuel and CO₂ based on model
+                        let freeFlowFuel = 0;
+                        let congestedFuel = 0;
+
+                        if (model === 'basic') {
+                            const fuelEffFree = vehicleParameters[vc.name]?.fuel_efficiency_free_flow || 0.1;
+                            const fuelEffCongested = vehicleParameters[vc.name]?.fuel_efficiency_congested || 0.15;
+                            freeFlowFuel = vehicleCount * distanceKm * fuelEffFree;
+                            congestedFuel = vehicleCount * distanceKm * fuelEffCongested;
+                        } else if (model === 'barth') {
+                            // FIXED: Use updated Barth formula matching Python model
+                            freeFlowFuel = calculateBarthFuelConsumption(
+                                freeFlowSpeed, vc.name, distanceKm, vehicleCount, roadGrade, false
+                            );
+                            congestedFuel = calculateBarthFuelConsumption(
+                                congestedSpeed, vc.name, distanceKm, vehicleCount, roadGrade, true, stopsPerKm, idleTimeMinutes
+                            );
+                        } else if (model === 'moves') {
+                            freeFlowFuel = calculateMovesFuelConsumption(
+                                freeFlowSpeed, 0.5, vc.name, distanceKm, vehicleCount, roadGrade, tempC, true
+                            );
+                            congestedFuel = calculateMovesFuelConsumption(
+                                congestedSpeed, stopsPerKm, vc.name, distanceKm, vehicleCount, roadGrade, tempC, false
+                            );
+                        }
+
+                        const excessFuelLiters = Math.max(0, congestedFuel - freeFlowFuel);
+                        results.excessFuel += excessFuelLiters * fuelCost;
+
+                        // UPDATED: Calculate CO₂ emissions using congested fuel instead of excess fuel
+                        results.co2Emissions += congestedFuel * emissionFactorValue;
+                    }
+                }
+            });
+
+            return results;
+        }
+
+        function calculateAllMetrics() {
+            const cityItems = document.querySelectorAll('.city-item');
+            const resultsContainer = document.getElementById('results-container') || document.createElement('div');
+            resultsContainer.id = 'results-container';
+            let html = '';
+
+            cityItems.forEach(cityElement => {
+                const cityName = capitalizeCity(cityElement.dataset.city.replace(/_/g, ' '));
+                const metrics = calculateCityMetrics(cityElement);
+                html += `
+                    <div class="city-metrics">
+                        <h4>${cityName}</h4>
+                        <p>Productivity Loss: ₦${metrics.productivityLoss.toFixed(2)}</p>
+                        <p>Excess Fuel Cost: ₦${metrics.excessFuel.toFixed(2)}</p>
+                        <p>CO₂ Emissions: ${metrics.co2Emissions.toFixed(2)} kg</p>
+                    </div>
+                `;
+            });
+
+            resultsContainer.innerHTML = html;
+            if (!document.getElementById('results-container')) {
+                document.getElementById('data-entry-form').appendChild(resultsContainer);
+            }
+        }
+
+        function showError(inputId, message) {
+            const errorElement = document.getElementById(`${inputId}-error`);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            const input = document.getElementById(inputId);
+            input.classList.add('error');
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.style.display = 'none';
+                el.textContent = '';
+            });
+            document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+        }
+
+        function resetForm() {
+            document.getElementById('data-entry-form').reset();
+            document.getElementById('city-grid').innerHTML = '';
+            cityCount = 0;
+            setDefaultValues();
+            calculateDelay();
+            clearErrors();
+            const resultsContainer = document.getElementById('results-container');
+            if (resultsContainer) resultsContainer.remove();
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function calculateDelay() {
+            const congestedTime = parseFloat(document.getElementById('congested_travel_time').value) || 0;
+            const freeFlowTime = parseFloat(document.getElementById('free_flow_time').value) || 0;
+            const delay = congestedTime - freeFlowTime;
+            document.getElementById('delay_time').textContent = `${delay.toFixed(1)} minutes`;
+        }
+
+        function toggleCollapse(header) {
+            const content = header.nextElementSibling;
+            content.classList.toggle('active');
+            const icon = header.querySelector('i');
+            icon.classList.toggle('fa-chevron-down');
+            icon.classList.toggle('fa-chevron-up');
+        }
+
+        function attachCollapsibleListeners() {
+            document.querySelectorAll('.collapsible-header').forEach(header => {
+                header.addEventListener('click', () => toggleCollapse(header));
+            });
+        }
+
+        function updateAdvancedFieldsVisibility() {
+            const model = document.getElementById('emission_model').value;
+            const commonFields = document.getElementById('commonFields');
+            const barthFields = document.getElementById('barthFields');
+
+            if (model === 'basic') {
+                commonFields.classList.remove('visible');
+                barthFields.classList.remove('visible');
+            } else if (model === 'barth') {
+                commonFields.classList.add('visible');
+                barthFields.classList.add('visible');
+            } else if (model === 'moves') {
+                commonFields.classList.add('visible');
+                barthFields.classList.remove('visible');
+            }
+        }
+
+        // UPDATED: setDefaultValues function with sensible defaults for advanced fields
+        function setDefaultValues() {
+            // ONLY Emission Factors have permanent values
+            document.getElementById('emission_factor_petrol').value = '2.31';
+            document.getElementById('emission_factor_diesel').value = '2.68';
+
+            // All other basic fields remain blank/empty for user input
+            document.getElementById('fuel_cost_petrol').value = '';
+            document.getElementById('fuel_cost_diesel').value = '';
+            document.getElementById('productivity_value').value = '';
+            document.getElementById('distance_km').value = '';
+            document.getElementById('congested_travel_time').value = '';
+            document.getElementById('free_flow_time').value = '';
+            document.getElementById('road').value = '';
+
+            // Traffic flow parameters
+            document.getElementById('flow_rate').value = '';
+            document.getElementById('analysis_period').value = '';
+
+            // Vehicle distribution - all blank (will be calculated from counts)
+            document.getElementById('class_distribution_motorcycles').value = '';
+            document.getElementById('class_distribution_cars').value = '';
+            document.getElementById('class_distribution_buses').value = '';
+            document.getElementById('class_distribution_trucks').value = '';
+            document.getElementById('class_distribution_tankers').value = '';
+
+            calculateDistributionTotal();
+
+            // UPDATED: Advanced fields with sensible defaults (users can modify)
+            document.getElementById('free_flow_speed').value = '60.0';
+            document.getElementById('congested_speed').value = '8.0';
+            document.getElementById('avg_acceleration').value = '0.5';
+            document.getElementById('avg_deceleration').value = '0.5';
+            document.getElementById('idle_time_percentage').value = '20.0';
+            document.getElementById('stops_per_km').value = '2.0';
+            document.getElementById('road_grade').value = '0.0';
+            document.getElementById('temperature_c').value = '25.0';
+
+            // UPDATED: Barth coefficients with realistic defaults
+            document.getElementById('barth_alpha').value = '0.00015';
+            document.getElementById('barth_beta').value = '0.0008';
+            document.getElementById('barth_gamma').value = '0.0005';
+            document.getElementById('barth_traffic_flow').value = '0.001';
+            document.getElementById('barth_road_gradient').value = '0.0005';
+            document.getElementById('barth_acceleration').value = '0.0003';
+
+            updateAdvancedFieldsVisibility();
+        }
+
+        function capitalizeCity(str) {
+            return str.replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        function toggleAdvancedFields() {
+            const advancedFields = document.getElementById('advancedFields');
+            const toggleButton = document.getElementById('toggleAdvanced');
+            const emissionModel = document.getElementById('emission_model').value;
+
+            if (advancedFields.classList.contains('visible')) {
+                advancedFields.classList.remove('visible');
+                toggleButton.innerHTML = '<i class="fas fa-cogs"></i> Show Advanced Fields';
+            } else {
+                advancedFields.classList.add('visible');
+                toggleButton.innerHTML = '<i class="fas fa-times"></i> Hide Advanced Fields';
+                updateAdvancedFieldsVisibility();
+                setTimeout(() => {
+                    advancedFields.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 300);
+            }
+        }
+
+        // Update DOMContentLoaded event listener
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('congested_travel_time').addEventListener('input', calculateDelay);
+            document.getElementById('free_flow_time').addEventListener('input', calculateDelay);
+            document.getElementById('toggleAdvanced').addEventListener('click', toggleAdvancedFields);
+            document.getElementById('emission_model').addEventListener('change', updateAdvancedFieldsVisibility);
+            document.getElementById('reset_form').addEventListener('click', resetForm);
+            attachDistributionListeners();
+            attachVehicleCountListeners(); // NEW: Attach vehicle count listeners
+            setDefaultValues();
+            calculateDelay();
+            attachCollapsibleListeners();
+
+            // NEW: Initialize form with URL parameters
+            initializeFormFromURL();
+        });
+    </script>
 </body>
 </html>
