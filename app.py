@@ -128,20 +128,106 @@ def register_custom_fonts():
         return 'Helvetica'
 
 
+def generate_pdf_with_reportlab_fallback(analysis_data, cities_data, metric_enum=None):
+    """Generate PDF using ReportLab as a fallback when WeasyPrint fails"""
+    try:
+        filename = f"/tmp/report_{uuid.uuid4().hex}.pdf"
+
+        doc = SimpleDocTemplate(filename, pagesize=A4)
+        styles = getSampleStyleSheet()
+        story = []
+
+        # Title
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=16,
+            spaceAfter=30,
+            alignment=TA_CENTER
+        )
+        story.append(Paragraph("Nigeria Traffic Analysis System", title_style))
+        story.append(Paragraph(f"{analysis_data.get('emission_model', 'Analysis')} Report", styles['Heading2']))
+        story.append(Spacer(1, 12))
+
+        # Summary
+        story.append(Paragraph("Executive Summary", styles['Heading2']))
+        summary_data = [
+            ['Total Vehicles', f"{analysis_data.get('total_vehicles', 0):,}"],
+            ['Total People Affected', f"{analysis_data.get('total_people', 0):,}"],
+            ['Analysis Date', analysis_data.get('generation_date', 'N/A')]
+        ]
+
+        summary_table = Table(summary_data, colWidths=[200, 200])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        story.append(summary_table)
+        story.append(Spacer(1, 20))
+
+        # City Data
+        story.append(Paragraph("Per-City Analysis", styles['Heading2']))
+        for city_data in cities_data:
+            story.append(Paragraph(f"City: {city_data.get('city', 'Unknown')}", styles['Heading3']))
+            city_table_data = [
+                ['Metric', 'Value'],
+                ['Vehicles', f"{city_data.get('total_vehicles', 0):,}"],
+                ['People', f"{city_data.get('total_people', 0):,}"]
+            ]
+
+            city_table = Table(city_table_data, colWidths=[150, 150])
+            city_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            story.append(city_table)
+            story.append(Spacer(1, 10))
+
+        # Footer
+        story.append(Spacer(1, 20))
+        story.append(Paragraph(
+            f"Generated on {analysis_data.get('generation_date', 'N/A')} at {analysis_data.get('generation_time', 'N/A')}",
+            styles['Normal']))
+
+        doc.build(story)
+        return filename
+
+    except Exception as e:
+        logger.error(f"ReportLab PDF fallback failed: {str(e)}")
+        raise
+
+
 def generate_traffic_report_pdf(analysis_data, cities_data, filename=None, metric_enum=None):
-    """Generate PDF report with proper Unicode support using WeasyPrint"""
-    # Apply PDF encoding fix before generation
-    fix_pdf_encoding()
+    """Generate PDF report with WeasyPrint fallback to ReportLab"""
+    try:
+        # Apply PDF encoding fix before generation
+        fix_pdf_encoding()
 
-    # Generate HTML content for WeasyPrint
-    html_content = generate_pdf_html_content(analysis_data, cities_data, metric_enum)
+        # Generate HTML content for WeasyPrint
+        html_content = generate_pdf_html_content(analysis_data, cities_data, metric_enum)
 
-    # Generate PDF using WeasyPrint
-    if filename is None:
-        filename = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf').name
+        # Generate PDF using WeasyPrint (primary method)
+        if filename is None:
+            filename = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf').name
 
-    HTML(string=html_content).write_pdf(filename)
-    return filename
+        HTML(string=html_content).write_pdf(filename)
+        return filename
+
+    except Exception as weasyprint_error:
+        logger.warning(f"WeasyPrint failed, falling back to ReportLab: {str(weasyprint_error)}")
+
+        # Fallback to ReportLab
+        try:
+            return generate_pdf_with_reportlab_fallback(analysis_data, cities_data, metric_enum)
+        except Exception as reportlab_error:
+            logger.error(f"Both WeasyPrint and ReportLab failed: {str(reportlab_error)}")
+            raise Exception(f"PDF generation failed: {str(reportlab_error)}")
 
 
 def generate_pdf_html_content(analysis_data, cities_data, metric_enum=None):
@@ -2041,7 +2127,7 @@ def download_traffic_data():
 
 @app.route('/download_pdf')
 def download_pdf():
-    """Generate and download the PDF report using WeasyPrint."""
+    """Generate and download the PDF report with fallback support."""
     try:
         # Get analysis data from session
         analysis_data = session.get('analysis_data', {})
@@ -2116,7 +2202,7 @@ def download_pdf():
 
                 pdf_cities_data.append(city_info)
 
-        # Generate PDF with WeasyPrint
+        # Generate PDF with fallback support
         pdf_filename = generate_traffic_report_pdf(pdf_analysis_data, pdf_cities_data, metric_enum=metric_enum)
 
         # Return the PDF
